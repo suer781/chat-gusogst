@@ -35,11 +35,11 @@ jobs:
       - name: Generate native project
         run: npx expo prebuild --platform android --no-install
 
-      - name: Fix reanimated compatibility
+      - name: Fix reanimated Gradle compatibility
         run: |
           cd android
-          # Pin Gradle wrapper to 8.11.1 (known stable with RN 0.81)
-          echo org.gradle.warning.mode=all >> gradle.properties
+          # Downgrade Gradle to 8.10.2 for reanimated compatibility
+          python3 -c "import pathlib; p=pathlib.Path('gradle/wrapper/gradle-wrapper.properties'); t=p.read_text(); t=t.replace('gradle-8.14.3-bin', 'gradle-8.10.2-bin'); p.write_text(t)"
           echo ndkVersion=26.1.10909125 >> gradle.properties
 
       - name: Make gradlew executable
