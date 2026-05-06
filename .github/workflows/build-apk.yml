@@ -39,14 +39,15 @@ jobs:
         run: |
           cd android
           # Pin Gradle wrapper to 8.11.1 (known stable with RN 0.81)
-          sed -i 's/gradle-8.14.3-bin/gradle-8.11.1-bin/' gradle/wrapper/gradle-wrapper.properties
+          echo org.gradle.warning.mode=all >> gradle.properties
+          echo ndkVersion=26.1.10909125 >> gradle.properties
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
       - name: Build APK (Release)
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
