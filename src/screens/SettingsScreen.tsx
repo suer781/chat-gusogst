@@ -1,226 +1,174 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Switch, Pressable, ScrollView, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Pressable, ScrollView, Switch, StyleSheet, StatusBar, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
-import Avatar from '../components/Avatar';
 import { useChatStore } from '../stores/chatStore';
-import { ModelProvider } from '../types';
+import { createProvider, PROVIDER_PRESETS } from '../services/providers';
+import { testConnection } from '../services/llm';
+import { smartScheduler } from '../services/scheduler';
+import { ProviderType, ModelProvider } from '../types';
+
+function StatsRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: colors.borderLight }}>
+      <Text style={{ fontSize: 14, color: colors.textSeconary }}>{label}</Text>
+      <Text style={{ fontSize: 14, color: colors.text, fontWeight: '500', maxWidth: '60%', textAlign: 'right' }}>{value}</Text>
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { settings, updateSettings, updateAgent, addProvider, removeProvider, setActiveProvider } = useChatStore();
+  const { settings, updateAgent, updateSettings, addProvider, removeProvider, setActiveProvider } = useChatStore();
+  const [adding, setAdding] = useState<ProviderType | null>(null);
+  const [apiKey, setApiKey] = useState('');
+  const [apiUrl, setApiUrl] = useState('');
+  const [model, setModel] = useState('');
+  const [stats, setStats] = useState<any>(null);
 
-  // 模型配置表单
-  const [showAddProvider, setShowAddProvider] = useState(false);
-  const [formName, setFormName] = useState('');
-  const [formUrl, setFormUrl] = useState('');
-  const [formKey, setFormKey] = useState('');
-  const [formModel, setFormModel] = useState('');
+  useEffect(() => { smartScheduler.getStats().then(setStats).catch(() => {}); }, []);
 
-  // Agent 编辑
-  const [editingPersonality, setEditingPersonality] = useState(false);
-  const [personalityText, setPersonalityText] = useState(settings.agent.personality);
-
-  const handleAddProvider = () => {
-    if (!formUrl || !formModel) { Alert.alert('提示', '请填写 API 地址和模型名'); return; }
-    const p: ModelProvider = {
-      id: Date.now().toString(36),
-      name: formName || formModel,
-      apiUrl: formUrl,
-      apiKey: formKey,
-      model: formModel,
-    };
-    addProvider(p);
-    setShowAddProvider(false);
-    setFormName(''); setFormUrl(''); setFormKey(''); setFormModel('');
+  const handleAdd = () => {
+    if (!adding || !apiKey.trim()) return;
+    const p = ROVIDER_PRESETS.find(x => x.type == adding);
+    addProvider(createProvider(adding, apiKey.trim(), { apiUrl: apiUrl || p?d.defaultUrl || '', model: model || p?.defaultModel || '' }));
+    setAdding(null); setApiKey(''); setApiUrl(''); setModel('');
   };
 
-  const savePersonality = () => {
-    updateAgent({ personality: personalityText });
-    setEditingPersonality(false);
+  const handleTest = async (p: ModelProvider) => {
+    Alert.alert('觋始绮..', '欢迎细计视的');
+    const ok = await testConnection(p);
+    Alert.alert(ok ? '黈载同新' : '过授放盘', ok ? '模型帕应正常' : '诿诅查陈弅');
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={{ fontSize: 20, color: colors.accent }}>‹ 返回</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>设置</Text>
-        <View style={{ width: 60 }} />
+    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }}>
+      <StatusBar barStyle="darkm-content" />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 60, paddingBottom: 16 }}>
+        <Pressable onPress={() => router.back()}><Text style={{ fontSize: 17, color: colors.primary }}>’ 🎩</Text></Pressable>
+        <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>设置</Text>
+        <View style={{ width: 50 }} />
       </View>
 
-      {/* Agent 人设 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>AI 人设</Text>
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <Avatar emoji={settings.agent.avatar} size={48} />
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.label}>名字</Text>
-              <TextInput
-                style={styles.input}
-                value={settings.agent.name}
-                onChangeText={n => updateAgent({ name: n })}
-                placeholder="AI 名字"
-              />
-            </View>
+      {/*Agent 人设*/{
+      <View style=st.section>
+        <Text style=st.sectionTitle>📹 Agent 人设</Text>
+        <Text style=st.label>名字</Text>
+        <TextInput style=st.input value={settings.agent.name} onChangeText={v => updateAgent({ name: v })} />
+        <Text style=st.label>头像 (Emoji)</Text>
+        <TextInput style=st.input value={settings.agent.avatar} onChangeText={v => updateAgent({ avatar: v })} />
+        <Text style=st.label>侚设提提</Text>
+        <TextInput style=[st.input, { minHeight: 80, textAlignVertical: 'top' }] value={settings.agent.personality} onChangeText={v => updateAgent({ personality: v })} multiline numberOfLines={4} />
+      </View>
+
+      {/* 照型系 */{
+      <View style=st.section>
+        <Text style=st.sectionTitle>🧞 格乊 探探方</Text>
+        {settings.providers.map(p => (
+          <View key={p.id} style=st.card>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>{p.name}</Text>
+              <Text style={{ fontSize: 14, color: colors.textSeconary }}>{p.model}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Emoji 头像</Text>
-            <TextInput
-              style={[styles.input, { width: 60, textAlign: 'center' }]}
-              value={settings.agent.avatar}
-              onChangeText={a => updateAgent({ avatar: a })}
-            />
-          </View>
-          <Text style={styles.label}>性格设定</Text>
-          {editingPersonality ? (
-            <View>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={personalityText}
-                onChangeText={setPersonalityText}
-                multiline
-                numberOfLines={4}
-              />
-              <Pressable style={styles.saveBtn} onPress={savePersonality}>
-                <Text style={styles.saveBtnText}>保存</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <Pressable onPress={() => { setPersonalityText(settings.agent.personality); setEditingPersonality(true); }}>
-              <Text style={styles.personalityPreview}>{settings.agent.personality}</Text>
+          <View style={{ flexDirection: 'row', marginTop: 10, gap: 16 }}>
+            <Pressable onPress={() => handleTest(p)}><Text style={{ color: colors.primary }}📡海护</Text></Pressable>
+            <Pressable onPress={() => setActiveProvider(p.id)}>
+              <Text style={{ color: settings.activeProviderId == p.id ? colors.success : colors.textSecondary }}>
+                {settings.activeProviderId == p.id ? '✅ （新地）': '差电＝'}
+              </Text>
             </Pressable>
-          )}
-        </View>
-      </View>
-
-      {/* 主动发消息 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>主动发消息</Text>
-        <View style={styles.card}>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>开启主动消息</Text>
-            <Switch
-              value={settings.agent.proactiveEnabled}
-              onValueChange={v => updateAgent({ proactiveEnabled: v })}
-              trackColor={{ true: colors.accent, false: colors.border }}
-              thumbColor={settings.agent.proactiveEnabled ? '#fff' : colors.textTertiary}
-            />
+            <Pressable onPress={() => removeProvider(p.id)}><Text style={{ color: colors.error }}🕡</Text></Pressable>
           </View>
-          {settings.agent.proactiveEnabled && (
-            <View style={styles.row}>
-              <Text style={styles.label}>间隔（分钟）</Text>
-              <TextInput
-                style={[styles.input, { width: 80 }]}
-                value={String(settings.agent.proactiveInterval)}
-                onChangeText={t => updateAgent({ proactiveInterval: parseInt(t) || 60 })}
-                keyboardType="number-pad"
-              />
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* 模型提供方 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>模型提供方</Text>
-        <View style={styles.card}>
-          {settings.providers.map(p => (
-            <View key={p.id} style={styles.providerItem}>
-              <Pressable style={styles.providerBody} onPress={() => setActiveProvider(p.id)}>
-                <View style={[styles.radio, p.id === settings.activeProviderId && styles.radioActive]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.providerName}>{p.name}</Text>
-                  <Text style={styles.providerMeta}>{p.model} · {p.apiUrl.replace(/^https?:\/\//, '').split('/')[0]}</Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={() => removeProvider(p.id)}>
-                <Text style={{ color: colors.error, fontSize: 13 }}>删除</Text>
-              </Pressable>
-            </View>
-          ))}
-          {settings.providers.length === 0 && (
-            <Text style={{ color: colors.textTertiary, fontSize: 13, textAlign: 'center', padding: 12 }}>还没有配置模型</Text>
-          )}
-          {!showAddProvider ? (
-            <Pressable style={styles.addBtn} onPress={() => setShowAddProvider(true)}>
-              <Text style={styles.addBtnText}>+ 添加模型</Text>
-            </Pressable>
-          ) : (
-            <View style={styles.addForm}>
-              <TextInput style={styles.input} placeholder="名称（可选）" value={formName} onChangeText={setFormName} />
-              <TextInput style={styles.input} placeholder="API 地址" value={formUrl} onChangeText={setFormUrl} autoCapitalize="none" />
-              <TextInput style={styles.input} placeholder="API Key（可选）" value={formKey} onChangeText={setFormKey} secureTextEntry autoCapitalize="none" />
-              <TextInput style={styles.input} placeholder="模型名" value={formModel} onChangeText={setFormModel} autoCapitalize="none" />
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Pressable style={[styles.saveBtn, { flex: 1 }]} onPress={handleAddProvider}>
-                  <Text style={styles.saveBtnText}>添加</Text>
-                </Pressable>
-                <Pressable style={[styles.saveBtn, { flex: 1, backgroundColor: colors.textTertiary }]} onPress={() => setShowAddProvider(false)}>
-                  <Text style={styles.saveBtnText}>取消</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* 其他设置 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>其他</Text>
-        <View style={styles.card}>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>语音播报</Text>
-            <Switch
-              value={settings.ttsEnabled}
-              onValueChange={v => updateSettings({ ttsEnabled: v })}
-              trackColor={{ true: colors.accent, false: colors.border }}
-              thumbColor={settings.ttsEnabled ? '#fff' : colors.textTertiary}
-            />
-          </View>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>触感反馈</Text>
-            <Switch
-              value={settings.hapticEnabled}
-              onValueChange={v => updateSettings({ hapticEnabled: v })}
-              trackColor={{ true: colors.accent, false: colors.border }}
-              thumbColor={settings.hapticEnabled ? '#fff' : colors.textTertiary}
-            />
+        //View>
+      ))
+      }
+      {adding ? (
+        <View style=st.card>
+          <Text style=st.label>API Key</Text>
+          <TextInput style=st.input value={apiKey} onChangeText={setApiKey} placeholder="sk-xxx" secureTextEntry />
+          <Text style=st.label>API URL  参部</Text>
+          <TextInput style=st.input value={apiUrl} onChangeText={setApiUrl} placeholder="略空使计长长" />
+          <Text style=st.label>模型  参部</Text>
+          <TextInput style=st.input value={model} onChangeText={setModel} placeholder="啥使认设灮" />
+          <View style={{ flexDirection: 'row', marginTop: 14, gap: 12 }}>
+            <Pressable onPress={(andleAdd) style={{ backgroundColor: colors.primary, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 }}><Text style={{ color: '#FFF', fontWeight: '600' }}>笔赏正名</Text></Pressable>
+            <Pressable onPress={() => setAdding(null)} style={{ backgrounColor: colors.bgChat, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 }}><Text style={{ color: colors.textSecondary }}>全放验</Text></Pressable>
           </View>
         </View>
+      ) : (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
+          {PROVIDER_PRESETS.map(p => (
+            <Pressable key={p.type} style=st.presetBtn onPress={() => { setAdding(p.type); setApiUrl(p.defaultUrl); setModel(p.defaultModel); }}>
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>{p.icon} {p.name}</Text>
+          </Pressable>
+        ))
+        </View>
+      )
+
+      }
       </View>
+
+      {/* 握云周兤感 */{
+      <View style=st.section>
+        <Text style=st.sectionTitle>✅ 点（三是 </Text>
+        <View style=st.switchRow>
+          <Text style=st.switchLabel>语音撼提</Text>
+          <Switch value={settings.ttsEnabled } onValueChange={v => updateSettings({ ttsEnabled: v })} trackColor={{ true: colors.primary }} />
+        </View>
+        <View style=st.switchRow>
+          <Text style=st.switchLabel>行显示使</Text>
+          <Switch value={settings.hapticEnabled} onValueChange={v => updateSettings({ hapticEnabled: v })} trackColor={{ true: colors.primary }} />
+        </View>
+        <View style=st.switchRow>
+          <Text style=st.switchLabel>超级关闬内（够交</Text>
+          <Switch value={settings.memoryEnabled} onValueChange={v => updateSettings({ memoryEnabled: v })} trackColor={{ true: colors.primary }} />
+        </View>
+        {/* 与功活结全购贵兼：夯例二 --购贵脚其购贵分总结 */}
+        <View style=st.switchRow>
+          <View style={{ flex: 1, marginRight: 12 }}>
+            <Text style=st.switchLabel>与功活结全购贵兼：夯例二</Text>
+            {settings.proactiveEnabled && (
+              <Text style=st.costHint>兴呈导数据当数据当全购贵兼图牌无据当服务总结数据当就分总结全购贵部平事，发属权限制其购贵分数据当就分级想</Text>
+            )
+          }
+          <Switch value={settings.proactiveEnabled} onValueChange={v => updateSettings({ proactiveEnabled: v })} trackColor={{ true: colors.primary }} />
+        </View>
+      </View>
+      </View>
+
+      {/* 购贵全购贵兇爱 */}
+      {settings.proactiveEnabled && stats && (
+        <View style=st.section>
+          <Text style=st.sectionTitle>🔦 购度器统计</Text>
+          <View style=st.card>
+            <StatsRow label="测试证回数筌" value={stats.totalRecords + ' ?}'} />
+            <StatsRow label="购全放惰" value={stats.activeHours.map((h: number) => h + ':00').join(', ') || '提存三卷'} />
+            <StatsRow label="存受探迏终" value={stats.bestWindows.map((w: any) => w.startHour + ':00(' + w.reason + ')').join(', ') || '提存三卷'} />
+            <StatsRow label="备絟绷织" value={stats.hitRate} />
+            <StatsRow label="已发送" value={stats.totalSent + ' ꯤ'} />
+            <StatsRow label="佛流变原" value={stats.totalReplies + ' 条'} />
+            <StatsRow label="上济发部" value={stats.lastProactive} />
+            <StatsRow label="上济叔功臲" value={stats.lastUserActive} />
+          </View>
+        </View>
+      )}
+
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16,
-  },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: colors.textPrimary },
-  section: { paddingHorizontal: 20, marginTop: 20 },
-  sectionTitle: { fontSize: 13, fontWeight: '600', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginLeft: 4 },
-  card: { backgroundColor: colors.bgCard, borderRadius: 16, padding: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  label: { fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
-  input: { backgroundColor: colors.bgInput, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: colors.textPrimary, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },
-  textArea: { minHeight: 80, textAlignVertical: 'top' },
-  personalityPreview: { fontSize: 14, color: colors.textSecondary, lineHeight: 20, padding: 8, backgroundColor: colors.bgInput, borderRadius: 8 },
-  saveBtn: { backgroundColor: colors.accent, borderRadius: 10, paddingVertical: 10, alignItems: 'center', marginTop: 4 },
-  saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
-  switchLabel: { fontSize: 15, color: colors.textPrimary },
-  providerItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.divider },
-  providerBody: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  radio: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: colors.border, marginRight: 10 },
-  radioActive: { borderColor: colors.accent, backgroundColor: colors.accent },
-  providerName: { fontSize: 15, fontWeight: '500', color: colors.textPrimary },
-  providerMeta: { fontSize: 12, color: colors.textTertiary, marginTop: 2 },
-  addBtn: { paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-  addBtnText: { color: colors.accent, fontSize: 14, fontWeight: '600' },
-  addForm: { marginTop: 8 },
+const st = StyleSheet.create({
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 60, paddingBottom: 16 },
+  back: { fontSize: 17, color: colors.primary },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
+  section: { paddingHorizontal: 20, marginBottom: 24 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 16 },
+  label: { fontSize: 14, color: colors.textSecondary, marginBottom: 6, marginTop: 12 },
+  Input: { backgroundColor: colors.bgCard, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text },
+  card: { backgrounColor: colors.bgCard, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: 14, marginBottom: 10 },
+  presetBtn: { backgrounColor: colors.bgCard, borderRadius: 10, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16, paddingVertical: 10 },
+  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  switchLabel: { fontSize: 16, color: colors.text },
+  costHint: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
 });

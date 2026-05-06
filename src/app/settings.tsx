@@ -1,1 +1,2 @@
-export { default } from '../screens/SettingsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+export default function SettingsPage() { return <SettingsScreen />; }

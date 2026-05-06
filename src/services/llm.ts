@@ -1,15 +1,11 @@
-import { Message, ModelProvider } from '../types';
+import { ModelProvider, StreamCallbacks } from '../types';
 
-interface StreamCallbacks {
-  onToken: (token: string) => void;
-  onComplete: (fullText: string) => void;
-  onError: (error: string) => void;
-}
-
+/** OpenAI 兼容接口 — 流式聊天（Chatbox multi-provider pattern） */
 export async function chatStream(
   provider: ModelProvider,
   messages: { role: string; content: string }[],
-  callbacks: StreamCallbacks
+  callbacks: StreamCallbacks,
+  signal?: AbortSignal,
 ) {
   try {
     const url = provider.apiUrl.replace(/\/$/, '') + '/v1/chat/completions';
@@ -17,7 +13,7 @@ export async function chatStream(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${provider.apiKey}`,
+        'Authorization': 'Bearer ' + provider.apiKey,
       },
       body: JSON.stringify({
         model: provider.model,
@@ -26,11 +22,12 @@ export async function chatStream(
         temperature: 0.8,
         max_tokens: 2048,
       }),
+      signal,
     });
 
     if (!resp.ok) {
       const err = await resp.text();
-      callbacks.onError(`API 错误 ${resp.status}: ${err}`);
+      callbacks.onError('API ' + resp.status + ': ' + err.slice(0, 200));
       return;
     }
 
@@ -40,53 +37,59 @@ export async function chatStream(
     const decoder = new TextDecoder();
     let full = '';
     let buffer = '';
+    let tokens = 0;
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-
-      const lines = buffer.split('\n');
+      const lines = buffer.split('
+');
       buffer = lines.pop() || '';
-
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const data = line.slice(6).trim();
         if (data === '[DONE]') break;
         try {
           const json = JSON.parse(data);
-          const token = json.choices?.[0]?.delta?.content;
-          if (token) {
-            full += token;
-            callbacks.onToken(token);
-          }
+          const delta = json.choices?.[0]?.delta?.content;
+          if (delta) { full += delta; tokens++; callbacks.onToken(delta); }
         } catch {}
       }
     }
-    callbacks.onComplete(full);
+    callbacks.onComplete(full, tokens);
   } catch (e: any) {
+    if (e.name === 'AbortError') return;
     callbacks.onError(e.message || '网络错误');
   }
 }
 
+/** 同步调用（用于记忆摘要等后台任务） */
 export async function chatSync(
   provider: ModelProvider,
-  messages: { role: string; content: string }[]
-): Promise<string> {
+  messages: { role: string; content: string }[],
+  opts?: { temperature?: number; maxTokens?: number },
+): Promise<{ content: string; tokens?: number }> {
   const url = provider.apiUrl.replace(/\/$/, '') + '/v1/chat/completions';
   const resp = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${provider.apiKey}`,
-    },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + provider.apiKey },
     body: JSON.stringify({
       model: provider.model,
       messages,
-      temperature: 0.8,
-      max_tokens: 2048,
+      temperature: opts?.temperature ?? 0.5,
+      max_tokens: opts?.maxTokens ?? 1024,
     }),
   });
-  const json = await resp.json();
-  return json.choices?.[0]?.message?.content || '';
+  if (!resp.ok) throw new Error('API ' + resp.status);
+  const data = await resp.json();
+  return { content: data.choices?.[0]?.message?.content || '', tokens: data.usage?.total_tokens };
+}
+
+/** 测试连接（Chatbox-style: provider_settings 中的测试按钮） */
+export async function testConnection(provider: ModelProvider): Promise<boolean> {
+  try {
+    const r = await chatSync(provider, [{ role: 'user', content: 'ping' }], { maxTokens: 10 });
+    return r.content.length > 0;
+  } catch { return false; }
 }
