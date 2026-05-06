@@ -38,8 +38,8 @@ jobs:
       - name: Fix reanimated Gradle compatibility
         run: |
           cd android
-          # Downgrade Gradle to 8.10.2 for reanimated compatibility
-          python3 -c "import pathlib; p=pathlib.Path('gradle/wrapper/gradle-wrapper.properties'); t=p.read_text(); t=t.replace('gradle-8.14.3-bin', 'gradle-8.13-bin'); p.write_text(t)"
+          # Force Gradle to 8.13 for Android Gradle Plugin compatibility
+          sed -i 's|gradle-[0-9.]*-bin|gradle-8.13-bin|' gradle/wrapper/gradle-wrapper.properties
           echo ndkVersion=26.1.10909125 >> gradle.properties
           echo NODE_BINARY=$(which node) >> gradle.properties
           echo hermesEnabled=true >> gradle.properties
