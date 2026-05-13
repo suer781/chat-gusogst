@@ -1,0 +1,40 @@
+{
+  "name": "chat-gusogst",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "mobile:init": "npx cap init chat-gusogst com.chatgusogst.app --web-dir dist",
+    "mobile:add:android": "npx cap add android",
+    "mobile:sync": "npx cap sync",
+    "mobile:open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/preferences": "^6.0.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0",
+    "lucide-react": "^0.454.0",
+    "framer-motion": "^11.11.0",
+    "zustand": "^5.0.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@types/uuid": "^10.0.0"
+  }
+}
