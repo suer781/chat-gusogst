@@ -1,0 +1,18 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #FF6B9D;
+  --primary-dark: #E8527A;
+  --primary-light: #FFB8D0;
+  --surface: #F8F9FA;
+  --card: #FFFFFF;
+  --text: #1A1A1A;
+  --text-secondary: #666;
+  --border: #E8E8E8;
+  --bubble-user: #FF6B9D;
+  --bubble-ai: #F0F0F0;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--surface); color: var(--text); -webkit-tap-highlight-color: transparent; }
+input, textarea { font-family: inherit; }
