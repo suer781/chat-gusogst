@@ -11,36 +11,23 @@ import type { EngineMeta } from './engines/registry'
 // ── 模型采样配置 ──────────────────────
 
 export interface PersonaSamplingConfig {
-  /** 温度 (0.0-2.0)：越低越确定，越高越随机 */
   temperature: number
-  /** 核采样 (0.0-1.0)：越低越保守 */
   topP: number
-  /** 存在惩罚 (-2.0~2.0)：鼓励谈论新话题 */
   presencePenalty: number
-  /** 频率惩罚 (-2.0~2.0)：减少重复用词 */
   frequencyPenalty: number
-  /** 回复长度偏好 */
   maxTokens: number
 }
 
 // ── 完整分析结果 ──────────────────────
 
 export interface PersonaAnalysis {
-  /** 人设画像标签 */
   tags: string[]
-  /** 搜索场景描述 */
   scenarios: string[]
-  /** 推荐的引擎优先级 */
   recommendedEngines: string[]
-  /** 各推荐引擎的理由 */
   engineReasons: Record<string, string>
-  /** 推荐的并发数 */
   concurrency: number
-  /** 是否启用联网搜索 */
   enableSearch: boolean
-  /** 是否启用时间过滤 */
   enableTimeRange: boolean
-  /** 推荐的模型采样参数 */
   sampling: PersonaSamplingConfig
 }
 
@@ -84,13 +71,14 @@ function extractTags(prompt: string): string[] {
   const tags: string[] = []
   const p = prompt.toLowerCase()
 
-  if (/编程|代码|开发|程序员|技术|bug|github|api|框架|算法|backend|frontend|devops|java|python|typescript|rust|golang|react|vue/.test(p)) tags.push('技术')
+  // 内容领域
+  if (/编程|代码|开发|程序员|技术|bug|github|api|框架|算法|backend|frontend|devops/.test(p)) tags.push('技术')
   if (/前端|后端|全栈|运维|sre|架构/.test(p)) tags.push('编程')
   if (/ai|机器学习|深度学习|llm|大模型|nlp|人工智能/.test(p)) tags.push('AI')
   if (/硬件|嵌入式|iot|单片机|电路/.test(p)) tags.push('硬件')
   if (/学术|论文|科研|研究|文献|期刊|sci/.test(p)) tags.push('学术')
   if (/考研|考公|考试|学习|教育|辅导/.test(p)) tags.push('学习')
-  if (/购物|优惠|比价|消费|买|推荐商品/.test(p)) tags.push('购物')
+  if (/购物|优惠|比价|消费|推荐商品/.test(p)) tags.push('购物')
   if (/美食|菜谱|做饭|烹饪|吃货|餐厅/.test(p)) tags.push('美食')
   if (/旅行|旅游|攻略|景点|酒店|机票/.test(p)) tags.push('旅行')
   if (/健身|运动|减肥|健康|养生/.test(p)) tags.push('健康')
@@ -114,14 +102,18 @@ function extractTags(prompt: string): string[] {
   if (/[\u4e00-\u9fff]/.test(p)) tags.push('中文')
   if (/[a-zA-Z]{5,}/.test(p)) tags.push('英文')
 
-  // 语气风格检测（影响采样参数）
+  // ── 语气/性格风格（影响采样参数的核心）──
   if (/温柔|轻声|体贴|关心|温暖|柔情/.test(p)) tags.push('温柔语气')
   if (/傲娇|嫌弃|毒舌|暴躁|凶/.test(p)) tags.push('傲娇语气')
-  if (/活泼|元气|开朗|热情|兴奋|正能量/.test(p)) tags.push('元气语气')
+  if (/活泼|元气|开朗|热情|兴奋|正能量|好动/.test(p)) tags.push('元气语气')
   if (/冷静|理性|客观|严谨|专业|严肃/.test(p)) tags.push('理性语气')
   if (/幽默|搞笑|段子|调侃|逗/.test(p)) tags.push('幽默语气')
   if (/文艺|诗意|浪漫|唯美|细腻/.test(p)) tags.push('文艺语气')
   if (/深夜|安静|沉思|冥想|放空/.test(p)) tags.push('深夜语气')
+  if (/冷酷|沉稳|冷淡|冷漠|高冷|不苟言笑|惜字如金/.test(p)) tags.push('冷酷语气')
+  if (/御姐|女王|霸道|强势|大姐头/.test(p)) tags.push('御姐语气')
+  if (/软糯|撒娇|奶声奶气|可爱|软萌/.test(p)) tags.push('软萌语气')
+  if (/中二|病娇|疯批|黑化|偏执/.test(p)) tags.push('病娇语气')
 
   return [...new Set(tags)]
 }
@@ -138,118 +130,105 @@ function extractScenarios(prompt: string): string[] {
 }
 
 // ── 采样参数推断 ──────────────────────
+// 核心逻辑：性格 → 温度
+// 活泼好动 → 高温度（0.85-1.0），输出跳跃有创意
+// 冷酷沉稳 → 低温度（0.2-0.4），输出精确克制
+// 温柔体贴 → 中低温度（0.5-0.6），稳定温暖
+// 幽默搞怪 → 最高温度（1.0+），需要创意随机
+// 理性专业 → 最低温度（0.2-0.3），精确一致
 
 function inferSampling(tags: string[]): PersonaSamplingConfig {
-  // 基准值
   let temperature = 0.7
   let topP = 0.9
   let presencePenalty = 0.3
   let frequencyPenalty = 0.3
   let maxTokens = 800
 
-  // ── 语气风格调整 ──
+  // ── 性格/语气 → 采样参数映射 ──
 
-  // 温柔型：稳定、温暖、少随机
+  // 温柔型：稳定温暖，少随机，允许重复温馨用词
   if (tags.includes('温柔语气')) {
-    temperature = 0.55
-    topP = 0.85
-    presencePenalty = 0.4  // 多关心不同方面
-    frequencyPenalty = 0.2 // 允许重复温馨用词
-    maxTokens = 600
+    temperature = 0.55; topP = 0.85; presencePenalty = 0.4; frequencyPenalty = 0.2; maxTokens = 600
   }
 
-  // 傲娇型：需要变化感，不能太死板
+  // 傲娇型：需要变化感，话不多但花样多
   if (tags.includes('傲娇语气')) {
-    temperature = 0.85
-    topP = 0.92
-    presencePenalty = 0.5  // 多换花样怼
-    frequencyPenalty = 0.4 // 减少重复句式
-    maxTokens = 500        // 傲娇话不多
+    temperature = 0.85; topP = 0.92; presencePenalty = 0.5; frequencyPenalty = 0.4; maxTokens = 500
   }
 
-  // 元气型：活泼多变
+  // 元气/活泼好动：高温度，话题跳跃，输出丰富
   if (tags.includes('元气语气')) {
-    temperature = 0.9
-    topP = 0.95
-    presencePenalty = 0.6  // 话题跳跃
-    frequencyPenalty = 0.3
-    maxTokens = 700
+    temperature = 0.9; topP = 0.95; presencePenalty = 0.6; frequencyPenalty = 0.3; maxTokens = 700
   }
 
-  // 理性型：精确、一致
+  // 冷酷/沉稳：低温度，克制精准，话少但有力
+  if (tags.includes('冷酷语气')) {
+    temperature = 0.3; topP = 0.75; presencePenalty = 0.1; frequencyPenalty = 0.1; maxTokens = 400
+  }
+
+  // 御姐/强势：中低温度，自信果断
+  if (tags.includes('御姐语气')) {
+    temperature = 0.5; topP = 0.8; presencePenalty = 0.3; frequencyPenalty = 0.2; maxTokens = 500
+  }
+
+  // 软萌/撒娇：中高温度，需要可爱变化
+  if (tags.includes('软萌语气')) {
+    temperature = 0.75; topP = 0.9; presencePenalty = 0.5; frequencyPenalty = 0.3; maxTokens = 500
+  }
+
+  // 病娇/中二：高温度，不可预测是特色
+  if (tags.includes('病娇语气')) {
+    temperature = 0.95; topP = 0.93; presencePenalty = 0.6; frequencyPenalty = 0.4; maxTokens = 600
+  }
+
+  // 理性/专业：最低温度，精确一致
   if (tags.includes('理性语气')) {
-    temperature = 0.3
-    topP = 0.8
-    presencePenalty = 0.1
-    frequencyPenalty = 0.1
-    maxTokens = 1200
+    temperature = 0.3; topP = 0.8; presencePenalty = 0.1; frequencyPenalty = 0.1; maxTokens = 1200
   }
 
-  // 幽默型：需要创意
+  // 幽默：最高温度，创意随机
   if (tags.includes('幽默语气')) {
-    temperature = 1.0
-    topP = 0.95
-    presencePenalty = 0.7
-    frequencyPenalty = 0.5
-    maxTokens = 600
+    temperature = 1.0; topP = 0.95; presencePenalty = 0.7; frequencyPenalty = 0.5; maxTokens = 600
   }
 
-  // 文艺型：细腻但有想象力
+  // 文艺：想象力丰富但细腻
   if (tags.includes('文艺语气')) {
-    temperature = 0.8
-    topP = 0.9
-    presencePenalty = 0.5
-    frequencyPenalty = 0.2  // 允许诗意重复
-    maxTokens = 900
+    temperature = 0.8; topP = 0.9; presencePenalty = 0.5; frequencyPenalty = 0.2; maxTokens = 900
   }
 
-  // 深夜型：沉稳、有深度
+  // 深夜：沉稳有深度
   if (tags.includes('深夜语气')) {
-    temperature = 0.6
-    topP = 0.85
-    presencePenalty = 0.3
-    frequencyPenalty = 0.2
-    maxTokens = 1000
+    temperature = 0.6; topP = 0.85; presencePenalty = 0.3; frequencyPenalty = 0.2; maxTokens = 1000
   }
 
-  // ── 内容领域调整 ──
+  // ── 内容领域叠加修正 ──
 
-  // 技术/学术：需要精确
   if (tags.includes('技术') || tags.includes('学术') || tags.includes('编程')) {
     temperature = Math.min(temperature, 0.5)
     topP = Math.min(topP, 0.85)
     frequencyPenalty = Math.min(frequencyPenalty, 0.2)
     maxTokens = Math.max(maxTokens, 1200)
   }
-
-  // 学习/辅导：准确为主
   if (tags.includes('学习')) {
     temperature = Math.min(temperature, 0.6)
     maxTokens = Math.max(maxTokens, 1000)
   }
-
-  // 写作/创作：需要创意空间
   if (tags.includes('写作')) {
     temperature = Math.max(temperature, 0.8)
     presencePenalty = Math.max(presencePenalty, 0.5)
     maxTokens = Math.max(maxTokens, 1500)
   }
-
-  // 情感/陪伴：自然流畅
   if (tags.includes('情感')) {
     temperature = Math.max(temperature, 0.6)
     frequencyPenalty = Math.max(frequencyPenalty, 0.3)
     maxTokens = Math.min(maxTokens, 600)
   }
-
-  // 金融/投资：严谨
   if (tags.includes('金融')) {
     temperature = Math.min(temperature, 0.4)
     frequencyPenalty = Math.min(frequencyPenalty, 0.2)
     maxTokens = Math.max(maxTokens, 1000)
   }
 
-  // ── 限制范围 ──
   return {
     temperature: Math.round(Math.max(0, Math.min(2, temperature)) * 100) / 100,
     topP: Math.round(Math.max(0, Math.min(1, topP)) * 100) / 100,
@@ -265,29 +244,22 @@ export function analyzePersona(prompt: string): PersonaAnalysis {
   const tags = extractTags(prompt)
   const scenarios = extractScenarios(prompt)
 
-  // 搜索引擎打分
   const scores: { id: string; score: number; reason: string }[] = []
   for (const profile of ENGINE_PROFILES) {
     let score = 0
     const reasons: string[] = []
     for (const tag of tags) {
       if (profile.strengths.some(s => tag.includes(s) || s.includes(tag))) {
-        score += 3
-        reasons.push(`擅长${tag}`)
+        score += 3; reasons.push(`擅长${tag}`)
       }
     }
     for (const tag of tags) {
-      if (profile.weaknesses.some(w => tag.includes(w) || w.includes(tag))) {
-        score -= 2
-      }
+      if (profile.weaknesses.some(w => tag.includes(w) || w.includes(tag))) score -= 2
     }
     score += profile.qualityScore * 0.3 + profile.speedScore * 0.1
     if (tags.includes('中文') && profile.languages === 'zh') score += 1
     if (tags.includes('英文') && profile.languages === 'en') score += 1
-    if (tags.includes('网盘资源') && /pansou|panclub|xiongdipan/.test(profile.id)) {
-      score += 5
-      reasons.push('网盘搜索')
-    }
+    if (tags.includes('网盘资源') && /pansou|panclub|xiongdipan/.test(profile.id)) { score += 5; reasons.push('网盘搜索') }
     if (score > 0) scores.push({ id: profile.id, score, reason: reasons.join('、') || '通用匹配' })
   }
 
@@ -303,8 +275,7 @@ export function analyzePersona(prompt: string): PersonaAnalysis {
   const needSearch = !(/情感|倾诉|陪伴|聊天$/.test(prompt) && tags.every(t => ['情感','社交','中文'].includes(t)))
 
   return {
-    tags,
-    scenarios,
+    tags, scenarios,
     recommendedEngines: recommendedIds,
     engineReasons,
     concurrency: tags.length > 3 ? 3 : 2,
@@ -330,7 +301,7 @@ export function analysisToSearchConfig(analysis: PersonaAnalysis): PersonaSearch
   }
 }
 
-// ── 标签 emoji（UI 展示用）──────────────────────
+// ── UI 辅助 ──────────────────────
 
 export function getTagEmoji(tag: string): string {
   const map: Record<string, string> = {
@@ -343,23 +314,27 @@ export function getTagEmoji(tag: string): string {
     '情感': '❤️', '社交': '👥', '网盘资源': '📁',
     '中文': '🇨🇳', '英文': '🇬🇧',
     '温柔语气': '💕', '傲娇语气': '💢', '元气语气': '☀️',
-    '理性语气': '🧠', '幽默语气': '😂', '文艺语气': '🌸', '深夜语气': '🌙',
+    '冷酷语气': '🧊', '御姐语气': '👑', '软萌语气': '🧸',
+    '病娇语气': '🗡️', '理性语气': '🧠', '幽默语气': '😂',
+    '文艺语气': '🌸', '深夜语气': '🌙',
   }
   return map[tag] || '🏷️'
 }
 
-/** 采样参数的中文说明 */
+/** 采样参数的中文说明（UI 展示用） */
 export function describeSampling(config: PersonaSamplingConfig): string {
   const parts: string[] = []
-  if (config.temperature <= 0.4) parts.push('精确稳定')
+  if (config.temperature <= 0.3) parts.push('极度克制')
+  else if (config.temperature <= 0.5) parts.push('精确稳定')
   else if (config.temperature <= 0.7) parts.push('均衡自然')
-  else if (config.temperature <= 1.0) parts.push('灵活多变')
+  else if (config.temperature <= 0.9) parts.push('灵活多变')
   else parts.push('高度创意')
 
   if (config.presencePenalty >= 0.5) parts.push('话题丰富')
   if (config.frequencyPenalty >= 0.4) parts.push('表达多样')
-  if (config.maxTokens >= 1000) parts.push('详尽回复')
-  else if (config.maxTokens <= 500) parts.push('简洁回复')
+  if (config.maxTokens <= 400) parts.push('惜字如金')
+  else if (config.maxTokens <= 600) parts.push('简洁回复')
+  else if (config.maxTokens >= 1000) parts.push('详尽回复')
 
   return parts.join(' · ')
 }
@@ -368,13 +343,7 @@ export function describeSampling(config: PersonaSamplingConfig): string {
 
 export function buildLLMAnalysisPrompt(systemPrompt: string, availableEngines: { id: string; name: string; description: string }[]): string {
   const engineList = availableEngines.map(e => `- ${e.id}: ${e.name} — ${e.description}`).join('\n')
-  return `根据以下 AI 助手人设，选出最适合的搜索引擎（4-6个）并建议模型采样参数。
-
-人设：${systemPrompt}
-
-可用引擎：${engineList}
-
-输出 JSON：{"recommendedEngines":[],"engineReasons":{},"sampling":{"temperature":0.7,"topP":0.9,"presencePenalty":0.3,"frequencyPenalty":0.3,"maxTokens":800},"concurrency":2,"enableSearch":true,"enableTimeRange":false}`
+  return `根据以下 AI 助手人设，选出最适合的搜索引擎（4-6个）并建议模型采样参数。\n\n人设：${systemPrompt}\n\n可用引擎：${engineList}\n\n输出 JSON：{"recommendedEngines":[],"engineReasons":{},"sampling":{"temperature":0.7,"topP":0.9,"presencePenalty":0.3,"frequencyPenalty":0.3,"maxTokens":800},"concurrency":2,"enableSearch":true,"enableTimeRange":false}`
 }
 
 export function parseLLMAnalysisResponse(llmResponse: string, originalTags: string[]): PersonaAnalysis {
@@ -383,8 +352,7 @@ export function parseLLMAnalysisResponse(llmResponse: string, originalTags: stri
     if (!jsonMatch) throw new Error('No JSON')
     const data = JSON.parse(jsonMatch[0])
     return {
-      tags: originalTags,
-      scenarios: [],
+      tags: originalTags, scenarios: [],
       recommendedEngines: data.recommendedEngines || ['duckduckgo', 'baidu'],
       engineReasons: data.engineReasons || {},
       concurrency: data.concurrency || 2,
