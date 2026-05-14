@@ -102,7 +102,8 @@ export interface MemoryToolResult {
 export interface CompressedMessage {
   role: 'system'
   content: string
-  /** 标记为压缩摘要 */\  isSummary: true
+  /** 标记为压缩摘要 */
+  isSummary: true
   /** 原始消息范围 [start, end) */
   originalRange?: [number, number]
 }
