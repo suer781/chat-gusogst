@@ -30,9 +30,10 @@ jobs:
           npm install
           npm run build
 
-      - name: Sync Capacitor
+      - name: Init Capacitor & Add Android
         working-directory: capacitor-app
         run: |
+          npx cap add android
           npx cap sync android
 
       - name: Build APK
