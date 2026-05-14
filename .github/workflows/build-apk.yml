@@ -1,5 +1,4 @@
 # Build chat-gusogst APK
-# 触发：push 到 main（代码变更）或手动触发
 name: Build APK
 
 on:
@@ -9,7 +8,7 @@ on:
       - 'capacitor-app/**'
       - 'app/src/**'
       - '.github/workflows/build-apk.yml'
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -38,6 +37,11 @@ jobs:
         run: |
           cd capacitor-app
           npm run build
+
+      - name: Add Android platform
+        run: |
+          cd capacitor-app
+          npx cap add android
 
       - name: Sync Capacitor
         run: |
