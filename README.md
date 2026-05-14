@@ -1,5 +1,10 @@
 # chat-gusogst
 
+> ⚠️ **项目仍在早期开发阶段，尚未可用。**
+> 核心代码框架已搭建完成（Agent 循环、UI 界面、模型适配），但尚未经过实际运行测试，
+> 不包含可直接安装的 APK。欢迎关注，但现阶段请不要将其作为可用软件使用。
+> 详见 [开发规划](docs/DEV_PLAN.md) 了解当前进度和待完成事项。
+
 AI 虚拟恋人 Android 应用。基于 Chatbox UI + Hermes Agent 拆解重组，TypeScript 全栈重写。
 
 ## 特性
@@ -31,4 +36,11 @@ app/src/
 └── shared/       ← 类型定义
 ```
 
-详见 [docs/DEV_PLAN.md](docs/DEV_PLAN.md)
+## 致谢
+
+- [Hermes Agent](https://github.com/NousResearch/hermes-agent) — Agent 核心参考
+- [Chatbox](https://github.com/chatboxai/chatbox) — UI 框架参考
+
+## 许可证
+
+[AGPL-3.0](LICENSE)
