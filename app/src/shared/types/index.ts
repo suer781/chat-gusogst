@@ -23,8 +23,8 @@ export interface ToolResult {
 
 // ── 模型 ─────────────────────────────────────────
 export interface ModelConfig {
-  provider: string       // openai | anthropic | gemini | custom
-  model: string          // gpt-4o | claude-3.5-sonnet | ...
+  provider: string
+  model: string
   apiKey: string
   apiHost?: string
   temperature?: number
@@ -33,7 +33,7 @@ export interface ModelConfig {
   contextWindow?: number
 }
 
-// ── Provider（模型适配器）────────────────────────
+// ── Provider ────────────────────────────────────
 export interface ProviderAdapter {
   readonly name: string
   chat(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): Promise<Message>
@@ -54,12 +54,30 @@ export interface MemoryEntry {
   id: string
   content: string
   type: 'conversation' | 'fact' | 'preference' | 'emotion'
-  importance: number       // 0-1
+  importance: number
   created_at: string
   last_accessed: string
   access_count: number
   tags: string[]
   embedding?: number[]
+}
+
+// ── 模型采样配置 ────────────────────────────────
+export interface PersonaSamplingConfig {
+  temperature: number
+  topP: number
+  presencePenalty: number
+  frequencyPenalty: number
+  maxTokens: number
+}
+
+// ── 人设搜索配置 ────────────────────────────────
+export interface PersonaSearchConfig {
+  engines: string[]
+  engineWeights?: Record<string, number>
+  concurrency?: number
+  enableTimeRange?: boolean
+  enableSearch?: boolean
 }
 
 // ── 人设 ─────────────────────────────────────────
@@ -70,6 +88,12 @@ export interface Persona {
   avatar?: string
   tags: string[]
   isDefault?: boolean
+  /** 搜索引擎配置 */
+  searchConfig?: PersonaSearchConfig
+  /** 模型采样配置（温度、topP 等） */
+  samplingConfig?: PersonaSamplingConfig
+  /** AI 智能分析开关，true=自动分析，false=手动 */
+  autoAnalyzeSearch?: boolean
 }
 
 // ── Agent 配置 ───────────────────────────────────
@@ -77,8 +101,8 @@ export interface AgentConfig {
   model: ModelConfig
   persona: Persona
   memoryEnabled: boolean
-  maxRounds: number         // 最大 tool call 轮次
-  maxHistoryTokens: number  // 历史上限
+  maxRounds: number
+  maxHistoryTokens: number
   searchEnabled: boolean
   searchEngine: 'tavily' | 'duckduckgo' | 'baidu'
   searchApiKey?: string
