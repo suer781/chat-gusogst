@@ -117,3 +117,6 @@ export type AgentEvent =
   | { type: 'done'; message: Message }
   | { type: 'error'; error: string }
   | { type: 'memory_saved'; count: number }
+
+// Memory types
+export type { MemoryEntry, MemoryConfig, MemoryToolArgs, MemoryToolResult, ChatRecord, SessionSummary } from './memory'

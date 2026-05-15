@@ -5,6 +5,7 @@ import { create } from 'zustand'
 import type { AgentConfig, Message, Persona } from '../shared/types'
 import { bridge } from '../bridge'
 import { PersonaManager } from '../agent/core/persona'
+import { MemoryManager } from '../agent/memory'
 import { registerSearchTools } from '../agent/tools/search'
 import { ToolRegistry } from '../agent/tools/registry'
 
@@ -90,6 +91,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 interface SettingsState {
   config: AgentConfig
   personaManager: PersonaManager
+  memoryManager: MemoryManager
   initialized: boolean
   theme: 'light' | 'dark'
   fontSize: number
@@ -103,6 +105,7 @@ interface SettingsState {
   setLanguage: (lang: string) => void
 }
 
+const memoryMgr = new MemoryManager()
 const personaMgr = new PersonaManager()
 
 const DEFAULT_CONFIG: AgentConfig = {
@@ -137,6 +140,7 @@ function loadConfig(): AgentConfig {
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   config: loadConfig(),
   personaManager: personaMgr,
+    memoryManager: memoryMgr,
   initialized: false,
   theme: 'light' as const,
   fontSize: 14,
