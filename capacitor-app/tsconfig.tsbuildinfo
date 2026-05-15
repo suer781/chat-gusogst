@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/components/Layout.tsx","./src/hooks/useStore.ts","./src/lib/api.ts","./src/lib/types.ts","./src/pages/ChatPage.tsx","./src/pages/PersonaPage.tsx","./src/pages/SettingsPage.tsx"],"version":"5.9.3"}

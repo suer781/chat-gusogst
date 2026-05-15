@@ -4,10 +4,16 @@
 import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../../shared/types'
 
 export class AnthropicProvider implements ProviderAdapter {
-  readonly name = 'anthropic'
+  readonly name: string
+  readonly defaultHost: string
+
+  constructor(name = 'anthropic', defaultHost = 'https://api.anthropic.com') {
+    this.name = name
+    this.defaultHost = defaultHost
+  }
 
   private getEndpoint(config: ModelConfig): string {
-    const host = (config.apiHost || 'https://api.anthropic.com').replace(/\/+$/, '')
+    const host = (config.apiHost || this.defaultHost).replace(/\/+$/, '')
     return `${host}/v1/messages`
   }
 

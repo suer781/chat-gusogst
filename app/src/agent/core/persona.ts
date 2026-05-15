@@ -2,9 +2,21 @@
  * 人设系统 - 基于 Hermes persona.py 重写
  * 预设 + 自定义人设，支持切换
  * AI 智能初始化：搜索引擎配置 + 模型采样参数
+ * 自动优化：LLM 深度分析 → 结构化人设字段 + 引擎/参数配置
  */
-import type { Persona, PersonaSearchConfig, PersonaSamplingConfig } from '../../shared/types'
-import { analyzePersona, analysisToSearchConfig } from '../../search/persona-search-init'
+import type {
+  Persona,
+  PersonaSearchConfig,
+  PersonaSamplingConfig,
+  PersonaStructuredProfile,
+} from '../shared/types'
+import {
+  analyzePersona,
+  analysisToSearchConfig,
+  buildLLMAnalysisPrompt,
+  parseLLMAnalysisResponse,
+  mergeAnalysis,
+} from '../../search/persona-search-init'
 import type { PersonaAnalysis } from '../../search/persona-search-init'
 
 const STORAGE_KEY = 'chat-gusogst-personas'
@@ -80,7 +92,7 @@ export class PersonaManager {
     localStorage.setItem(ACTIVE_KEY, this.activeId)
   }
 
-  /** 启动时批量初始化所有开启智能分析的人设 */
+  /** 启动时批量初始化所有开启智能分析的人设（关键词分析，快速） */
   private ensureAllInitialized(): void {
     let changed = false
     for (const p of this.personas) {
@@ -108,10 +120,11 @@ export class PersonaManager {
 
   // ── 切换人设 ──────────────────────
 
-  switchTo(id: string): Persona {
-    const p = this.personas.find(x => x.id === id)
-    if (!p) throw new Error(`Persona not found: ${id}`)
+  setActive(id: string): Persona {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) throw new Error(`人设不存在: ${id}`)
     this.activeId = id
+    this.ensureInitialized(p)
     this.persist()
     return p
   }
@@ -119,129 +132,213 @@ export class PersonaManager {
   // ── 增删改 ──────────────────────
 
   add(persona: Omit<Persona, 'id'>): Persona {
-    const p: Persona = {
-      ...persona,
-      id: `custom_${Date.now()}`,
-      autoAnalyzeSearch: persona.autoAnalyzeSearch ?? true,
-    }
-    if (p.autoAnalyzeSearch && !p.searchConfig) {
-      const analysis = this.analyzeAndCache(p)
-      p.searchConfig = analysisToSearchConfig(analysis)
-      if (!p.samplingConfig) p.samplingConfig = analysis.sampling
+    const id = 'custom-' + Date.now().toString(36)
+    const p: Persona = { ...persona, id }
+    if (p.autoAnalyzeSearch) {
+      this.analyzeAndCache(p)
     }
     this.personas.push(p)
     this.persist()
     return p
   }
 
-  update(id: string, patch: Partial<Persona>): boolean {
-    const idx = this.personas.findIndex(p => p.id === id)
-    if (idx < 0) return false
-    const updated = { ...this.personas[idx], ...patch }
-    if (patch.systemPrompt && updated.autoAnalyzeSearch) {
-      const analysis = this.analyzeAndCache(updated)
-      updated.searchConfig = analysisToSearchConfig(analysis)
-      updated.samplingConfig = analysis.sampling
+  update(id: string, updates: Partial<Persona>): Persona {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) throw new Error(`人设不存在: ${id}`)
+
+    Object.assign(p, updates)
+
+    // 如果修改了 systemPrompt 且开启了自动分析，重新分析
+    if (updates.systemPrompt && p.autoAnalyzeSearch) {
+      this.analyzeAndCache(p)
     }
-    this.personas[idx] = updated
+
     this.persist()
-    return true
+    return p
   }
 
-  delete(id: string): boolean {
-    if (DEFAULT_PERSONAS.some(p => p.id === id)) return false
+  delete(id: string): void {
+    if (DEFAULT_PERSONAS.some(p => p.id === id)) {
+      throw new Error('不能删除预设人设')
+    }
     this.personas = this.personas.filter(p => p.id !== id)
-    if (this.activeId === id) this.activeId = 'gentle'
+    if (this.activeId === id) {
+      this.activeId = this.personas[0]?.id || 'gentle'
+    }
     this.analysisCache.delete(id)
     this.persist()
-    return true
   }
 
-  // ── 智能初始化 ──────────────────────
+  // ── 自动分析（关键词模式，快速） ──────────
 
-  private analyzeAndCache(persona: Persona): PersonaAnalysis {
-    const analysis = analyzePersona(persona.systemPrompt)
-    this.analysisCache.set(persona.id, analysis)
-    return analysis
+  /** 内部分析 + 缓存 */
+  private analyzeAndCache(p: Persona): void {
+    const analysis = analyzePersona(p.systemPrompt)
+    this.analysisCache.set(p.id, analysis)
+    p.searchConfig = analysisToSearchConfig(analysis)
+    p.samplingConfig = analysis.sampling
+    p.tags = analysis.tags
   }
 
-  /** 获取分析结果（UI 展示标签、推荐理由等） */
-  getAnalysis(personaId: string): PersonaAnalysis | null {
-    const cached = this.analysisCache.get(personaId)
-    if (cached) return cached
-    const persona = this.getById(personaId)
-    if (!persona) return null
-    return this.analyzeAndCache(persona)
+  /** 确保人设已初始化 */
+  private ensureInitialized(p: Persona): void {
+    if (p.autoAnalyzeSearch && (!p.searchConfig || !p.searchConfig.engines.length)) {
+      this.analyzeAndCache(p)
+    }
   }
 
-  /** 手动重新分析（搜索+采样一起重新生成） */
-  reAnalyze(personaId: string): PersonaAnalysis | null {
-    const persona = this.getById(personaId)
-    if (!persona) return null
-    this.analysisCache.delete(personaId)
-    const analysis = this.analyzeAndCache(persona)
-    this.update(personaId, {
-      searchConfig: analysisToSearchConfig(analysis),
-      samplingConfig: analysis.sampling,
-    })
-    return analysis
+  /** 手动触发重新分析（关键词模式） */
+  reAnalyze(id: string): PersonaAnalysis {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) throw new Error(`人设不存在: ${id}`)
+    this.analyzeAndCache(p)
+    this.persist()
+    return this.analysisCache.get(id)!
   }
 
-  /** 切换智能分析开关 */
-  setAutoAnalyze(personaId: string, enabled: boolean): void {
-    const persona = this.getById(personaId)
-    if (!persona) return
-    if (enabled) {
-      const analysis = this.analyzeAndCache(persona)
-      this.update(personaId, {
-        autoAnalyzeSearch: true,
-        searchConfig: analysisToSearchConfig(analysis),
-        samplingConfig: analysis.sampling,
-      })
+  // ── 自动优化（LLM 深度分析） ──────────────
+
+  /**
+   * 自动优化：用 LLM 深度理解系统提示词，提取结构化人设字段
+   * 
+   * 流程：
+   * 1. 关键词分析（快速，生成引擎/参数基线）
+   * 2. LLM 分析（深度，提取语气/口头禅/性格等结构化字段）
+   * 3. 合并结果（LLM 标签补充 → 重新推荐引擎/参数）
+   * 
+   * @param id 人设 ID
+   * @param llmCall LLM 调用函数（由上层注入，接收 prompt 返回 response）
+   * @returns 分析结果（含结构化字段）
+   */
+  async autoOptimize(
+    id: string,
+    llmCall: (prompt: string) => Promise<string>,
+  ): Promise<PersonaAnalysis> {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) throw new Error(`人设不存在: ${id}`)
+
+    // 第一步：关键词分析（快速基线）
+    const keywordAnalysis = analyzePersona(p.systemPrompt)
+
+    // 第二步：LLM 深度分析
+    const analysisPrompt = buildLLMAnalysisPrompt(p.systemPrompt)
+    const llmResponse = await llmCall(analysisPrompt)
+    const llmProfile = parseLLMAnalysisResponse(llmResponse)
+
+    let finalAnalysis: PersonaAnalysis
+
+    if (llmProfile) {
+      // 第三步：合并结果
+      finalAnalysis = mergeAnalysis(keywordAnalysis, llmProfile)
+      // 保存结构化档案
+      p.structured = llmProfile
     } else {
-      this.update(personaId, { autoAnalyzeSearch: false })
+      // LLM 分析失败，降级到关键词分析
+      finalAnalysis = keywordAnalysis
     }
+
+    // 更新人设配置
+    this.analysisCache.set(id, finalAnalysis)
+    p.searchConfig = analysisToSearchConfig(finalAnalysis)
+    p.samplingConfig = finalAnalysis.sampling
+    p.tags = finalAnalysis.tags
+    p.autoAnalyzeSearch = true
+
+    this.persist()
+    return finalAnalysis
   }
 
-  // ── 搜索配置手动控制 ──────────────────────
+  /**
+   * 快速自动优化（纯关键词，不调 LLM）
+   * 适用于没有配置 LLM 或需要快速结果的场景
+   */
+  autoOptimizeQuick(id: string): PersonaAnalysis {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) throw new Error(`人设不存在: ${id}`)
 
-  setManualSearchConfig(personaId: string, config: PersonaSearchConfig): void {
-    this.update(personaId, {
-      searchConfig: config,
-      autoAnalyzeSearch: false,
-    })
+    this.analyzeAndCache(p)
+    this.persist()
+    return this.analysisCache.get(id)!
   }
 
-  getSearchConfig(personaId?: string): PersonaSearchConfig | null {
-    const id = personaId || this.activeId
-    const persona = this.getById(id)
-    return persona?.searchConfig || null
+  /**
+   * 更新结构化字段（用户手动微调后保存）
+   */
+  updateStructured(id: string, structured: Partial<PersonaStructuredProfile>): void {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) throw new Error(`人设不存在: ${id}`)
+
+    p.structured = { ...(p.structured || {} as PersonaStructuredProfile), ...structured }
+    this.persist()
   }
 
-  // ── 采样配置手动控制 ──────────────────────
+  // ── 开关控制 ──────────────────────
 
-  setManualSamplingConfig(personaId: string, config: PersonaSamplingConfig): void {
-    this.update(personaId, { samplingConfig: config })
-  }
+  /** 开启/关闭自动分析 */
+  setAutoAnalyze(id: string, enabled: boolean): void {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) return
 
-  getSamplingConfig(personaId?: string): PersonaSamplingConfig | null {
-    const id = personaId || this.activeId
-    const persona = this.getById(id)
-    return persona?.samplingConfig || null
-  }
-
-  /** 首次激活人设时确保已初始化 */
-  ensureInitialized(personaId: string): void {
-    const persona = this.getById(personaId)
-    if (!persona) return
-    if (persona.autoAnalyzeSearch && (!persona.searchConfig || !persona.searchConfig.engines.length)) {
-      const analysis = this.analyzeAndCache(persona)
-      this.update(personaId, {
-        searchConfig: analysisToSearchConfig(analysis),
-        samplingConfig: analysis.sampling,
-      })
+    p.autoAnalyzeSearch = enabled
+    if (enabled) {
+      this.analyzeAndCache(p)
     }
+    this.persist()
+  }
+
+  /** 手动设置搜索配置（会关闭自动分析） */
+  setManualSearchConfig(id: string, config: PersonaSearchConfig): void {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) return
+
+    p.searchConfig = config
+    p.autoAnalyzeSearch = false
+    this.persist()
+  }
+
+  /** 手动设置采样配置（会关闭自动分析） */
+  setManualSamplingConfig(id: string, config: PersonaSamplingConfig): void {
+    const p = this.personas.find(p => p.id === id)
+    if (!p) return
+
+    p.samplingConfig = config
+    p.autoAnalyzeSearch = false
+    this.persist()
+  }
+
+  // ── 获取配置 ──────────────────────
+
+  getSearchConfig(id?: string): PersonaSearchConfig | undefined {
+    const p = id ? this.getById(id) : this.getActive()
+    return p?.searchConfig
+  }
+
+  getSamplingConfig(id?: string): PersonaSamplingConfig | undefined {
+    const p = id ? this.getById(id) : this.getActive()
+    return p?.samplingConfig
+  }
+
+  getStructured(id?: string): PersonaStructuredProfile | undefined {
+    const p = id ? this.getById(id) : this.getActive()
+    return p?.structured
+  }
+
+  /** 获取分析结果（用于 UI 展示） */
+  getAnalysis(id?: string): PersonaAnalysis | undefined {
+    const targetId = id || this.activeId
+    if (this.analysisCache.has(targetId)) {
+      return this.analysisCache.get(targetId)
+    }
+    const p = this.getById(targetId)
+    if (p) {
+      const analysis = analyzePersona(p.systemPrompt)
+      this.analysisCache.set(targetId, analysis)
+      return analysis
+    }
+    return undefined
   }
 }
 
-export { getTagEmoji, describeSampling } from '../../search/persona-search-init'
+// ── 辅助导出 ──────────────────────
+
+export { getTagEmoji, describeSampling, describeStructured } from '../../search/persona-search-init'

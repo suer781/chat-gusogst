@@ -1,0 +1,295 @@
+openapi: 3.1.0
+info:
+  title: Chat-Gusogst API — AI 虚拟恋人 App
+  description: |
+    ## 概述
+    Chat-Gusogst 是一个安卓 AI 虚拟恋人应用，后端引擎通过 Chaquopy 嵌入 Android，
+    前端壳为 Capacitor + React + TypeScript，应用内直接 IPC 通信（非 HTTP）。
+
+    本 OpenAPI 文档定义 Python 后端暴露给前端的完整接口契约，
+    实际调用通过 Chaquopy `py.getModule().callAttr()` 桥接。
+
+    ## 架构
+    ```
+    React/TS 前端 ──Chaquopy IPC──▶ Python 后端
+                                        ├── Provider Adapters (多格式 AI API)
+                                        ├── Search Engines (22 引擎)
+                                        ├── Memory System (两层记忆)
+                                        ├── Persona System (人设/性格)
+                                        ├── MCP Tools (外部工具)
+                                        └── Chat Engine (对话核心)
+    ```
+
+    ## 支持的 AI Provider 格式
+    | # | 格式 | api_mode | 典型服务 |
+    |---|------|----------|----------|
+    | 1 | OpenAI Chat Completions | chat_completions | OpenAI / DeepSeek / LongCat / 通义(兼容) / 文心(兼容) |
+    | 2 | OpenAI Responses API | responses | OpenAI 最新格式 |
+    | 3 | Anthropic Messages API | anthropic_messages | Claude 系列 / 第三方 Claude 代理 |
+    | 4 | Google Gemini API | gemini | Gemini Pro / Ultra / Flash |
+    | 5 | 百度文心一言 API | baidu_ernie | 文心一言 / ERNIE Bot |
+    | 6 | 阿里 DashScope API | dashscope | 通义千问(原生) / 通义万相 |
+    | 7 | Ollama 本地 API | ollama_chat / ollama_generate | 本地部署的任意开源模型 |
+    | 8 | Hugging Face Inference API | hf_inference | HF 上的开源模型在线推理 |
+    | 9 | 通用 OpenAI 兼容 | openai_compatible | 任意兼容 OpenAI 格式的服务 |
+
+  version: 1.0.0
+  contact:
+    name: chat-gusogst
+    url: https://github.com/suer781/chat-gusogst
+
+servers:
+  - url: chaquopy://local
+    description: Chaquopy 进程内 IPC（非 HTTP，文档用）
+
+tags:
+  - name: providers
+    description: AI 模型 Provider 管理 — 多格式适配器注册、发现、配置
+  - name: search
+    description: 联网搜索引擎 — 22 引擎统一调度、结果聚合
+  - name: chat
+    description: 对话核心 — 会话管理、消息收发、流式响应、情绪感知
+  - name: persona
+    description: 人设系统 — 角色设定、性格、说话风格、智能初始化
+  - name: memory
+    description: 记忆系统 — 长期记忆 + 短期记忆、自动提取、信任评分
+  - name: companion
+    description: 伴侣特性 — 关系阶段、情感状态、主动消息、亲密度
+  - name: tools
+    description: MCP 外部工具 — 智能家居、文件操作等扩展能力
+  - name: config
+    description: 应用配置 — 全局设置、语音、主题
+
+paths:
+  # ──────────────────────────────────────────
+  # PROVIDER ADAPTERS
+  # ──────────────────────────────────────────
+  /providers:
+    get:
+      operationId: listProviders
+      summary: 列出所有已注册的 Provider
+      description: |
+        返回所有已发现的 Provider Profile 列表，包括内置插件和用户自定义插件。
+        发现顺序：内置插件 → 用户插件 → 旧式单文件模块。用户插件同名覆盖内置。
+      tags: [providers]
+      responses:
+        "200":
+          description: Provider 列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProviderProfile"
+
+  /providers/{name}:
+    get:
+      operationId: getProvider
+      summary: 获取指定 Provider 详情
+      tags: [providers]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+          description: Provider 名称或别名
+      responses:
+        "200":
+          description: Provider 详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderProfile"
+        "404":
+          description: Provider 不存在
+
+  /providers/{name}/models:
+    get:
+      operationId: listProviderModels
+      summary: 获取 Provider 可用模型列表
+      description: |
+        尝试从 Provider 的模型端点实时获取列表，失败时回退到 fallback_models。
+        需要 Provider 已配置有效的 API Key。
+      tags: [providers]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: 模型列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items: { type: string }
+                  source:
+                    type: string
+                    enum: [live, fallback]
+                    description: 数据来源是实时获取还是回退列表
+
+  /providers/{name}/test:
+    post:
+      operationId: testProvider
+      summary: 测试 Provider 连通性
+      description: 发送一条简单消息测试 Provider 是否正常工作
+      tags: [providers]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  description: 指定测试用模型，不传则用默认模型
+      responses:
+        "200":
+          description: 测试成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  latency_ms: { type: integer }
+                  model: { type: string }
+                  response_preview: { type: string, description: 回复前 100 字符 }
+        "500":
+          description: 测试失败
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  error: { type: string }
+
+  # ──────────────────────────────────────────
+  # SEARCH ENGINES (22 引擎)
+  # ──────────────────────────────────────────
+  /search/engines:
+    get:
+      operationId: listSearchEngines
+      summary: 列出所有搜索引擎及状态
+      description: |
+        返回 22 个搜索引擎的配置、可用状态、是否需要 API Key。
+        引擎按类别分组：AI 搜索、传统搜索、隐私搜索、国内搜索、新闻搜索、学术搜索。
+      tags: [search]
+      responses:
+        "200":
+          description: 搜索引擎列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  engines:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SearchEngine"
+                  default_engine:
+                    type: string
+                    description: 当前默认搜索引擎 ID
+                  fallback_chain:
+                    type: array
+                    items: { type: string }
+                    description: 引擎不可用时的回退链顺序
+
+  /search/engines/{engine_id}/test:
+    post:
+      operationId: testSearchEngine
+      summary: 测试指定搜索引擎
+      tags: [search]
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query: { type: string, default: "今天天气怎么样" }
+      responses:
+        "200":
+          description: 测试结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  latency_ms: { type: integer }
+                  results_count: { type: integer }
+                  sample:
+                    type: array
+                    items: { $ref: "#/components/schemas/SearchResult" }
+                    maxItems: 2
+
+  /search:
+    post:
+      operationId: search
+      summary: 统一搜索接口
+      description: |
+        使用指定引擎或自动选择引擎进行搜索。
+        支持单引擎搜索、多引擎聚合、回退链自动切换。
+        搜索结果会被缓存，相同查询在 TTL 内直接返回缓存。
+      tags: [search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchRequest"
+      responses:
+        "200":
+          description: 搜索结果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+
+  /search/aggregate:
+    post:
+      operationId: aggregateSearch
+      summary: 多引擎聚合搜索
+      description: |
+        同时查询多个引擎，合并去重排序结果。
+        用于需要高覆盖率的场景（如角色设定时的信息补充）。
+      tags: [search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/SearchRequest"
+                - type: object
+                  properties:
+                    engines:
+                      type: array
+                      items: { type: string }
+                      description: 要聚合的引擎列表，不传则用全部可用引擎
+                    max_results:
+                      type: integer
+                      default: 20
+                      description: 聚合后最大结果数
+      responses:
+        "200":
+          description: 聚合搜索结果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"

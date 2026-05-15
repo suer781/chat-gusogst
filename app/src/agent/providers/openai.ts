@@ -5,11 +5,17 @@
 import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../../shared/types'
 
 export class OpenAIProvider implements ProviderAdapter {
-  readonly name = 'openai'
+  readonly name: string
+  readonly defaultHost: string
+
+  constructor(name = 'openai', defaultHost = 'https://api.openai.com') {
+    this.name = name
+    this.defaultHost = defaultHost
+  }
   _lastStreamToolCalls?: Array<{id: string; type: string; function: {name: string; arguments: string}}>
 
   private getEndpoint(config: ModelConfig): string {
-    const host = (config.apiHost || 'https://api.openai.com').replace(/\/+$/, '')
+    const host = (config.apiHost || this.defaultHost).replace(/\/+$/, '')
     return `${host}/v1/chat/completions`
   }
 
