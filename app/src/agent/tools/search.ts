@@ -1,67 +1,75 @@
-// ============================================
-// 搜索工具 — Agent 可调用的 Tool 定义
-// 底层走 SearchDispatcher 调度
-// ============================================
+import { ToolRegistry } from './registry'
+import { SearchDispatcher } from '../../search/dispatcher'
+import type { SearchOptions } from '../../search/types'
 
-import { z } from 'zod'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import type { SearchDispatcher } from '../../search/dispatcher'
-import type { SearchResult } from '../../search/types'
-import type { ToolDefinition, ToolExecuteResult } from './registry'
-
-// ── Zod Schema ──────────────────────────
-
-const SearchInputSchema = z.object({
-  query: z.string().describe('搜索关键词，支持中文或英文'),
-  count: z.number().optional().default(5).describe('返回结果数量，默认 5'),
-  timeRange: z.enum(['day', 'week', 'month', 'year']).optional().describe('时间范围过滤'),
-  language: z.string().optional().describe('语言偏好，如 zh、en'),
-})
-
-// ── Tool 定义 ──────────────────────────
-
-export function createSearchTool(dispatcher: SearchDispatcher): ToolDefinition {
-  return {
-    id: 'search',
-    name: '联网搜索',
-    description: '搜索互联网获取实时信息。可以搜索新闻、百科、技术文档等。',
-    inputSchema: zodToJsonSchema(SearchInputSchema),
-    async execute(input: unknown): Promise<ToolExecuteResult> {
-      const parsed = SearchInputSchema.safeParse(input)
-      if (!parsed.success) {
-        return { content: [{ type: 'text', text: `参数错误: ${parsed.error.message}` }] }
-      }
-
-      const { query, count, timeRange, language } = parsed.data
-
-      try {
-        const results = await dispatcher.search(query, { count, timeRange, language })
-        return {
-          content: [{ type: 'text', text: formatResults(results) }],
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        return {
-          content: [{ type: 'text', text: `搜索失败: ${msg}` }],
-          isError: true,
-        }
-      }
+const searchInputSchema = {
+  type: 'object' as const,
+  properties: {
+    query: {
+      type: 'string',
+      description: '搜索关键词（支持中英文）'
     },
+    count: {
+      type: 'number',
+      description: '返回结果数量，默认 5',
+      default: 5
+    },
+    timeRange: {
+      type: 'string',
+      enum: ['day', 'week', 'month', 'year'],
+      description: '时间范围过滤'
+    },
+    language: {
+      type: 'string',
+      enum: ['zh', 'en'],
+      description: "语言偏好，如 'zh' 或 'en'"
+    }
+  },
+  required: ['query']
+}
+
+/** 创建搜索工具 */
+function createSearchTool(dispatcher: SearchDispatcher) {
+  return {
+    name: 'search',
+    description: '联网搜索：搜索互联网获取实时信息（新闻、百科、技术文档等）',
+    parameters: searchInputSchema,
+    execute: async (args: Record<string, unknown>) => {
+      try {
+        const query = String(args.query ?? '')
+        const options: SearchOptions = {
+          count: typeof args.count === 'number' ? args.count : 5,
+          timeRange: args.timeRange as 'day' | 'week' | 'month' | 'year' | undefined,
+          language: args.language as string | undefined
+        }
+        const results = await dispatcher.search(query, options)
+        return formatResults(results)
+      } catch (err) {
+        return `搜索失败: ${String(err)}`
+      }
+    }
   }
 }
 
-// ── 格式化输出 ──────────────────────────
+function formatResults(results: Array<{ title: string; url: string; snippet: string; source?: string }>): string {
+  if (!results.length) return '未找到相关结果'
+  return results.map((r, i) =>
+    `${i + 1}. ${r.title}\n   ${r.url}\n   ${r.snippet}${r.source ? `\n   来源: ${r.source}` : ''}`
+  ).join('\n\n')
+}
 
-function formatResults(results: SearchResult[]): string {
-  if (results.length === 0) return '未找到相关结果'
-
-  return results
-    .map((r, i) => {
-      let text = `【${i + 1}】${r.title}`
-      if (r.url) text += `\n${r.url}`
-      if (r.snippet) text += `\n${r.snippet}`
-      if (r.source) text += `\n[来源: ${r.source}]`
-      return text
-    })
-    .join('\n\n')
+/** 注册搜索工具到 ToolRegistry */
+export function registerSearchTools(
+  registry: ToolRegistry,
+  options: { engine?: string; apiKey?: string } = {}
+): void {
+  const dispatcherOpts: Record<string, unknown> = {}
+  if (options.engine && options.apiKey) {
+    dispatcherOpts.engineConfigs = {
+      [options.engine]: { id: options.engine, name: options.engine, apiKey: options.apiKey }
+    }
+  }
+  const dispatcher = new SearchDispatcher(dispatcherOpts)
+  const tool = createSearchTool(dispatcher)
+  registry.register(tool.name, tool.description, tool.parameters, tool.execute)
 }

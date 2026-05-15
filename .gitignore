@@ -5,3 +5,8 @@ app/dist/
 app/.vite/
 *.log
 .DS_Store
+
+# 临时实验目录
+android-app/
+capacitor-app/
+chatbox-upstream/

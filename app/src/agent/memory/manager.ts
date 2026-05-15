@@ -371,5 +371,35 @@ export class MemoryManager {
     await MemoryStore.updateMemory(
       adjustTrust(entry, helpful ? 'helpful' : 'unhelpful', this.config)
     )
+
   }
-}
+  // 公共方法（供 agent.ts 调用）
+
+  async search(query: string, limit: number = 5): Promise<MemoryEntry[]> {
+    const all = await MemoryStore.getMemories(undefined, this.currentPersonaId)
+    return all
+      .filter(m => {
+        if (m.trustScore < this.config.minTrustThreshold) return false
+        return m.content.toLowerCase().includes(query.toLowerCase()) ||
+               m.tags.some(t => t.includes(query) || query.includes(t))
+      })
+      .sort((a, b) => b.trustScore - a.trustScore)
+      .slice(0, limit)
+  }
+
+  async extractAndSave(history: Message[]): Promise<number> {
+    const messages = history.slice(-5)
+    let count = 0
+    for (const msg of messages) {
+      if (!msg.content) continue
+      const results = quickExtract(msg.content)
+      for (const r of results) {
+        const safe = scanContent(r.content)
+        if (!safe.safe) continue
+        await this.saveMemory(r.content, r.category, r.confidence)
+        count++
+      }
+    }
+    return count
+  }
+  }

@@ -1,3 +1,8 @@
+export type ToolExecuteResult = {
+  content: { type: "text"; text: string }[]
+  isError?: boolean
+}
+
 /**
  * Tool Registry — 管理和执行工具
  * 基于 Hermes toolsets.py 重写

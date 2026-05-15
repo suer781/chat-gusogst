@@ -17,28 +17,28 @@ interface QuickExtract {
 
 const QUICK_PATTERNS: { re: RegExp; category: MemoryCategory; extract: (m: RegExpMatchArray) => string }[] = [
   // 偏好
-  { re: /我(?:喜欢|爱|偏好|习惯|经常)吃(.+?)[。，！]/, category: 'preference', m => `喜欢吃${m[1].trim()}` },
-  { re: /我(?:不喜欢|讨厌|不爱|不吃|不能吃)(.+?)[。，！]/, category: 'preference', m => `不喜欢${m[1].trim()}` },
-  { re: /我(?:喜欢|爱|偏好)(.+?)[。，！]/, category: 'preference', m => `喜欢${m[1].trim()}` },
-  { re: /我(?:讨厌|不喜欢|不爱)(.+?)[。，！]/, category: 'preference', m => `不喜欢${m[1].trim()}` },
+  { re: /我(?:喜欢|爱|偏好|习惯|经常)吃(.+?)[。，！]/, category: 'preference', extract: (m) => `喜欢吃${m[1].trim()}` },
+  { re: /我(?:不喜欢|讨厌|不爱|不吃|不能吃)(.+?)[。，！]/, category: 'preference', extract: (m) => `不喜欢${m[1].trim()}` },
+  { re: /我(?:喜欢|爱|偏好)(.+?)[。，！]/, category: 'preference', extract: (m) => `喜欢${m[1].trim()}` },
+  { re: /我(?:讨厌|不喜欢|不爱)(.+?)[。，！]/, category: 'preference', extract: (m) => `不喜欢${m[1].trim()}` },
   
   // 事实
-  { re: /我(?:住在|在|去了|来自)(.+?)[。，！]/, category: 'fact', m => `地点：${m[1].trim()}` },
-  { re: /我(?:是|做|从事|在)(.+?)(?:工作|职业|行业)/, category: 'fact', m => `职业：${m[1].trim()}` },
-  { re: /我(?:今年|现在)(.+?)(?:岁|年级)/, category: 'fact', m => `年龄：${m[1].trim()}` },
-  { re: /我(?:叫|是|名字叫)(.+?)[。，！]/, category: 'fact', m => `名字：${m[1].trim()}` },
+  { re: /我(?:住在|在|去了|来自)(.+?)[。，！]/, category: 'fact', extract: (m) => `地点：${m[1].trim()}` },
+  { re: /我(?:是|做|从事|在)(.+?)(?:工作|职业|行业)/, category: 'fact', extract: (m) => `职业：${m[1].trim()}` },
+  { re: /我(?:今年|现在)(.+?)(?:岁|年级)/, category: 'fact', extract: (m) => `年龄：${m[1].trim()}` },
+  { re: /我(?:叫|是|名字叫)(.+?)[。，！]/, category: 'fact', extract: (m) => `名字：${m[1].trim()}` },
   
   // 情感
-  { re: /我(?:今天|最近|现在)(?:心情|感觉)(.+?)[。，！]/, category: 'emotion', m => `情绪：${m[1].trim()}` },
-  { re: /我(?:开心|高兴|难过|伤心|焦虑|压力大|累|烦)/, category: 'emotion', m => m[0] },
+  { re: /我(?:今天|最近|现在)(?:心情|感觉)(.+?)[。，！]/, category: 'emotion', extract: (m) => `情绪：${m[1].trim()}` },
+  { re: /我(?:开心|高兴|难过|伤心|焦虑|压力大|累|烦)/, category: 'emotion', extract: (m) => m[0] },
   
   // 习惯
-  { re: /我(?:每天|通常|一般)(.+?)(?:点|时|分)(?:起床|睡|出门)/, category: 'habit', m => `作息：${m[0].trim()}` },
-  { re: /我(?:每天都|经常|习惯)(.+?)[。，！]/, category: 'habit', m => `习惯：${m[0].trim()}` },
+  { re: /我(?:每天|通常|一般)(.+?)(?:点|时|分)(?:起床|睡|出门)/, category: 'habit', extract: (m) => `作息：${m[0].trim()}` },
+  { re: /我(?:每天都|经常|习惯)(.+?)[。，！]/, category: 'habit', extract: (m) => `习惯：${m[0].trim()}` },
   
   // 人际关系
-  { re: /我(?:的|有个)(.+?)(?:叫|是|名字)(.+?)[。，！]/, category: 'relationship', m => `${m[1].trim()}：${m[2].trim()}` },
-  { re: /我(?:老婆|老公|女朋友|男朋友|爸妈|爸|妈|哥|姐|弟|妹)(.+?)[。，！]/, category: 'relationship', m => `${m[0].trim()}` },
+  { re: /我(?:的|有个)(.+?)(?:叫|是|名字)(.+?)[。，！]/, category: 'relationship', extract: (m) => `${m[1].trim()}：${m[2].trim()}` },
+  { re: /我(?:老婆|老公|女朋友|男朋友|爸妈|爸|妈|哥|姐|弟|妹)(.+?)[。，！]/, category: 'relationship', extract: (m) => `${m[0].trim()}` },
 ]
 
 export function quickExtract(userMessage: string): QuickExtract[] {

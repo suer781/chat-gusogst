@@ -35,7 +35,8 @@ export interface EngineConfig {
   mode: 'api' | 'scrape'
   apiKey?: string
   customHeaders?: Record<string, string>
-}\n/** 所有引擎配置的集合，key 是引擎 id */
+}
+/** 所有引擎配置的集合，key 是引擎 id */
 export type EngineConfigMap = Record<string, EngineConfig>
 
 /** 搜索引擎接口 */

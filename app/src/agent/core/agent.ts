@@ -3,6 +3,7 @@
  * 流程: 用户消息 → build_context → 调模型 → tool_calls? → 执行 → 再调 → 返回
  */
 import type { Message, AgentConfig, AgentEvent, ToolDefinition } from '../../shared/types'
+import { buildChannelInstruction } from './channel'
 import { getProvider } from '../providers'
 import { MemoryManager } from '../memory/manager'
 import { ToolRegistry } from '../tools/registry'

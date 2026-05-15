@@ -91,10 +91,16 @@ interface SettingsState {
   config: AgentConfig
   personaManager: PersonaManager
   initialized: boolean
+  theme: 'light' | 'dark'
+  fontSize: number
+  language: string
   init: () => Promise<void>
   updateConfig: (patch: Partial<AgentConfig>) => void
   switchPersona: (id: string) => void
   addCustomPersona: (name: string, prompt: string) => void
+  setTheme: (theme: 'light' | 'dark') => void
+  setFontSize: (size: number) => void
+  setLanguage: (lang: string) => void
 }
 
 const personaMgr = new PersonaManager()
@@ -114,6 +120,7 @@ const DEFAULT_CONFIG: AgentConfig = {
   maxHistoryTokens: 8000,
   searchEnabled: false,
   searchEngine: 'duckduckgo',
+  channel: 'app',
 }
 
 function loadConfig(): AgentConfig {
@@ -131,6 +138,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   config: loadConfig(),
   personaManager: personaMgr,
   initialized: false,
+  theme: 'light' as const,
+  fontSize: 14,
+  language: 'zh-CN',
+  setTheme: (theme) => set({ theme }),
+  setFontSize: (fontSize) => set({ fontSize }),
+  setLanguage: (language) => set({ language }),
 
   init: async () => {
     const { config } = get()

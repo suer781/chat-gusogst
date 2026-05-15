@@ -80,6 +80,16 @@ export interface PersonaSearchConfig {
   enableSearch?: boolean
 }
 
+// ── 渠道 ─────────────────────────────────────────
+export type Channel = 'app' | 'wechat' | 'qq' | 'feishu' | 'custom'
+
+export interface ChannelStyle {
+  id: Channel
+  name: string
+  /** 拼进 system prompt 的风格指令 */
+  instruction: string
+}
+
 // ── 人设 ─────────────────────────────────────────
 export interface Persona {
   id: string
@@ -106,6 +116,8 @@ export interface AgentConfig {
   searchEnabled: boolean
   searchEngine: 'tavily' | 'duckduckgo' | 'baidu'
   searchApiKey?: string
+  /** 当前对话渠道，决定输出风格 */
+  channel?: Channel
 }
 
 // ── Agent 事件 ───────────────────────────────────

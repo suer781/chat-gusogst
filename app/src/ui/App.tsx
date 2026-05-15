@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSettingsStore, useChatStore } from './stores'
 import { ChatView } from './chat/ChatView'
-import { SettingsView } from './settings/SettingsView'
+import SettingsView from './settings/SettingsView'
 import { PersonaView } from './persona/PersonaView'
 
 type View = 'chat' | 'settings' | 'persona'
@@ -25,13 +25,13 @@ export default function App() {
 
   // 未配置 API Key 时强制跳到设置
   if (!config.model.apiKey) {
-    return <SettingsView onDone={() => setView('chat')} />
+    return <SettingsView />
   }
 
   return (
     <div className="app">
       {view === 'chat' && <ChatView onOpenSettings={() => setView('settings')} onOpenPersona={() => setView('persona')} />}
-      {view === 'settings' && <SettingsView onDone={() => setView('chat')} />}
+      {view === 'settings' && <SettingsView />}
       {view === 'persona' && <PersonaView onDone={() => setView('chat')} />}
     </div>
   )
