@@ -5,17 +5,20 @@
 import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../../shared/types'
 
 export class OpenAIProvider implements ProviderAdapter {
+  readonly displayName = 'OpenAI'
+  readonly apiMode = 'chat_completions' as const
+  readonly authType = 'api_key' as const
   readonly name: string
-  readonly defaultHost: string
+  readonly baseUrl: string
 
-  constructor(name = 'openai', defaultHost = 'https://api.openai.com') {
+  constructor(name = 'openai', baseUrl = 'https://api.openai.com') {
     this.name = name
-    this.defaultHost = defaultHost
+    this.baseUrl = baseUrl
   }
   _lastStreamToolCalls?: Array<{id: string; type: string; function: {name: string; arguments: string}}>
 
   private getEndpoint(config: ModelConfig): string {
-    const host = (config.apiHost || this.defaultHost).replace(/\/+$/, '')
+    const host = (config.apiHost || this.baseUrl).replace(/\/+$/, '')
     return `${host}/v1/chat/completions`
   }
 
@@ -26,7 +29,6 @@ export class OpenAIProvider implements ProviderAdapter {
         const msg: Record<string, unknown> = { role: m.role, content: m.content }
         if (m.tool_calls) msg.tool_calls = m.tool_calls
         if (m.tool_call_id) msg.tool_call_id = m.tool_call_id
-        if (m.name) msg.name = m.name
         return msg
       }),
       stream,
@@ -70,7 +72,8 @@ export class OpenAIProvider implements ProviderAdapter {
     const choice = data.choices?.[0]
     if (!choice) throw new Error('No choice in response')
     return {
-      role: 'assistant',
+      id: crypto.randomUUID(),
+          role: 'assistant',
       content: choice.message?.content ?? null,
       tool_calls: choice.message?.tool_calls,
       timestamp: Date.now(),

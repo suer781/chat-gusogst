@@ -1,10 +1,10 @@
-import type { Channel, ChannelStyle } from '../../shared/types'
+import type { ChannelStyle, ChannelId } from "../../shared/types"
 
 /**
  * 渠道风格配置
  * 同一个 Agent，不同渠道用不同输出风格
  */
-const CHANNEL_STYLES: Record<Channel, ChannelStyle> = {
+const CHANNEL_STYLES: Record<ChannelId, ChannelStyle> = {
   app: {
     id: 'app',
     name: '应用内',
@@ -13,6 +13,7 @@ const CHANNEL_STYLES: Record<Channel, ChannelStyle> = {
       '可以用括号写动作和心理描写，如（微微一笑）（想了想）*轻叹*。',
       '语言自然、有温度，像面对面聊天一样。',
     ].join(''),
+    compact: false,
   },
   wechat: {
     id: 'wechat',
@@ -22,6 +23,17 @@ const CHANNEL_STYLES: Record<Channel, ChannelStyle> = {
       '纯文字聊天，不用括号描写动作，不用星号标注语气。',
       '口语化、简洁，像普通微信好友聊天一样，偶尔可以用 emoji。',
     ].join(''),
+    compact: false,
+  },
+  telegram: {
+    id: 'telegram',
+    name: 'Telegram',
+    instruction: [
+      '你正在 Telegram 上与用户聊天。',
+      '纯文字聊天，不用括号描写动作。',
+      '风格简洁直接，支持 emoji。',
+    ].join(''),
+    compact: false,
   },
   qq: {
     id: 'qq',
@@ -31,6 +43,7 @@ const CHANNEL_STYLES: Record<Channel, ChannelStyle> = {
       '纯文字聊天，不用括号描写动作。',
       '风格活泼一些，像QQ好友聊天，可以用 emoji 和颜文字。',
     ].join(''),
+    compact: false,
   },
   feishu: {
     id: 'feishu',
@@ -40,16 +53,16 @@ const CHANNEL_STYLES: Record<Channel, ChannelStyle> = {
       '简洁专业，少废话，重点突出。',
       '不需要情感表达和闲聊铺垫。',
     ].join(''),
+    compact: false,
   },
   custom: {
     id: 'custom',
     name: '自定义',
     instruction: '',
+    compact: false,
   },
 }
-
-/** 获取渠道风格配置 */
-export function getChannelStyle(channel: Channel): ChannelStyle {
+export function getChannelStyle(channel: ChannelId): ChannelStyle {
   return CHANNEL_STYLES[channel] ?? CHANNEL_STYLES.app
 }
 
@@ -62,7 +75,7 @@ export function listChannels(): ChannelStyle[] {
  * 构建渠道风格指令
  * 用于拼入 system prompt
  */
-export function buildChannelInstruction(channel?: Channel): string {
+export function buildChannelInstruction(channel?: ChannelId): string {
   if (!channel || channel === 'custom') return ''
   const style = getChannelStyle(channel)
   return `

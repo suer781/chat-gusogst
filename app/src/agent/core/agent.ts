@@ -1,14 +1,11 @@
 /**
- * Agent Core — Hermes agent loop 的 TypeScript 重写
- * 流程: 用户消息 → build_context → 调模型 → tool_calls? → 执行 → 再调 → 返回
+ * Agent Core - 驱动 Agent Loop
+ * 基于 Hermes agent.py 重写
  */
-import type { Message, AgentConfig, AgentEvent, ToolDefinition } from '../../shared/types'
-import { buildChannelInstruction } from './channel'
-import { getProvider } from '../providers'
+import type { Message, AgentConfig, AgentEvent, ToolCall, SearchResult } from '../../shared/types'
+import type { ProviderAdapter } from '../../shared/types'
 import { MemoryManager } from '../memory/manager'
 import { ToolRegistry } from '../tools/registry'
-
-type EventHandler = (event: AgentEvent) => void
 
 export class Agent {
   private history: Message[] = []
@@ -24,173 +21,300 @@ export class Agent {
   }
 
   updateConfig(config: Partial<AgentConfig>) {
-    Object.assign(this.config, config)
+    this.config = { ...this.config, ...config }
   }
 
-  getHistory(): Message[] { return [...this.history] }
-  clearHistory() { this.history = [] }
+  getHistory(): Message[] {
+    return [...this.history]
+  }
+
+  clearHistory() {
+    this.history = []
+  }
 
   /**
-   * 核心：发送消息并处理 agent loop
+   * 核心 Agent Loop
+   * 流式生成器，逐步输出事件
    */
   async *sendMessage(userContent: string): AsyncGenerator<AgentEvent> {
     this.abortController = new AbortController()
 
-    // 1. 构建上下文
-    const context = await this.buildContext(userContent)
+    try {
+      // 添加用户消息
+      const userMsg: Message = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: userContent,
+        timestamp: Date.now(),
+      }
+      this.history.push(userMsg)
 
-    // 2. 获取 provider 和工具定义
-    const provider = getProvider(this.config.model.provider)
-    const toolDefs = this.tools.getToolDefinitions()
+      // 构建上下文
+      const context = await this.buildContext(userContent)
 
-    // 3. Agent loop（最多 maxRounds 轮 tool call）
-    let rounds = 0
-    while (rounds < this.config.maxRounds) {
-      rounds++
-      let response: Message
+      // 获取 provider 和工具
+      const provider = this.getProvider()
+      const toolDefs = this.tools.getToolDefinitions()
+      const maxRounds = this.config.maxRounds || 10
 
-      try {
-        // 流式调用，同时累积 tool_calls
-        let fullContent = ""
-        for await (const token of provider.chatStream(context, this.config.model, toolDefs)) {
-          if (this.abortController?.signal.aborted) break
-          fullContent += token
-          yield { type: "token", content: token }
+      // Agent Loop
+      for (let round = 0; round < maxRounds; round++) {
+        if (this.abortController.signal.aborted) {
+          yield { type: 'error', data: '请求已中止' }
+          return
         }
 
-        // 流式已拿到 tool_calls 则直接用，否则回退非流式
-        const streamedToolCalls = (provider as any)._lastStreamToolCalls
-        if (streamedToolCalls) {
-          response = { role: "assistant", content: fullContent, tool_calls: streamedToolCalls }
-        } else {
-          response = await provider.chat(context, this.config.model, toolDefs)
+        // 流式调用模型
+        const response = await this.callModel(provider, context, toolDefs)
+
+        // 处理工具调用
+        if (response.tool_calls && response.tool_calls.length > 0) {
+          // 添加助手消息（含工具调用）
+          const assistantMsg: Message = {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: response.content || '',
+            timestamp: Date.now(),
+            tool_calls: response.tool_calls,
+          }
+          this.history.push(assistantMsg)
+          context.push(assistantMsg)
+
+          // 依次执行工具调用
+          for (const toolCall of response.tool_calls) {
+            yield { type: 'tool_call', data: toolCall, name: toolCall.function.name }
+
+            try {
+              const result = await this.tools.execute(toolCall.function.name, JSON.parse(toolCall.function.arguments))
+              const toolMsg: Message = {
+                id: crypto.randomUUID(),
+                role: 'tool',
+                content: JSON.stringify(result),
+                timestamp: Date.now(),
+                tool_call_id: toolCall.id,
+              }
+              this.history.push(toolMsg)
+              context.push(toolMsg)
+              yield { type: 'tool_result', data: result, message: JSON.stringify(result) }
+            } catch (error: any) {
+              const errorMsg: Message = {
+                id: crypto.randomUUID(),
+                role: 'tool',
+                content: `工具执行失败: ${error.message}`,
+                timestamp: Date.now(),
+                tool_call_id: toolCall.id,
+              }
+              this.history.push(errorMsg)
+              context.push(errorMsg)
+              yield { type: 'tool_result', data: error, message: `工具执行失败: ${error.message}` }
+            }
+          }
+
+          // 继续循环，让模型处理工具结果
+          continue
         }
-      } catch (err: any) {
-        yield { type: "error", error: err.message }
+
+        // 无工具调用，纯文本回复
+        const botMsg: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: response.content || '',
+          timestamp: Date.now(),
+        }
+        this.history.push(botMsg)
+
+        yield { type: 'token', data: response.content, content: response.content || '' }
+        yield { type: 'done', data: botMsg }
+
+        // 异步保存记忆
+        this.saveMemory(userContent, response.content || '')
         return
       }
 
-      // 4. 检查是否有 tool calls
-      if (response.tool_calls && response.tool_calls.length > 0) {
-        // 把 assistant 响应（含 tool_calls）加入上下文
-        context.push(response)
-        this.history.push(response)
-
-        // 执行所有 tool calls
-        for (const tc of response.tool_calls) {
-          yield { type: 'tool_call', name: tc.function.name, args: JSON.parse(tc.function.arguments) }
-
-          const result = await this.tools.execute(
-            tc.function.name,
-            JSON.parse(tc.function.arguments),
-          )
-
-          yield { type: 'tool_result', name: tc.function.name, content: result }
-
-          // 把 tool result 加入上下文
-          const toolMsg: Message = {
-            role: 'tool',
-            tool_call_id: tc.id,
-            name: tc.function.name,
-            content: result,
-            timestamp: Date.now(),
-          }
-          context.push(toolMsg)
-          this.history.push(toolMsg)
-        }
-        // 继续循环，让模型处理 tool results
-        continue
-      }
-
-      // 5. 纯文本回复，结束
-      this.history.push(response)
-      yield { type: 'done', message: response }
-
-      // 6. 异步保存记忆
-      this.saveMemory(userContent, response.content ?? '').then(count => {
-        if (count > 0) {
-          // 记忆保存完成
-        }
-      })
-
-      return
+      // 达到最大轮次
+      yield { type: 'error', data: `达到最大轮次 ${maxRounds}，请简化请求` }
+    } catch (error: any) {
+      yield { type: 'error', data: error.message }
+    } finally {
+      this.abortController = null
     }
-
-    yield { type: 'error', error: `达到最大轮次 ${this.config.maxRounds}` }
   }
 
-  abort() { this.abortController?.abort() }
-
   /**
-   * 构建上下文：系统提示 + 相关记忆 + 历史
+   * 中止当前请求
    */
+  abort() {
+    this.abortController?.abort()
+  }
+
+  // ── 内部方法 ──────────────────────
+
+  private getProvider(): ProviderAdapter {
+    // TODO: 根据 config.model.provider 获取对应的 provider
+    // 暂时返回一个模拟的 provider
+    return {
+      name: 'openai',
+      displayName: 'OpenAI',
+      apiMode: 'chat_completions',
+      baseUrl: this.config.model.baseUrl,
+      authType: 'api_key',
+    }
+  }
+
+  private async callModel(
+    provider: ProviderAdapter,
+    context: Message[],
+    tools: any[]
+  ): Promise<{ content?: string; tool_calls?: ToolCall[] }> {
+    const { baseUrl, apiKey } = this.config.model
+    const model = this.config.model.model
+    const temperature = this.config.model.temperature
+    const maxTokens = this.config.model.maxTokens
+
+    // 构建请求体
+    const body: any = {
+      model,
+      messages: context.map(m => ({
+        role: m.role,
+        content: m.content,
+        ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
+        ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
+      })),
+      temperature,
+      max_tokens: maxTokens,
+      stream: false,
+    }
+
+    // 如果有工具，添加 tools
+    if (tools.length > 0) {
+      body.tools = tools.map(t => ({
+        type: 'function',
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.parameters,
+        },
+      }))
+    }
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+      signal: this.abortController?.signal,
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`模型调用失败: ${response.status} ${error}`)
+    }
+
+    const data = await response.json()
+    const message = data.choices?.[0]?.message
+
+    return {
+      content: message?.content,
+      tool_calls: message?.tool_calls,
+    }
+  }
+
   private async buildContext(userContent: string): Promise<Message[]> {
     const context: Message[] = []
 
-    // 系统提示
+    // 1. 系统提示
     const systemPrompt = this.buildSystemPrompt()
-    context.push({ role: 'system', content: systemPrompt, timestamp: Date.now() })
+    if (systemPrompt) {
+      context.push({
+        id: 'system',
+        role: 'system',
+        content: systemPrompt,
+        timestamp: 0,
+      })
+    }
 
-    // 相关记忆
+    // 2. 相关记忆
     if (this.config.memoryEnabled) {
       const memories = await this.memory.search(userContent, 5)
       if (memories.length > 0) {
-        const memText = memories.map(m => `- ${m.content}`).join('\n')
+        const memoryContent = memories.map(m => `- ${m.content}`).join('\n')
         context.push({
+          id: 'memories',
           role: 'system',
-          content: `[记忆] 以下是与当前对话相关的记忆：\n${memText}`,
-          timestamp: Date.now(),
+          content: `相关记忆：\n${memoryContent}`,
+          timestamp: 0,
         })
       }
     }
 
-    // 历史消息（截断到 token 上限）
-    const history = this.truncateHistory(this.config.maxHistoryTokens)
-    context.push(...history)
+    // 3. 历史消息（截断）
+    const maxHistoryTokens = this.config.maxHistoryTokens || 4000
+    const truncatedHistory = this.truncateHistory(maxHistoryTokens)
+    context.push(...truncatedHistory)
 
-    // 当前用户消息
-    context.push({ role: 'user', content: userContent, timestamp: Date.now() })
+    // 4. 当前用户消息
+    context.push({
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: userContent,
+      timestamp: Date.now(),
+    })
 
     return context
   }
 
   private buildSystemPrompt(): string {
-    const parts: string[] = []
+    const persona = this.config.persona
+    if (!persona) return ''
 
-    // 人设
-    parts.push(this.config.persona.systemPrompt)
+    const parts: string[] = [persona.systemPrompt]
 
-    // 时间
-    parts.push(`当前时间: ${new Date().toLocaleString('zh-CN')}`)
+    // 当前时间
+    const now = new Date()
+    const timeStr = now.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    parts.push(`当前时间：${timeStr}`)
 
-    // 能力说明
+    // 搜索能力
     if (this.config.searchEnabled) {
-      parts.push('你可以使用搜索工具查找实时信息。')
+      parts.push('你可以使用搜索工具获取最新信息。')
     }
 
     return parts.join('\n\n')
   }
 
   private truncateHistory(maxTokens: number): Message[] {
-    // 粗略估算：1 token ≈ 2 字符
+    // 粗略估计：1 token ≈ 2 字符
     const maxChars = maxTokens * 2
-    let total = 0
+    let totalChars = 0
     const result: Message[] = []
+
+    // 从最新消息向前截断
     for (let i = this.history.length - 1; i >= 0; i--) {
       const msg = this.history[i]
-      const chars = (msg.content?.length ?? 0) + (JSON.stringify(msg.tool_calls)?.length ?? 0)
-      if (total + chars > maxChars) break
-      total += chars
+      const msgChars = msg.content.length + (msg.tool_calls ? JSON.stringify(msg.tool_calls).length : 0)
+      if (totalChars + msgChars > maxChars) break
+      totalChars += msgChars
       result.unshift(msg)
     }
+
     return result
   }
 
-  private async saveMemory(userMsg: string, botMsg: string): Promise<number> {
-    // 简单策略：每 5 轮对话提取一次记忆
-    // Every turn saves memory
+  private async saveMemory(userMsg: string, botMsg: string) {
     try {
-      return await this.memory.extractAndSave(this.history.slice(-10))
-    } catch { return 0 }
+      // 取最近 10 条历史
+      const recentHistory = this.history.slice(-10)
+      await this.memory.extractAndSave(recentHistory)
+    } catch (error) {
+      console.error('保存记忆失败:', error)
+    }
   }
 }

@@ -50,7 +50,10 @@ export interface ModelConfig {
   model: string
   apiKey: string
   baseUrl: string
+  /** API 主机（用于 providers 调用） */
+  apiHost?: string
   temperature?: number
+  topP?: number
   maxTokens?: number
   /** 完整系统提示词（用户自由填写） */
   systemPrompt?: string
@@ -58,7 +61,7 @@ export interface ModelConfig {
 
 // ── 渠道风格 ──────────────────────────────
 
-export type ChannelId = 'app' | 'wechat' | 'qq' | 'telegram'
+export type ChannelId = 'app' | 'wechat' | 'qq' | 'telegram' | 'feishu' | 'custom'
 
 export interface ChannelStyle {
   id: ChannelId
@@ -66,6 +69,10 @@ export interface ChannelStyle {
   instruction: string
   /** 是否精简回复（适合 IM） */
   compact: boolean
+  /** 消息长度限制 */
+  maxLength?: number
+  /** 是否启用 emoji */
+  enableEmoji?: boolean
 }
 
 // ── 搜索配置 ──────────────────────────────
@@ -119,6 +126,70 @@ export interface PersonaStructuredProfile {
   restrictions: string[]
 }
 
+// ── 工具定义 ──────────────────────────────
+
+export interface ToolParameter {
+  name: string
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
+  description: string
+  required: boolean
+  default?: any
+  enum?: any[]
+}
+
+export interface ToolDefinition {
+  name: string
+  description: string
+  parameters: ToolParameter[]
+  execute: (args: Record<string, any>) => Promise<any>
+}
+
+// ── Provider 适配器 ───────────────────────
+
+export interface ProviderAdapter {
+  name: string
+  displayName: string
+  description?: string
+  apiMode: 'chat_completions' | 'responses' | 'anthropic_messages' | 'gemini' | 'baidu_ernie' | 'dashscope' | 'ollama_chat' | 'ollama_generate' | 'hf_inference' | 'openai_compatible'
+  baseUrl: string
+  modelsUrl?: string
+  authType: 'api_key' | 'oauth_device_code' | 'none'
+  envVars?: string[]
+  defaultHeaders?: Record<string, string>
+  fallbackModels?: string[]
+  defaultMaxTokens?: number
+  fixedTemperature?: number
+  supportsHealthCheck?: boolean
+  supportsStreaming?: boolean
+  supportsToolCalling?: boolean
+  supportsVision?: boolean
+  signupUrl?: string
+  aliases?: string[]
+}
+
+// ── 记忆条目 ──────────────────────────────
+
+export type MemoryCategory = 'personal' | 'preference' | 'event' | 'relationship'
+
+export interface MemoryEntry {
+  id: string
+  content: string
+  category: MemoryCategory
+  confidence: number
+  sourceMessageId?: string
+  sourceRole?: 'user' | 'assistant'
+  confirmedCount: number
+  contradictedCount: number
+  createdAt: number
+  lastAccessed: number
+  /** 标签 */
+  tags?: string[]
+  /** 情感分数 (-1 ~ 1) */
+  sentiment?: number
+  /** 重要性 (0 ~ 1) */
+  importance?: number
+}
+
 // ── 人设 ──────────────────────────────────
 
 export interface Persona {
@@ -149,6 +220,12 @@ export interface AgentConfig {
   searchApiKey?: string
   /** 当前对话渠道 */
   channel?: ChannelId
+  /** 最大轮次（防止无限循环） */
+  maxRounds?: number
+  /** 是否启用记忆 */
+  memoryEnabled?: boolean
+  /** 最大历史 token 数 */
+  maxHistoryTokens?: number
 }
 
 // ── 事件 ──────────────────────────────────
@@ -165,6 +242,14 @@ export type AgentEventType =
 export interface AgentEvent {
   type: AgentEventType
   data: any
+  /** 用于 token 事件 */
+  content?: string
+  /** 用于 error 事件 */
+  error?: string
+  /** 用于 tool_call 事件 */
+  name?: string
+  /** 用于 tool_result 事件 */
+  message?: string
 }
 
 // ── 对话 ──────────────────────────────────

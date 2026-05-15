@@ -402,4 +402,14 @@ export class MemoryManager {
     }
     return count
   }
+  
+  async handleFeedback(content: string, helpful: boolean): Promise<{ success: boolean }> {
+    const memories = await MemoryStore.getMemories(undefined, this.currentPersonaId)
+    const target = memories.find(m => m.content.includes(content) || content.includes(m.content))
+    if (target) {
+      await MemoryStore.updateMemory(adjustTrust(target, helpful ? 'helpful' : 'unhelpful', this.config))
+      return { success: true }
+    }
+    return { success: false }
   }
+}

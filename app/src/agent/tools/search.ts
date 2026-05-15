@@ -71,5 +71,5 @@ export function registerSearchTools(
   }
   const dispatcher = new SearchDispatcher(dispatcherOpts)
   const tool = createSearchTool(dispatcher)
-  registry.register(tool.name, tool.description, tool.parameters, tool.execute)
+  registry.register(tool.name, tool.description, tool.parameters as any, tool.execute)
 }

@@ -1,13 +1,8 @@
-export type ToolExecuteResult = {
-  content: { type: "text"; text: string }[]
-  isError?: boolean
-}
-
 /**
  * Tool Registry — 管理和执行工具
  * 基于 Hermes toolsets.py 重写
  */
-import type { ToolDefinition } from '../../shared/types'
+import type { ToolDefinition, ToolParameter } from '../../shared/types'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -19,13 +14,22 @@ interface RegisteredTool {
 export class ToolRegistry {
   private tools: Map<string, RegisteredTool> = new Map()
 
-  register(name: string, description: string, parameters: Record<string, unknown>, handler: ToolHandler) {
+  register(name: string, description: string, parameters: ToolParameter[], handler: ToolHandler) {
     this.tools.set(name, {
       definition: {
-        type: 'function',
-        function: { name, description, parameters },
+        name,
+        description,
+        parameters,
+        execute: handler,
       },
       handler,
+    })
+  }
+
+  registerTool(tool: ToolDefinition) {
+    this.tools.set(tool.name, {
+      definition: tool,
+      handler: tool.execute,
     })
   }
 

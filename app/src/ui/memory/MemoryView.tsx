@@ -94,9 +94,9 @@ export function MemoryView({ onDone }: { onDone: () => void }) {
         {entries.map(e => (
           <div key={e.id} className="memory-card">
             <div className="mc-header">
-              <span className="mc-bank">{e.bank === 'agent' ? '🤖' : '👤'}</span>
+              <span className="mc-bank">{(e as any).bank === 'agent' ? '🤖' : '👤'}</span>
               <span className="mc-category">{e.category}</span>
-              <span className="mc-trust">信 {(e.trustScore ?? 0).toFixed(2)}</span>
+              <span className="mc-trust">信 {((e as any).trustScore ?? 0).toFixed(2)}</span>
               <span className="mc-date">{fmtDate(e.createdAt)}</span>
             </div>
             <div className="mc-content">{e.content}</div>

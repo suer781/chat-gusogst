@@ -4,16 +4,19 @@
 import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../../shared/types'
 
 export class AnthropicProvider implements ProviderAdapter {
+  readonly displayName = 'Anthropic'
+  readonly apiMode = 'anthropic_messages' as const
+  readonly authType = 'api_key' as const
   readonly name: string
-  readonly defaultHost: string
+  readonly baseUrl: string
 
-  constructor(name = 'anthropic', defaultHost = 'https://api.anthropic.com') {
+  constructor(name = 'anthropic', baseUrl = 'https://api.anthropic.com') {
     this.name = name
-    this.defaultHost = defaultHost
+    this.baseUrl = baseUrl
   }
 
   private getEndpoint(config: ModelConfig): string {
-    const host = (config.apiHost || this.defaultHost).replace(/\/+$/, '')
+    const host = (config.apiHost || this.baseUrl).replace(/\/+$/, '')
     return `${host}/v1/messages`
   }
 
@@ -54,9 +57,9 @@ export class AnthropicProvider implements ProviderAdapter {
   private convertTools(tools?: ToolDefinition[]): unknown[] | undefined {
     if (!tools?.length) return undefined
     return tools.map(t => ({
-      name: t.function.name,
-      description: t.function.description,
-      input_schema: t.function.parameters,
+      name: t.name,
+      description: t.description,
+      input_schema: t.parameters,
     }))
   }
 
@@ -95,7 +98,7 @@ export class AnthropicProvider implements ProviderAdapter {
         })
       }
     }
-    return { role: 'assistant', content: text || null, tool_calls: toolCalls?.length ? toolCalls : undefined, timestamp: Date.now() }
+    return { id: crypto.randomUUID(), role: 'assistant', content: text ?? '', tool_calls: toolCalls?.length ? toolCalls : undefined, timestamp: Date.now() }
   }
 
   async *chatStream(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): AsyncGenerator<string> {

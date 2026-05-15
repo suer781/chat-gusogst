@@ -133,12 +133,12 @@ export default function PersonaView({ onDone }: Props) {
 
   const handleSearch = () => {
     const cfg = personaManager.getSearchConfig()
-    setSearchConfig(cfg)
+    setSearchConfig(cfg ?? null)
   }
 
   const handleSampling = () => {
     const cfg = personaManager.getSamplingConfig()
-    setSamplingConfig(cfg)
+    setSamplingConfig(cfg ?? null)
   }
 
   const handleAnalysis = () => {

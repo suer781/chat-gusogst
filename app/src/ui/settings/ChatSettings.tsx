@@ -6,7 +6,7 @@ interface Props { onBack: () => void }
 export default function ChatSettings({ onBack }: Props) {
   const { config, updateConfig } = useSettingsStore()
   const [maxRounds, setMaxRounds] = useState(config.maxRounds)
-  const [maxHistoryTokens, setMaxHistoryTokens] = useState(config.maxHistoryTokens)
+  const [maxHistoryTokens, setMaxHistoryTokens] = useState((config.maxHistoryTokens ?? 10000))
   const [memoryEnabled, setMemoryEnabled] = useState(config.memoryEnabled)
   const [autoSave, setAutoSave] = useState(true)
   const [saved, setSaved] = useState(false)

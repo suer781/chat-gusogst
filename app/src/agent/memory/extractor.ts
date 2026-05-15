@@ -87,19 +87,17 @@ export async function deepExtract(
   modelConfig: ModelConfig
 ): Promise<QuickExtract[]> {
   const messages: Message[] = [
-    { role: 'system', content: EXTRACTION_PROMPT },
-    { role: 'user', content: `用户：${userMessage}\n助手：${assistantResponse}` },
+    { id: crypto.randomUUID(), role: 'system', content: EXTRACTION_PROMPT, timestamp: Date.now() },
+    { id: crypto.randomUUID(), role: 'user', content: `用户：${userMessage}\n助手：${assistantResponse}`, timestamp: Date.now() },
   ]
   try {
-    const response = await provider.chat(messages, {
-      ...modelConfig,
-      temperature: 0.1,
-      maxTokens: 500,
+    const res = await fetch(`${provider.baseUrl}/chat/completions`, {
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + ((provider as any).apiKey || "") },
+      body: JSON.stringify({ model: modelConfig?.model || "gpt-4o-mini", messages, temperature: 0.1, max_tokens: 500 }),
     })
-    const text = response.content || '[]'
-    const jsonMatch = text.match(/\[\s\{[\s\S]*\}\s*\]/)
-    if (!jsonMatch) return []
-    const items = JSON.parse(jsonMatch[0])
+    const json = await res.json()
+    const text = json.choices?.[0]?.message?.content || "[]"
+    const items = JSON.parse(text)
     return items.map((item: any) => ({
       content: item.content,
       category: item.category || 'fact',
@@ -133,16 +131,17 @@ export async function compressConversation(
     .map(m => `${m.role === 'user' ? '用户' : '助手'}：${m.content}`)
     .join('\n')
   const chatMessages: Message[] = [
-    { role: 'system', content: COMPRESS_PROMPT },
-    { role: 'user', content: conversationText },
+    { id: crypto.randomUUID(), role: 'system', content: COMPRESS_PROMPT, timestamp: Date.now() },
+    { id: crypto.randomUUID(), role: 'user', content: conversationText, timestamp: Date.now() },
   ]
   try {
-    const response = await provider.chat(chatMessages, {
-      ...modelConfig,
-      temperature: 0.2,
-      maxTokens: Math.max(200, Math.floor(conversationText.length / 4)),
+    const res = await fetch(`${provider.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(provider as any).apiKey || ''}` },
+      body: JSON.stringify({ model: modelConfig?.model || 'gpt-4o-mini', messages: chatMessages, temperature: 0.2, max_tokens: Math.max(200, Math.floor(conversationText.length / 4)) }),
     })
-    return response.content || conversationText.slice(0, 500)
+    const json = await res.json()
+    return json.choices?.[0]?.message?.content || conversationText.slice(0, 500)
   } catch {
     return conversationText.slice(0, 500)
   }

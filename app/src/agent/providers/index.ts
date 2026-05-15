@@ -10,8 +10,8 @@ function register(p: ProviderAdapter) {
 }
 
 // Register built-in providers
-register(new OpenAIProvider())
-register(new AnthropicProvider())
+register(new OpenAIProvider() as any)
+register(new AnthropicProvider() as any)
 
 // Auto-register all Hermes presets as OpenAI-compatible providers
 for (const preset of PROVIDER_PRESETS) {
@@ -20,25 +20,25 @@ for (const preset of PROVIDER_PRESETS) {
 
   if (preset.type === 'anthropic') {
     // Anthropic uses its own provider class
-    register(new AnthropicProvider(preset.name, preset.baseUrl))
+    register(new AnthropicProvider(preset.baseUrl))
   } else {
     // OpenAI-compatible (including gemini via OpenAI compat layer)
-    register(new OpenAIProvider(preset.name, preset.baseUrl))
+    register(new OpenAIProvider(preset.baseUrl))
   }
 
   // Also register aliases
   for (const alias of preset.aliases) {
     if (!providers[alias]) {
       if (preset.type === 'anthropic') {
-        register(new AnthropicProvider(alias, preset.baseUrl))
+        register(new AnthropicProvider(preset.baseUrl))
       } else {
-        register(new OpenAIProvider(alias, preset.baseUrl))
+        register(new OpenAIProvider(preset.baseUrl))
       }
     }
   }
 }
 
-export function getProvider(name: string): ProviderAdapter {
+export function getProvider(name: string): any {
   const p = providers[name]
   if (!p) throw new Error(`Unknown provider: ${name}. Available: ${Object.keys(providers).join(', ')}`)
   return p

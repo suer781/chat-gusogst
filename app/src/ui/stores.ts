@@ -25,18 +25,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
   error: null,
 
   sendMessage: async (content: string) => {
-    const userMsg: Message = { role: 'user', content, timestamp: Date.now() }
+    const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content, timestamp: Date.now() }
     set(s => ({ messages: [...s.messages, userMsg], isStreaming: true, error: null }))
 
     let assistantContent = ''
-    const assistantMsg: Message = { role: 'assistant', content: '', timestamp: Date.now() }
+    const assistantMsg: Message = { id: crypto.randomUUID(), role: 'assistant', content: '', timestamp: Date.now() }
     set(s => ({ messages: [...s.messages, assistantMsg] }))
 
     try {
       for await (const event of bridge.chat(content)) {
         switch (event.type) {
           case 'token':
-            assistantContent += event.content
+            assistantContent += event.content || ''
             set(s => {
               const msgs = [...s.messages]
               msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantContent }
@@ -44,18 +44,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
             })
             break
           case 'tool_call':
-            assistantContent += `\n🔧 调用 ${event.name}...`
             set(s => {
               const msgs = [...s.messages]
-              msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantContent }
+              msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantContent + `\n\n🔧 调用工具: ${event.name}` }
               return { messages: msgs }
             })
             break
           case 'tool_result':
-            assistantContent += ` [${event.name}: ${String(event.content).slice(0, 80)}]`
             set(s => {
               const msgs = [...s.messages]
-              msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantContent }
+              msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantContent + `\n\n📋 工具结果: ${event.message}` }
               return { messages: msgs }
             })
             break
@@ -65,7 +63,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           case 'done':
             set(s => {
               const msgs = [...s.messages]
-              msgs[msgs.length - 1] = { ...event.message, content: assistantContent || event.message.content }
+              msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantContent || event.message || '' }
               return { messages: msgs, isStreaming: false }
             })
             break
@@ -81,27 +79,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ isStreaming: false })
   },
 
-  clear: () => {
-    bridge.clearHistory()
-    set({ messages: [], error: null })
-  },
+  clear: () => set({ messages: [], error: null }),
 }))
 
-// ── Settings Store ──────────────────────────────────
+// ── Settings Store ──────────────────────────────────────
 interface SettingsState {
   config: AgentConfig
   personaManager: PersonaManager
   memoryManager: MemoryManager
   initialized: boolean
-  theme: 'light' | 'dark'
-  fontSize: number
+  theme: 'light' | 'dark' | 'auto'
+  fontSize: 'small' | 'medium' | 'large'
   language: string
   init: () => Promise<void>
   updateConfig: (patch: Partial<AgentConfig>) => void
   switchPersona: (id: string) => void
   addCustomPersona: (name: string, prompt: string) => void
-  setTheme: (theme: 'light' | 'dark') => void
-  setFontSize: (size: number) => void
+  setTheme: (theme: 'light' | 'dark' | 'auto') => void
+  setFontSize: (size: 'small' | 'medium' | 'large') => void
   setLanguage: (lang: string) => void
 }
 
@@ -113,68 +108,75 @@ const DEFAULT_CONFIG: AgentConfig = {
     provider: 'openai',
     model: 'gpt-4o-mini',
     apiKey: '',
+    baseUrl: 'https://api.openai.com/v1',
     apiHost: '',
     temperature: 0.7,
     maxTokens: 4096,
   },
   persona: personaMgr.getActive(),
-  memoryEnabled: true,
-  maxRounds: 10,
-  maxHistoryTokens: 8000,
   searchEnabled: false,
-  searchEngine: 'duckduckgo',
   channel: 'app',
-}
-
-function loadConfig(): AgentConfig {
-  try {
-    const raw = localStorage.getItem('chat-gusogst-config')
-    if (raw) {
-      const saved = JSON.parse(raw)
-      return { ...DEFAULT_CONFIG, ...saved, persona: personaMgr.getActive() }
-    }
-  } catch {}
-  return DEFAULT_CONFIG
+  maxRounds: 10,
+  memoryEnabled: true,
+  maxHistoryTokens: 8000,
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  config: loadConfig(),
+  config: DEFAULT_CONFIG,
   personaManager: personaMgr,
-    memoryManager: memoryMgr,
+  memoryManager: memoryMgr,
   initialized: false,
-  theme: 'light' as const,
-  fontSize: 14,
+  theme: 'auto',
+  fontSize: 'medium',
   language: 'zh-CN',
-  setTheme: (theme) => set({ theme }),
-  setFontSize: (fontSize) => set({ fontSize }),
-  setLanguage: (language) => set({ language }),
 
   init: async () => {
-    const { config } = get()
-    const tools = new ToolRegistry()
-    if (config.searchEnabled) {
-      registerSearchTools(tools, { engine: config.searchEngine, apiKey: config.searchApiKey })
+    const state = get()
+    if (state.initialized) return
+
+    try {
+      // 加载保存的配置
+      const savedConfig = localStorage.getItem('chat-gusogst-config')
+      let config = DEFAULT_CONFIG
+      if (savedConfig) {
+        config = { ...DEFAULT_CONFIG, ...JSON.parse(savedConfig) }
+      }
+
+      // 注册搜索工具
+      const toolRegistry = new ToolRegistry()
+      if (config.searchEnabled) {
+        registerSearchTools(toolRegistry, config as any)
+      }
+
+      // 初始化 bridge
+      await bridge.init(config)
+
+      set({ config, initialized: true })
+    } catch (err: any) {
+      console.error('初始化失败:', err)
     }
-    await bridge.init(config)
-    set({ initialized: true })
   },
 
-  updateConfig: (patch) => {
-    set(s => {
-      const config = { ...s.config, ...patch }
-      localStorage.setItem('chat-gusogst-config', JSON.stringify(config))
-      bridge.updateConfig(patch)
-      return { config }
-    })
+  updateConfig: (patch: Partial<AgentConfig>) => {
+    const state = get()
+    const newConfig = { ...state.config, ...patch }
+    localStorage.setItem('chat-gusogst-config', JSON.stringify(newConfig))
+    set({ config: newConfig })
   },
 
-  switchPersona: (id) => {
-    const p = personaMgr.switchTo(id)
-    set(s => ({ config: { ...s.config, persona: p } }))
-    bridge.switchPersona(p)
+  switchPersona: (id: string) => {
+    const state = get()
+    const persona = state.personaManager.switchTo(id)
+    state.updateConfig({ persona })
   },
 
-  addCustomPersona: (name, prompt) => {
-    personaMgr.add({ name, systemPrompt: prompt, tags: ['自定义'] })
+  addCustomPersona: (name: string, prompt: string) => {
+    const state = get()
+    const persona = state.personaManager.add({ name, systemPrompt: prompt, tags: ['自定义'] })
+    state.updateConfig({ persona })
   },
+
+  setTheme: (theme: 'light' | 'dark' | 'auto') => set({ theme }),
+  setFontSize: (fontSize: 'small' | 'medium' | 'large') => set({ fontSize }),
+  setLanguage: (language: string) => set({ language }),
 }))

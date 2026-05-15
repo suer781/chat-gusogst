@@ -42,7 +42,7 @@ export default function ModelSettings({ onBack }: Props) {
   const isCustom = !MODELS[provider]?.some((m) => m.value === model)
 
   const handleProviderChange = (p: string) => {
-    setProvider(p)
+    setProvider(p as any)
     setModel(MODELS[p]?.[0]?.value || '')
     setCustomModel('')
   }

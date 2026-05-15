@@ -9,7 +9,7 @@ import type {
   PersonaSearchConfig,
   PersonaSamplingConfig,
   PersonaStructuredProfile,
-} from '../shared/types'
+} from '../../shared/types'
 import {
   analyzePersona,
   analysisToSearchConfig,
@@ -127,6 +127,11 @@ export class PersonaManager {
     this.ensureInitialized(p)
     this.persist()
     return p
+  }
+
+  /** 切换到指定人设（UI 调用别名） */
+  switchTo(id: string): Persona {
+    return this.setActive(id)
   }
 
   // ── 增删改 ──────────────────────
