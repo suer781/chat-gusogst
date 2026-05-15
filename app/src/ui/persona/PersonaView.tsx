@@ -76,7 +76,32 @@ export function PersonaView({ onDone }: { onDone: () => void }) {
     </div>
   )
 
-  // ==================== DETAIL VIEW ====================
+    // ==================== ADD / EDIT FORM ====================
+  if (view === 'add' || view === 'edit') return (
+    <div className="view persona-view">
+      <div className="view-header">
+        <button onClick={() => setView('list')}><ArrowLeft size={20} /></button>
+        <span>{view === 'add' ? '添加人设' : '编辑人设'}</span>
+        <span />
+      </div>
+      <div className="persona-form">
+        <label>名称</label>
+        <input value={fn} onChange={e => setFn(e.target.value)} placeholder="人设名称" />
+        <label>标签（逗号分隔）</label>
+        <input value={ft} onChange={e => setFt(e.target.value)} placeholder="romantic,creative" />
+        <label>系统提示词</label>
+        <textarea value={fp} onChange={e => setFp(e.target.value)} rows={8} placeholder="描述人设的性格、语气、行为模式..." />
+        <div className="form-actions">
+          <button onClick={view === 'add' ? saveNew : saveEdit} disabled={!fn.trim() || !fp.trim()}>
+            <Check size={16} /> 保存
+          </button>
+          <button onClick={() => setView('list')}><X size={16} /> 取消</button>
+        </div>
+      </div>
+    </div>
+  )
+
+// ==================== DETAIL VIEW ====================
   if (view !== 'detail' || !sel) return null
 
   const sc = personaManager.getSearchConfig(sel.id)
