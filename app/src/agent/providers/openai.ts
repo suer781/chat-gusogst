@@ -6,6 +6,7 @@ import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../.
 
 export class OpenAIProvider implements ProviderAdapter {
   readonly name = 'openai'
+  _lastStreamToolCalls?: Array<{id: string; type: string; function: {name: string; arguments: string}}>
 
   private getEndpoint(config: ModelConfig): string {
     const host = (config.apiHost || 'https://api.openai.com').replace(/\/+$/, '')
@@ -31,17 +32,21 @@ export class OpenAIProvider implements ProviderAdapter {
     return body
   }
 
-  private parseSSELine(line: string): string | null {
+  private parseSSELine(line: string): { content?: string; toolCalls?: Array<{index: number; id?: string; type?: string; function?: {name?: string; arguments?: string}}> } | null {
+    if (line.startsWith(': ping')) return null
     if (!line.startsWith('data: ')) return null
     const data = line.slice(6).trim()
     if (data === '[DONE]') return null
     try {
-      const parsed = JSON.parse(data)
-      return parsed.choices?.[0]?.delta?.content ?? null
+      const json = JSON.parse(data)
+      const delta = json.choices?.[0]?.delta
+      if (!delta) return null
+      const result: any = {}
+      if (delta.content) result.content = delta.content
+      if (delta.tool_calls) result.toolCalls = delta.tool_calls
+      return Object.keys(result).length > 0 ? result : null
     } catch { return null }
   }
-
-  async chat(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): Promise<Message> {
     const resp = await fetch(this.getEndpoint(config), {
       method: 'POST',
       headers: {
@@ -66,6 +71,9 @@ export class OpenAIProvider implements ProviderAdapter {
   }
 
   async *chatStream(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): AsyncGenerator<string> {
+    const toolCallsMap: Map<number, any> = new Map()
+    this._lastStreamToolCalls = undefined
+
     const resp = await fetch(this.getEndpoint(config), {
       method: 'POST',
       headers: {
@@ -90,12 +98,34 @@ export class OpenAIProvider implements ProviderAdapter {
         const lines = buffer.split('\n')
         buffer = lines.pop() ?? ''
         for (const line of lines) {
-          const token = this.parseSSELine(line)
-          if (token !== null) yield token
+          const parsed = this.parseSSELine(line)
+          if (!parsed) continue
+          if (parsed.content) yield parsed.content
+          if (parsed.toolCalls) {
+            for (const tc of parsed.toolCalls) {
+              const existing = toolCallsMap.get(tc.index) ?? {} as any
+              if (tc.id) existing.id = tc.id
+              if (tc.type) existing.type = tc.type
+              if (tc.function) {
+                existing.function = existing.function ?? {} as any
+                if (tc.function.name) existing.function.name = (existing.function.name ?? '') + tc.function.name
+                if (tc.function.arguments) existing.function.arguments = (existing.function.arguments ?? '') + tc.function.arguments
+              }
+              toolCallsMap.set(tc.index, existing)
+            }
+          }
         }
       }
     } finally {
       reader.releaseLock()
+    }
+
+    if (toolCallsMap.size > 0) {
+      this._lastStreamToolCalls = [...toolCallsMap.entries()].sort(([a],[b]) => a-b).map(([, tc]) => ({
+        id: tc.id ?? '',
+        type: tc.type ?? 'function',
+        function: { name: tc.function?.name ?? '', arguments: tc.function?.arguments ?? '{}' }
+      }))
     }
   }
 }

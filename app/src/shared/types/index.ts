@@ -102,7 +102,7 @@ export interface AgentConfig {
   maxRounds: number
   maxHistoryTokens: number
   searchEnabled: boolean
-  searchEngine: 'tavily' | 'duckduckgo' | 'baidu'
+  searchEngine: 'tavily' | 'duckduckgo' | 'baidu' | 'bing' | 'quark' | 'brave'
   searchApiKey?: string
   /** 当前对话渠道，决定输出风格 */
   channel?: Channel

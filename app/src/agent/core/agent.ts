@@ -50,18 +50,23 @@ export class Agent {
       let response: Message
 
       try {
-        // 流式调用
-        let fullContent = ''
+        // 流式调用，同时累积 tool_calls
+        let fullContent = ""
         for await (const token of provider.chatStream(context, this.config.model, toolDefs)) {
           if (this.abortController?.signal.aborted) break
           fullContent += token
-          yield { type: 'token', content: token }
+          yield { type: "token", content: token }
         }
 
-        // 非流式拿完整响应（含 tool_calls）
-        response = await provider.chat(context, this.config.model, toolDefs)
+        // 流式已拿到 tool_calls 则直接用，否则回退非流式
+        const streamedToolCalls = (provider as any)._lastStreamToolCalls
+        if (streamedToolCalls) {
+          response = { role: "assistant", content: fullContent, tool_calls: streamedToolCalls }
+        } else {
+          response = await provider.chat(context, this.config.model, toolDefs)
+        }
       } catch (err: any) {
-        yield { type: 'error', error: err.message }
+        yield { type: "error", error: err.message }
         return
       }
 

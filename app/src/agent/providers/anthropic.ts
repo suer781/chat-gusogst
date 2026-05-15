@@ -93,8 +93,50 @@ export class AnthropicProvider implements ProviderAdapter {
   }
 
   async *chatStream(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): AsyncGenerator<string> {
-    // Anthropic SSE streaming — simplified, expand as needed
-    const result = await this.chat(messages, config, tools)
-    if (result.content) yield result.content
+    const endpoint = this.getEndpoint(config)
+    const body: Record<string, unknown> = {
+      model: config.model,
+      max_tokens: config.maxTokens ?? 4096,
+      messages: this.convertMessages(messages),
+      stream: true
+    }
+    if (config.temperature !== undefined) body.temperature = config.temperature
+    if (config.systemPrompt) body.system = config.systemPrompt
+    if (tools && tools.length > 0) body.tools = this.convertTools(tools)
+
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' }
+    if (config.apiKey) headers['x-api-key'] = config.apiKey
+
+    const resp = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) })
+    if (!resp.ok) throw new Error(`Anthropic stream error ${resp.status}: ${await resp.text()}`)
+    if (!resp.body) throw new Error('No response body for streaming')
+
+    const reader = resp.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('
+')
+        buffer = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6).trim()
+          if (data === '[DONE]') return
+          try {
+            const evt = JSON.parse(data)
+            if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+              yield evt.delta.text
+            }
+          } catch { /* skip malformed SSE lines */ }
+        }
+      }
+    } finally {
+      reader.releaseLock()
+    }
   }
 }
