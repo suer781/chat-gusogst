@@ -1,88 +1,91 @@
 import { useState } from 'react'
 import { useSettingsStore } from '../stores'
-import { ArrowLeft, Plus, X, Pencil, Trash2, Check } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Check, X, RefreshCw } from 'lucide-react'
 
-type PersonaItem = { id: string; name: string; systemPrompt: string; tags: string[]; isCustom?: boolean }
+type Tab = 'info' | 'search' | 'sampling' | 'analysis'
+type PItem = { id: string; name: string; systemPrompt: string; tags: string[]; isDefault?: boolean; autoAnalyzeSearch?: boolean }
 
 export function PersonaView({ onDone }: { onDone: () => void }) {
   const { config, personaManager, switchPersona, addCustomPersona } = useSettingsStore()
-  const [showAdd, setShowAdd] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newPrompt, setNewPrompt] = useState('')
-  const [editId, setEditId] = useState<string | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editPrompt, setEditPrompt] = useState('')
-  const [refreshKey, setRefreshKey] = useState(0)
+  const [view, setView] = useState<'list' | 'detail' | 'add' | 'edit'>('list')
+  const [sel, setSel] = useState<PItem | null>(null)
+  const [tab, setTab] = useState<Tab>('info')
+  const [rk, setRk] = useState(0)
+  const [formName, setFormName] = useState('')
+  const [formPrompt, setFormPrompt] = useState('')
+  const [formTags, setFormTags] = useState('')
+  const [busy, setBusy] = useState(false)
+  const refresh = () => setRk(k => k + 1)
   const personas = personaManager.listAll()
+  const emo: Record<string, string> = { romantic: '💕', professional: '💼', casual: '😊', creative: '🎨', tech: '💻', learning: '📚', humor: '😄', fantasy: '🌙' }
 
-  const refresh = () => setRefreshKey(k => k + 1)
+  const openDetail = (p: PItem) => { setSel(p); setTab('info'); setView('detail') }
 
-  const handleAdd = () => {
-    const n = newName.trim(), p = newPrompt.trim()
-    if (!n || !p) return
-    addCustomPersona(n, p)
-    setNewName(''); setNewPrompt(''); setShowAdd(false)
-    refresh()
+  const doReAnalyze = async () => {
+    if (!sel) return; setBusy(true)
+    try { await personaManager.reAnalyze(sel.id); setSel(personaManager.getById(sel.id) as PItem); refresh() }
+    finally { setBusy(false) }
   }
 
-  const startEdit = (per: PersonaItem) => {
-    setEditId(per.id); setEditName(per.name); setEditPrompt(per.systemPrompt)
+  const toggleAutoAnalyze = () => {
+    if (!sel) return
+    personaManager.setAutoAnalyze(sel.id, !(sel.autoAnalyzeSearch !== false))
+    setSel(personaManager.getById(sel.id) as PItem); refresh()
   }
 
-  const handleSave = () => {
-    if (!editId) return
-    personaManager.update(editId, { name: editName.trim(), systemPrompt: editPrompt.trim() })
-    setEditId(null); refresh()
+  const toggleSearch = (key: 'enableSearch' | 'enableTimeRange') => {
+    if (!sel) return
+    const sc = personaManager.getSearchConfig(sel.id)
+    personaManager.setManualSearchConfig(sel.id, { ...sc, [key]: !sc[key] })
+    setSel(personaManager.getById(sel.id) as PItem); refresh()
   }
 
-  const handleDelete = (id: string) => {
+  const setSampling = (key: string, val: string) => {
+    if (!sel) return
+    const sc = personaManager.getSamplingConfig(sel.id)
+    personaManager.setManualSamplingConfig(sel.id, { ...sc, [key]: Number(val) })
+    setSel(personaManager.getById(sel.id) as PItem); refresh()
+  }
+
+  const doDelete = (id: string) => {
     personaManager.delete(id)
     if (config.persona.id === id) switchPersona('default')
-    refresh()
+    setView('list'); refresh()
   }
 
-  return (
+  const startAdd = () => { setFormName(''); setFormPrompt(''); setFormTags(''); setView('add') }
+  const startEdit = (p: PItem) => { setFormName(p.name); setFormPrompt(p.systemPrompt); setFormTags(p.tags.join(',')); setSel(p); setView('edit') }
+
+  const saveNew = () => {
+    const n = formName.trim(), p = formPrompt.trim()
+    if (!n || !p) return
+    addCustomPersona(n, p)
+    setView('list'); refresh()
+  }
+  const saveEdit = () => {
+    if (!sel) return
+    personaManager.update(sel.id, { name: formName.trim(), systemPrompt: formPrompt.trim(), tags: formTags.split(',').map(t => t.trim()).filter(Boolean) })
+    setView('list'); refresh()
+  }
+
+  if (view === 'list') return (
     <div className="view persona-view">
       <div className="view-header">
         <button onClick={onDone}><ArrowLeft size={20} /></button>
-        <span>人设管理</span>
-        <button onClick={() => setShowAdd(true)}><Plus size={20} /></button>
+        <span>人设管理 ({personas.length})</span>
+        <button onClick={startAdd}><Plus size={20} /></button>
       </div>
-
-      {showAdd && (
-        <div className="persona-add-form">
-          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="人设名称" />
-          <textarea value={newPrompt} onChange={e => setNewPrompt(e.target.value)} placeholder="系统提示词" rows={4} />
-          <button onClick={handleAdd} disabled={!newName.trim() || !newPrompt.trim()}>保存</button>
-          <button onClick={() => setShowAdd(false)}>取消</button>
-        </div>
-      )}
-
       <div className="persona-list">
-        {personas.map(p => (
-          editId === p.id ? (
-            <div key={p.id} className="persona-card edit">
-              <input value={editName} onChange={e => setEditName(e.target.value)} />
-              <textarea value={editPrompt} onChange={e => setEditPrompt(e.target.value)} rows={4} />
-              <div className="actions">
-                <button onClick={handleSave}><Check size={16} /></button>
-                <button onClick={() => setEditId(null)}><X size={16} /></button>
-              </div>
+        {personas.map((p: PItem) => (
+          <div key={p.id} className="persona-card" onClick={() => openDetail(p)}>
+            <div className="pc-row">
+              <span className="pc-name">{p.name}</span>
+              {config.persona.id === p.id && <Check size={16} className="pc-active" />}
+              <span className="pc-tags">{p.tags.map(t => emo[t] || '🏷️').join('')}</span>
             </div>
-          ) : (
-            <div key={p.id} className="persona-card" onClick={() => switchPersona(p.id)}>
-              <div>{p.name}</div>
-              <div>{p.systemPrompt.slice(0, 50)}...</div>
-              <div className="actions">
-                <button onClick={e => { e.stopPropagation(); startEdit(p) }}><Pencil size={16} /></button>
-                {!p.isDefault && (
-                  <button onClick={e => { e.stopPropagation(); handleDelete(p.id) }}><Trash2 size={16} /></button>
-                )}
-              </div>
-            </div>
-          )
+            <div className="pc-prompt">{p.systemPrompt.slice(0, 60)}...</div>
+          </div>
         ))}
       </div>
     </div>
   )
-}
