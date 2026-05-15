@@ -47,6 +47,7 @@ export class OpenAIProvider implements ProviderAdapter {
       return Object.keys(result).length > 0 ? result : null
     } catch { return null }
   }
+  async chat(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): Promise<Message> {
     const resp = await fetch(this.getEndpoint(config), {
       method: 'POST',
       headers: {
