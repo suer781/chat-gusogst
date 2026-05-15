@@ -36,8 +36,8 @@ export default function ChatPage() {
     let buffer = ''
     try {
       for await (const ev of chatStream(model, persona, updated)) {
-        if (ev.token) { buffer += ev.token }
-        else if (ev.error) { setError(ev.error); break }
+        if (ev.type === 'token') { buffer += ev.content }
+        else if (ev.type === 'error') { setError(ev.message); break }
       }
       if (buffer) {
         setMessages(prev => [...prev, { role: 'assistant', content: buffer, timestamp: Date.now() }])
