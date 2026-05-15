@@ -6,8 +6,10 @@ import ChatSettings from './ChatSettings'
 import DocumentSettings from './DocumentSettings'
 import GeneralSettings from './GeneralSettings'
 import AboutView from './AboutView'
+import PersonaView from '../persona/PersonaView'
+import { MemoryView } from '../memory/MemoryView'
 
-type SubPage = 'list' | 'model' | 'search' | 'chat' | 'document' | 'general' | 'about'
+type SubPage = 'list' | 'model' | 'search' | 'chat' | 'document' | 'general' | 'about' | 'persona' | 'memory'
 
 /** 设置页路由容器 — 仿 Chatbox 多级菜单 */
 export default function SettingsView() {
@@ -28,7 +30,11 @@ export default function SettingsView() {
       return <GeneralSettings onBack={goBack} />
     case 'about':
       return <AboutView onBack={goBack} />
+    case 'persona':
+      return <PersonaView onDone={goBack} />
+    case 'memory':
+      return <MemoryView onDone={goBack} />
     default:
-      return <SettingsList onNavigate={setPage} />
+      return <SettingsList onNavigate={(page: string) => setPage(page as SubPage)} />
   }
 }

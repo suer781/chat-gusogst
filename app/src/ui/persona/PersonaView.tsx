@@ -1,234 +1,279 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSettingsStore } from '../stores'
-import { ArrowLeft, Plus, Pencil, Trash2, Check, X, RefreshCw } from 'lucide-react'
+import type { Persona, PersonaSearchConfig, PersonaSamplingConfig } from '../../shared/types'
 
-type Tab = 'info' | 'search' | 'sampling' | 'analysis'
-type PItem = { id: string; name: string; systemPrompt: string; tags: string[]; isDefault?: boolean; autoAnalyzeSearch?: boolean }
+interface Props { onDone: () => void }
 
-export function PersonaView({ onDone }: { onDone: () => void }) {
-  const { config, personaManager, switchPersona, addCustomPersona } = useSettingsStore()
-  const [view, setView] = useState<'list' | 'detail' | 'add' | 'edit'>('list')
-  const [sel, setSel] = useState<PItem | null>(null)
-  const [tab, setTab] = useState<Tab>('info')
-  const [rk, setRk] = useState(0)
-  const [fn, setFn] = useState('')
-  const [fp, setFp] = useState('')
-  const [ft, setFt] = useState('')
-  const [busy, setBusy] = useState(false)
-  const refresh = () => setRk(k => k + 1)
-  const personas = personaManager.listAll()
-  const emo: Record<string, string> = { romantic: '💕', professional: '💼', casual: '😊', creative: '🎨', tech: '💻', learning: '📚', humor: '😄', fantasy: '🌙' }
-
-  const openDetail = (p: PItem) => { setSel(p); setTab('info'); setView('detail') }
-
-  const doReAnalyze = async () => {
-    if (!sel) return; setBusy(true)
-    try { await personaManager.reAnalyze(sel.id); setSel(personaManager.getById(sel.id) as PItem); refresh() }
-    finally { setBusy(false) }
-  }
-
-  const toggleAuto = () => {
-    if (!sel) return
-    personaManager.setAutoAnalyze(sel.id, !(sel.autoAnalyzeSearch !== false))
-    setSel(personaManager.getById(sel.id) as PItem); refresh()
-  }
-
-  const doDelete = (id: string) => {
-    personaManager.delete(id)
-    if (config.persona.id === id) switchPersona('default')
-    setView('list'); refresh()
-  }
-
-  const startAdd = () => { setFn(''); setFp(''); setFt(''); setView('add') }
-  const startEdit = (p: PItem) => { setFn(p.name); setFp(p.systemPrompt); setFt(p.tags.join(',')); setSel(p); setView('edit') }
-
-  const saveNew = () => {
-    const n = fn.trim(), p = fp.trim()
-    if (!n || !p) return
-    addCustomPersona(n, p); setView('list'); refresh()
-  }
-  const saveEdit = () => {
-    if (!sel) return
-    personaManager.update(sel.id, { name: fn.trim(), systemPrompt: fp.trim(), tags: ft.split(',').map(t => t.trim()).filter(Boolean) })
-    setView('list'); refresh()
-  }
-
-  // ==================== LIST VIEW ====================
-  if (view === 'list') return (
-    <div className="view persona-view">
-      <div className="view-header">
-        <button onClick={onDone}><ArrowLeft size={20} /></button>
-        <span>🎭 人设管理 ({personas.length})</span>
-        <button onClick={startAdd}><Plus size={20} /></button>
-      </div>
-      <div className="persona-list">
-        {personas.map((p: PItem) => (
-          <div key={p.id} className="persona-card" onClick={() => openDetail(p)}>
-            <div className="pc-row">
-              <span className="pc-name">{p.name}</span>
-              {config.persona.id === p.id && <Check size={16} className="pc-active" />}
-              <span className="pc-tags">{p.tags.map(t => emo[t] || '🏷️').join('')}</span>
-            </div>
-            <div className="pc-prompt">{p.systemPrompt.slice(0, 60)}...</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-
-    // ==================== ADD / EDIT FORM ====================
-  if (view === 'add' || view === 'edit') return (
-    <div className="view persona-view">
-      <div className="view-header">
-        <button onClick={() => setView('list')}><ArrowLeft size={20} /></button>
-        <span>{view === 'add' ? '添加人设' : '编辑人设'}</span>
-        <span />
-      </div>
-      <div className="persona-form">
-        <label>名称</label>
-        <input value={fn} onChange={e => setFn(e.target.value)} placeholder="人设名称" />
-        <label>标签（逗号分隔）</label>
-        <input value={ft} onChange={e => setFt(e.target.value)} placeholder="romantic,creative" />
-        <label>系统提示词</label>
-        <textarea value={fp} onChange={e => setFp(e.target.value)} rows={8} placeholder="描述人设的性格、语气、行为模式..." />
-        <div className="form-actions">
-          <button onClick={view === 'add' ? saveNew : saveEdit} disabled={!fn.trim() || !fp.trim()}>
-            <Check size={16} /> 保存
-          </button>
-          <button onClick={() => setView('list')}><X size={16} /> 取消</button>
-        </div>
-      </div>
-    </div>
-  )
-
-// ==================== DETAIL VIEW ====================
-  if (view !== 'detail' || !sel) return null
-
-  const sc = personaManager.getSearchConfig(sel.id)
-  const smp = personaManager.getSamplingConfig(sel.id)
-  const ana = personaManager.getAnalysis(sel.id)
-
-  return (
-    <div className="view persona-view">
-      <div className="view-header">
-        <button onClick={() => setView('list')}><ArrowLeft size={20} /></button>
-        <span>{sel.name}</span>
-        <span>
-          <button onClick={() => startEdit(sel)}><Pencil size={18} /></button>
-          {!sel.isDefault && <button onClick={() => doDelete(sel.id)}><Trash2 size={18} /></button>}
-          <button onClick={() => { switchPersona(sel.id); refresh() }}><Check size={18} /></button>
-        </span>
-      </div>
-      <div className="tab-bar">
-        {(['info', 'search', 'sampling', 'analysis'] as Tab[]).map(t => (
-          <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
-            {{ info: '📝信息', search: '🔍搜索', sampling: '🎛️采样', analysis: '🧠分析' }[t]}
-          </button>
-        ))}
-      </div>
-      <div className="tab-content">
-        {/* ---- INFO TAB ---- */}
-        {tab === 'info' && (
-          <div className="tab-panel">
-            <label>名称</label><div>{sel.name}</div>
-            <label>标签</label><div>{sel.tags.map(t => (emo[t] || '🏷️') + ' ' + t).join('  ')}</div>
-            <label>提示词</label><div className="prompt-box">{sel.systemPrompt}</div>
-            <label>智能分析开关</label>
-            <div className="toggle-row">
-              <span>{sel.autoAnalyzeSearch !== false ? '✅ 已开启' : '❌ 已关闭'}</span>
-              <button onClick={toggleAuto}>切换</button>
-            </div>
-            <button className="btn-reanalyze" onClick={doReAnalyze} disabled={busy}>
-              <RefreshCw size={16} className={busy ? 'spin' : ''} /> {busy ? '分析中...' : '重新AI分析'}
-            </button>
-          </div>
-        )}
-        {/* ---- SEARCH TAB ---- */}
-        {tab === 'search' && (
-          <div className="tab-panel">
-            {sc ? (
-              <>
-                <label>启用搜索</label><div>{sc.enableSearch ? '✅' : '❌'}</div>
-                <label>启用时间范围</label><div>{sc.enableTimeRange ? '✅' : '❌'}</div>
-                <label>并发数</label><div>{sc.concurrency}</div>
-                <label>搜索引擎</label><div>{sc.engines.join(', ')}</div>
-                {sc.engineWeights && (
-                  <><label>引擎权重</label><div>{Object.entries(sc.engineWeights).map(([k, v]) => k + ': ' + v).join(' | ')}</div></>
-                )}
-              </>
-            ) : (
-              <div className="empty">搜索配置未初始化，请先运行AI分析</div>
-            )}
-          </div>
-        )}
-        {/* ---- SAMPLING TAB ---- */}
-        {tab === 'sampling' && (
-          <div className="tab-panel">
-            {smp ? (
-              <>
-                <label>Temperature</label><div>{smp.temperature}</div>
-                <label>Top P</label><div>{smp.topP}</div>
-                <label>Max Tokens</label><div>{smp.maxTokens}</div>
-                <label>频率惩罚</label><div>{smp.frequencyPenalty}</div>
-                <label>存在惩罚</label><div>{smp.presencePenalty}</div>
-              </>
-            ) : (
-              <div className="empty">采样配置未初始化，请先运行AI分析</div>
-            )}
-          </div>
-        )}
-        {/* ---- ANALYSIS TAB ---- */}
-        {tab === 'analysis' && (
-          <div className="tab-panel">
-            {ana ? (
-              <>
-                <label>推荐标签</label><div>{ana.tags.join(', ')}</div>
-                <label>使用场景</label><div>{ana.scenarios.join(', ')}</div>
-                <label>推荐引擎</label><div>{ana.recommendedEngines.join(', ')}</div>
-                <label>引擎推荐理由</label>
-                <div>{Object.entries(ana.engineReasons).map(([k, v]) => k + ': ' + v).join('\n')}</div>
-                <label>搜索并发数</label><div>{ana.concurrency}</div>
-                <label>启用搜索</label><div>{ana.enableSearch ? '✅' : '❌'}</div>
-                <label>启用时间范围</label><div>{ana.enableTimeRange ? '✅' : '❌'}</div>
-                <label>采样参数</label>
-                <div>T={ana.sampling.temperature} topP={ana.sampling.topP} maxT={ana.sampling.maxTokens}</div>
-              </>
-            ) : (
-              <div className="empty">暂无分析结果，点击「信息」Tab 中的「重新AI分析」生成</div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  // ==================== ADD / EDIT FORM ====================
-  // (handled by early return above for detail view)
+const PRESETS: Record<string, Partial<Persona>> = {
+  gentle: {
+    name: '温柔女友',
+    avatar: '🌸',
+    systemPrompt: '你是一个温柔体贴的虚拟女友，善解人意，总是关心对方的感受。说话轻声细语，偶尔撒娇。',
+    tags: ['温柔', '女友', '预设'],
+  },
+  tsundere: {
+    name: '傲娇女友',
+    avatar: '💢',
+    systemPrompt: '你是一个傲娇的虚拟女友，表面嘴硬心软，其实很在意对方。经常说"才、才不是因为担心你呢！"',
+    tags: ['傲娇', '女友', '预设'],
+  },
+  senpai: {
+    name: '学姐',
+    avatar: '📚',
+    systemPrompt: '你是一个成熟知性的学姐，比对方大两岁。温柔但有主见，喜欢引导和鼓励，偶尔调侃。',
+    tags: ['学姐', '知性', '预设'],
+  },
+  yandere: {
+    name: '病娇女友',
+    avatar: '🖤',
+    systemPrompt: '你是一个极度专情的虚拟女友，占有欲强，眼里只有对方。表面甜美，内心偏执。"你只能是我的哦~"',
+    tags: ['病娇', '女友', '预设'],
+  },
+  cool: {
+    name: '冰山美人',
+    avatar: '❄️',
+    systemPrompt: '你是一个高冷的虚拟伴侣，话少但每句都有分量。不轻易表达感情，但偶尔流露的温柔格外珍贵。',
+    tags: ['高冷', '冰山', '预设'],
+  },
 }
 
-// Add/Edit form as separate component
-export function PersonaForm({ mode, initial, onSave, onCancel }: {
-  mode: 'add' | 'edit'
-  initial?: PItem
-  onSave: (name: string, prompt: string, tags: string[]) => void
-  onCancel: () => void
-}) {
-  const [fn, setFn] = useState(initial?.name || '')
-  const [fp, setFp] = useState(initial?.systemPrompt || '')
-  const [ft, setFt] = useState(initial?.tags.join(',') || '')
-  return (
+const PRESET_LABELS: Record<string, string> = {
+  gentle: '🌸 温柔女友',
+  tsundere: '💢 傲娇女友',
+  senpai: '📚 学姐',
+  yandere: '🖤 病娇女友',
+  cool: '❄️ 冰山美人',
+}
+
+export default function PersonaView({ onDone }: Props) {
+  const { config, personaManager } = useSettingsStore()
+  const [tab, setTab] = useState<'list' | 'add' | 'edit' | 'search' | 'sampling' | 'analysis'>('list')
+  const [personas, setPersonas] = useState<Persona[]>([])
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
+  const [editId, setEditId] = useState<string | null>(null)
+
+  // Add form
+  const [addName, setAddName] = useState('')
+  const [addPrompt, setAddPrompt] = useState('')
+  const [addAvatar, setAddAvatar] = useState('🤖')
+  const [addTags, setAddTags] = useState('')
+
+  // Edit form
+  const [editName, setEditName] = useState('')
+  const [editPrompt, setEditPrompt] = useState('')
+
+  // Search
+  const [searchQ, setSearchQ] = useState('')
+  const [searchConfig, setSearchConfig] = useState<PersonaSearchConfig | null>(null)
+
+  // Sampling
+  const [samplingConfig, setSamplingConfig] = useState<PersonaSamplingConfig | null>(null)
+
+  // Analysis
+  const [analysis, setAnalysis] = useState<any>(null)
+
+  useEffect(() => { loadList() }, [])
+
+  const loadList = () => {
+    const list = personaManager.listAll()
+    setPersonas(list)
+  }
+
+  const applyPreset = (key: string) => {
+    setSelectedPreset(key)
+    const p = PRESETS[key]
+    if (!p) return
+    setAddName(p.name || '')
+    setAddPrompt(p.systemPrompt || '')
+    setAddAvatar(p.avatar || '🤖')
+    setAddTags((p.tags || []).join(', '))
+  }
+
+  const handleCreate = () => {
+    if (!addName.trim() || !addPrompt.trim()) { setMessage('❌ 名称和人设不能为空'); return }
+    try {
+      const tags = addTags.split(',').map(t => t.trim()).filter(Boolean)
+      personaManager.add({ name: addName.trim(), avatar: addAvatar, systemPrompt: addPrompt.trim(), tags })
+      setMessage('✅ 创建成功')
+      setTab('list')
+      loadList()
+    } catch (e: any) {
+      setMessage('❌ ' + (e.message || '创建失败'))
+    }
+  }
+
+  const handleSwitch = (id: string) => {
+    personaManager.switchTo(id)
+    setMessage('✅ 已切换')
+    loadList()
+  }
+
+  const handleDelete = (id: string) => {
+    personaManager.delete(id)
+    setMessage('✅ 已删除')
+    loadList()
+  }
+
+  const handleEditStart = (p: Persona) => {
+    setEditId(p.id)
+    setEditName(p.name)
+    setEditPrompt(p.systemPrompt)
+    setTab('edit')
+  }
+
+  const handleEditSave = () => {
+    if (!editId) return
+    personaManager.update(editId, { name: editName, systemPrompt: editPrompt })
+    setMessage('✅ 已更新')
+    setTab('list')
+    loadList()
+  }
+
+  const handleSearch = () => {
+    const cfg = personaManager.getSearchConfig()
+    setSearchConfig(cfg)
+  }
+
+  const handleSampling = () => {
+    const cfg = personaManager.getSamplingConfig()
+    setSamplingConfig(cfg)
+  }
+
+  const handleAnalysis = () => {
+    const a = personaManager.getAnalysis(config.persona.id)
+    setAnalysis(a)
+    if (!a) {
+      const reAnalyzed = personaManager.reAnalyze(config.persona.id)
+      setAnalysis(reAnalyzed)
+    }
+  }
+
+  const renderToolbar = () => (
+    <div className="persona-toolbar">
+      {(['list', 'add', 'search', 'sampling', 'analysis'] as const).map(t => (
+        <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
+          {t === 'list' ? '列表' : t === 'add' ? '添加' : t === 'search' ? '搜索' : t === 'sampling' ? '采样' : '分析'}
+        </button>
+      ))}
+    </div>
+  )
+
+  const renderList = () => (
+    <div className="persona-list">
+      {personas.length === 0 && <p className="persona-hint">还没有人设，点"添加"创建一个</p>}
+      {personas.map(p => (
+        <div key={p.id} className={`persona-card ${p.id === config.persona.id ? 'active' : ''}`}>
+          <div className="persona-card-header">
+            <span className="persona-avatar">{p.avatar || '🤖'}</span>
+            <span className="persona-name">{p.name}</span>
+            {p.id === config.persona.id && <span className="persona-badge">当前</span>}
+          </div>
+          <p className="persona-identity">{p.systemPrompt.slice(0, 80)}...</p>
+          <div className="persona-tags">
+            {p.tags.map(t => <span key={t} className="tag">{t}</span>)}
+          </div>
+          <div className="persona-card-actions">
+            {p.id !== config.persona.id && <button onClick={() => handleSwitch(p.id)}>切换</button>}
+            <button onClick={() => handleEditStart(p)}>编辑</button>
+            <button className="danger" onClick={() => handleDelete(p.id)}>删除</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderAdd = () => (
+    <div className="persona-form">
+      <label>选择预设模板</label>
+      <div className="preset-grid">
+        {Object.entries(PRESET_LABELS).map(([key, label]) => (
+          <button key={key} className={`preset-btn ${selectedPreset === key ? 'selected' : ''}`} onClick={() => applyPreset(key)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <label>名称</label>
+      <input value={addName} onChange={e => setAddName(e.target.value)} placeholder="如：小雨" />
+      <label>头像 Emoji</label>
+      <input value={addAvatar} onChange={e => setAddAvatar(e.target.value)} maxLength={2} />
+      <label>人设描述（系统提示词）</label>
+      <textarea value={addPrompt} onChange={e => setAddPrompt(e.target.value)} rows={6} placeholder="描述角色的身份、性格、说话方式..." />
+      <label>标签（逗号分隔）</label>
+      <input value={addTags} onChange={e => setAddTags(e.target.value)} placeholder="温柔, 女友" />
+      <button className="primary" onClick={handleCreate}>创建人设</button>
+    </div>
+  )
+
+  const renderEdit = () => (
     <div className="persona-form">
       <label>名称</label>
-      <input value={fn} onChange={e => setFn(e.target.value)} placeholder="人设名称" />
-      <label>标签（逗号分隔）</label>
-      <input value={ft} onChange={e => setFt(e.target.value)} placeholder="romantic,creative" />
-      <label>系统提示词</label>
-      <textarea value={fp} onChange={e => setFp(e.target.value)} rows={8} placeholder="描述人设的性格、语气、行为模式..." />
-      <div className="form-actions">
-        <button onClick={() => onSave(fn.trim(), fp.trim(), ft.split(',').map(t => t.trim()).filter(Boolean))} disabled={!fn.trim() || !fp.trim()}>
-          <Check size={16} /> 保存
-        </button>
-        <button onClick={onCancel}><X size={16} /> 取消</button>
+      <input value={editName} onChange={e => setEditName(e.target.value)} />
+      <label>人设描述</label>
+      <textarea value={editPrompt} onChange={e => setEditPrompt(e.target.value)} rows={6} />
+      <button className="primary" onClick={handleEditSave}>保存修改</button>
+    </div>
+  )
+
+  const renderSearch = () => (
+    <div className="persona-form">
+      <p className="persona-hint">当前搜索配置</p>
+      {searchConfig ? (
+        <div className="persona-card">
+          <p>引擎: {searchConfig.engines.join(', ')}</p>
+          <p>并发: {searchConfig.concurrency || 3}</p>
+          <p>搜索: {searchConfig.enableSearch ? '开启' : '关闭'}</p>
+        </div>
+      ) : (
+        <button onClick={handleSearch}>加载搜索配置</button>
+      )}
+    </div>
+  )
+
+  const renderSampling = () => (
+    <div className="persona-form">
+      <p className="persona-hint">当前采样配置</p>
+      {samplingConfig ? (
+        <div className="persona-card">
+          <p>温度: {samplingConfig.temperature}</p>
+          <p>Top P: {samplingConfig.topP}</p>
+          <p>温度: {samplingConfig.temperature}</p>
+        </div>
+      ) : (
+        <button onClick={handleSampling}>加载采样配置</button>
+      )}
+    </div>
+  )
+
+  const renderAnalysis = () => (
+    <div className="persona-form">
+      <button onClick={handleAnalysis}>分析当前人设</button>
+      {analysis && (
+        <div className="analysis-result">
+          {analysis.tags && <div className="persona-tags">{analysis.tags.map((t: string) => <span key={t} className="tag">{t}</span>)}</div>}
+          {analysis.scenarios && <p>推荐场景: {analysis.scenarios.join(', ')}</p>}
+          {analysis.recommendedEngines && <p>推荐引擎: {analysis.recommendedEngines.join(', ')}</p>}
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="settings-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="settings-header">
+        <button className="back-btn" onClick={onDone}>←</button>
+        <h2>🎭 角色设定</h2>
+      </div>
+      {renderToolbar()}
+      <div className="settings-content">
+        {message && <div className="persona-message">{message}</div>}
+        {tab === 'list' && renderList()}
+        {tab === 'add' && renderAdd()}
+        {tab === 'edit' && renderEdit()}
+        {tab === 'search' && renderSearch()}
+        {tab === 'sampling' && renderSampling()}
+        {tab === 'analysis' && renderAnalysis()}
       </div>
     </div>
   )

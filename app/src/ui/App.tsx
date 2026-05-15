@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSettingsStore, useChatStore } from './stores'
 import { ChatView } from './chat/ChatView'
 import SettingsView from './settings/SettingsView'
-import { PersonaView } from './persona/PersonaView'
+import PersonaView from './persona/PersonaView'
 import { MemoryView } from './memory/MemoryView'
 
 type View = 'chat' | 'settings' | 'persona' | 'memory'
