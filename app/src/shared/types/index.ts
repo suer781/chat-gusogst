@@ -29,6 +29,7 @@ export interface ModelConfig {
   apiHost?: string
   temperature?: number
   maxTokens?: number
+  systemPrompt?: string
   topP?: number
   contextWindow?: number
 }
