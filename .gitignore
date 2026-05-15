@@ -11,3 +11,4 @@ android-app/
 capacitor-app/
 chatbox-upstream/
 app/src/agent/providers/openai.ts.bak
+_gen.py
