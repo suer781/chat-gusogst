@@ -51,7 +51,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             })
             break
           case 'tool_result':
-            assistantContent += ` ✅`
+            assistantContent += event.result ? ` [${event.tool}: ${String(event.result).slice(0, 100)}]` : ` ✅`
             set(s => {
               const msgs = [...s.messages]
               msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantContent }
@@ -64,7 +64,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           case 'done':
             set(s => {
               const msgs = [...s.messages]
-              msgs[msgs.length - 1] = event.message
+              msgs[msgs.length - 1] = { ...event.message, content: assistantContent || event.message.content }
               return { messages: msgs, isStreaming: false }
             })
             break

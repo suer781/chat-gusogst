@@ -188,7 +188,7 @@ export class Agent {
 
   private async saveMemory(userMsg: string, botMsg: string): Promise<number> {
     // 简单策略：每 5 轮对话提取一次记忆
-    if (this.history.length % 10 !== 0) return 0
+    // Every turn saves memory
     try {
       return await this.memory.extractAndSave(this.history.slice(-10))
     } catch { return 0 }
