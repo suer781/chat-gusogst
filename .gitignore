@@ -8,7 +8,6 @@ app/.vite/
 
 # 临时实验目录
 android-app/
-capacitor-app/
 chatbox-upstream/
 app/src/agent/providers/openai.ts.bak
 _gen.py

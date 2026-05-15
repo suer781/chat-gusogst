@@ -8,3 +8,127 @@
 .persona-name { font-size: 15px; font-weight: 600; }
 .persona-desc { font-size: 12px; color: var(--text-secondary); }
 .check { color: var(--primary); font-size: 20px; font-weight: 700; }
+/* PersonaPage 额外样式 */
+.persona-section-label {
+  font-size: 0.8rem;
+  color: #999;
+  padding: 12px 16px 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.add-persona-btn {
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.add-persona-btn:active {
+  opacity: 0.8;
+}
+.persona-empty {
+  text-align: center;
+  color: #bbb;
+  font-size: 0.85rem;
+  padding: 20px;
+}
+.persona-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.persona-edit-btn, .persona-delete-btn {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  opacity: 0.5;
+}
+.persona-edit-btn:hover, .persona-delete-btn:hover {
+  opacity: 1;
+}
+.delete-confirm {
+  display: flex;
+  gap: 2px;
+}
+.confirm-yes {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.confirm-no {
+  background: #eee;
+  border: none;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+/* 编辑器 */
+.persona-editor {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.editor-avatar-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.editor-avatar-input {
+  width: 56px;
+  height: 56px;
+  text-align: center;
+  font-size: 2rem;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  outline: none;
+}
+.editor-avatar-input:focus {
+  border-color: #646cff;
+}
+.editor-name-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+}
+.editor-name-input:focus {
+  border-color: #646cff;
+}
+.persona-editor label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 4px;
+}
+.editor-prompt-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.editor-prompt-input:focus {
+  border-color: #646cff;
+}
+.editor-hint {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin: 0;
+}

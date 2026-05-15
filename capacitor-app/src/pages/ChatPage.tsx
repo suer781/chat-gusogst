@@ -35,17 +35,18 @@ export default function ChatPage() {
 
     let buffer = ''
     try {
-      for await (const event of chatStream(model, persona, updated)) {
-        if (event.type === 'token') buffer += event.content
-        else if (event.type === 'error') { setError(event.message); break }
+      for await (const ev of chatStream(model, persona, updated)) {
+        if (ev.token) { buffer += ev.token }
+        else if (ev.error) { setError(ev.error); break }
       }
-    } catch (e: any) { setError(e.message) }
-
-    if (buffer) {
-      const reply: Message = { role: 'assistant', content: buffer, timestamp: Date.now() }
-      setMessages([...updated, reply])
+      if (buffer) {
+        setMessages(prev => [...prev, { role: 'assistant', content: buffer, timestamp: Date.now() }])
+      }
+    } catch (e: unknown) {
+      setError(String(e))
+    } finally {
+      setStreaming(false)
     }
-    setStreaming(false)
   }, [input, streaming, model, persona, messages, setMessages])
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -55,39 +56,39 @@ export default function ChatPage() {
   return (
     <div className="chat-page">
       <header className="chat-header">
-        <span className="header-title">{persona.avatar} {persona.name}</span>
-        <div className="header-actions">
-          <button className="icon-btn" onClick={clearMessages} title="清空">🗑️</button>
-          <button className="icon-btn" onClick={() => navigate('/settings')} title="设置">⚙️</button>
+        <div className="chat-persona" onClick={() => navigate('/persona')}>
+          <span className="chat-persona-avatar">{persona.avatar}</span>
+          <span className="chat-persona-name">{persona.name}</span>
+          <span className="chat-persona-switch">▾</span>
+        </div>
+        <div className="chat-actions">
+          <button className="chat-action-btn" onClick={() => navigate('/settings')} title="记忆与设置">🧠</button>
+          <button className="chat-action-btn" onClick={clearMessages} title="清空对话">🗑️</button>
         </div>
       </header>
 
       <div className="chat-list" ref={listRef}>
         {messages.length === 0 && (
           <div className="chat-empty">
-            <span className="empty-emoji">💕</span>
-            <span className="empty-text">说点什么吧~</span>
+            <div className="empty-avatar">{persona.avatar}</div>
+            <p>和 {persona.name} 说点什么吧~</p>
           </div>
         )}
-        {messages.map((msg, i) => (
-          <div key={i} className={'bubble-row ' + msg.role}>
-            <div className={'bubble ' + (msg.role === 'error' ? 'error' : msg.role)}>
-              {msg.content}
-            </div>
+        {messages.map((m, i) => (
+          <div key={i} className={'bubble ' + m.role}>
+            {m.content}
           </div>
         ))}
         {streaming && (
-          <div className="bubble-row assistant">
-            <div className="bubble assistant loading">
-              <span className="dot" /><span className="dot" /><span className="dot" />
-            </div>
+          <div className="bubble assistant streaming">
+            <span className="dot" /><span className="dot" /><span className="dot" />
           </div>
         )}
       </div>
 
       {error && (
         <div className="error-bar">
-          <span>{error}</span>
+          ⚠️ {error}
           <button onClick={() => setError(null)}>✕</button>
         </div>
       )}
@@ -98,11 +99,11 @@ export default function ChatPage() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="说点什么..."
+          placeholder="输入消息..."
           rows={1}
         />
         <button className="send-btn" onClick={send} disabled={!input.trim() || streaming}>
-          ➤
+          {streaming ? '⏳' : '➤'}
         </button>
       </div>
     </div>

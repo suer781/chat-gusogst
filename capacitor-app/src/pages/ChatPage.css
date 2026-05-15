@@ -32,3 +32,55 @@
 .chat-input textarea:focus { border-color: var(--primary); }
 .send-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--primary); color: #fff; font-size: 18px; cursor: pointer; flex-shrink: 0; }
 .send-btn:disabled { opacity: .4; cursor: default; }
+/* ChatPage 额外样式 - 头部按钮 */
+.chat-persona {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.chat-persona:active {
+  background: rgba(0,0,0,0.05);
+}
+.chat-persona-avatar {
+  font-size: 1.3rem;
+}
+.chat-persona-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.chat-persona-switch {
+  font-size: 0.7rem;
+  color: #999;
+}
+.chat-actions {
+  display: flex;
+  gap: 4px;
+}
+.chat-action-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.chat-action-btn:active {
+  background: rgba(0,0,0,0.05);
+}
+.chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #bbb;
+}
+.empty-avatar {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
