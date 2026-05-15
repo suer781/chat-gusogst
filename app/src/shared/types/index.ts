@@ -49,18 +49,6 @@ export interface ToolDefinition {
   }
 }
 
-// ── 记忆 ─────────────────────────────────────────
-export interface MemoryEntry {
-  id: string
-  content: string
-  type: 'conversation' | 'fact' | 'preference' | 'emotion'
-  importance: number
-  created_at: string
-  last_accessed: string
-  access_count: number
-  tags: string[]
-  embedding?: number[]
-}
 
 // ── 模型采样配置 ────────────────────────────────
 export interface PersonaSamplingConfig {

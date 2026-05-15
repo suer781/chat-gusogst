@@ -268,7 +268,7 @@ export class MemoryManager {
         if (category && m.category !== category) return false
         if (m.trustScore < this.config.minTrustThreshold) return false
         return m.content.toLowerCase().includes(query.toLowerCase()) ||
-               m.tags.some(t => t.includes(query) || query.includes(t))
+               m.tags.some(t => t.toLowerCase().includes(query.toLowerCase()) || query.toLowerCase().includes(t.toLowerCase()))
       })
       .sort((a, b) => b.trustScore - a.trustScore)
       .slice(0, 10)
@@ -381,7 +381,7 @@ export class MemoryManager {
       .filter(m => {
         if (m.trustScore < this.config.minTrustThreshold) return false
         return m.content.toLowerCase().includes(query.toLowerCase()) ||
-               m.tags.some(t => t.includes(query) || query.includes(t))
+               m.tags.some(t => t.toLowerCase().includes(query.toLowerCase()) || query.toLowerCase().includes(t.toLowerCase()))
       })
       .sort((a, b) => b.trustScore - a.trustScore)
       .slice(0, limit)
