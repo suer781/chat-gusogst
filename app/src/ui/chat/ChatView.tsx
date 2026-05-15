@@ -3,9 +3,10 @@ import { useChatStore, useSettingsStore } from '../stores'
 import { Settings, Smile, Send, Square, Trash2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
-export function ChatView({ onOpenSettings, onOpenPersona }: {
+export function ChatView({ onOpenSettings, onOpenPersona, onOpenMemory }: {
   onOpenSettings: () => void
   onOpenPersona: () => void
+  onOpenMemory?: () => void
 }) {
   const { messages, isStreaming, error, sendMessage, abort, clear } = useChatStore()
   const config = useSettingsStore(s => s.config)
@@ -43,6 +44,7 @@ export function ChatView({ onOpenSettings, onOpenPersona }: {
           <button onClick={clear} className="icon-btn" title="清空对话">
             <Trash2 size={18} />
           </button>
+          {onOpenMemory && <button onClick={onOpenMemory} className="icon-btn" title="记忆库">🧠</button>}
           <button onClick={onOpenSettings} className="icon-btn" title="设置">
             <Settings size={18} />
           </button>

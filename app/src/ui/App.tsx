@@ -3,8 +3,9 @@ import { useSettingsStore, useChatStore } from './stores'
 import { ChatView } from './chat/ChatView'
 import SettingsView from './settings/SettingsView'
 import { PersonaView } from './persona/PersonaView'
+import { MemoryView } from './memory/MemoryView'
 
-type View = 'chat' | 'settings' | 'persona'
+type View = 'chat' | 'settings' | 'persona' | 'memory'
 
 export default function App() {
   const [view, setView] = useState<View>('chat')
@@ -30,9 +31,10 @@ export default function App() {
 
   return (
     <div className="app">
-      {view === 'chat' && <ChatView onOpenSettings={() => setView('settings')} onOpenPersona={() => setView('persona')} />}
+      {view === 'chat' && <ChatView onOpenSettings={() => setView('settings')} onOpenPersona={() => setView('persona')} onOpenMemory={() => setView('memory')} />}
       {view === 'settings' && <SettingsView />}
       {view === 'persona' && <PersonaView onDone={() => setView('chat')} />}
+      {view === 'memory' && <MemoryView onDone={() => setView('chat')} />}
     </div>
   )
 }
