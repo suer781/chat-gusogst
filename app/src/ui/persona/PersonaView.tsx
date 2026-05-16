@@ -1,54 +1,57 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSettingsStore } from '../stores'
-import { ArrowLeft, Plus, X } from 'lucide-react'
+import type { Persona } from '../types'
+import { Plus, Search, ChevronRight } from 'lucide-react'
+import { t, onLangChange } from '../i18n'
 
 export function PersonaView({ onDone }: { onDone: () => void }) {
-  const { config, personaManager, switchPersona, addCustomPersona } = useSettingsStore()
-  const [showAdd, setShowAdd] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newPrompt, setNewPrompt] = useState('')
-  const personas = personaManager.listAll()
+  const [search, setSearch] = useState('')
+  const [, forceUpdate] = useState(0)
+  const setPersona = useSettingsStore((s) => s.setPersona)
+  const current = useSettingsStore((s) => s.config.persona)
 
-  const handleAdd = () => {
-    if (!newName.trim() || !newPrompt.trim()) return
-    addCustomPersona(newName.trim(), newPrompt.trim())
-    setNewName('')
-    setNewPrompt('')
-    setShowAdd(false)
-  }
+  useEffect(() => onLangChange(() => forceUpdate((n) => n + 1)), [])
+
+  const PRESETS: Persona[] = [
+    { id: 'default', name: 'Hermes', systemPrompt: t('persona.hermes.desc'), tags: ['general'] },
+    { id: 'creative', name: 'Muse', systemPrompt: t('persona.muse.desc'), tags: ['creative', 'writing'] },
+    { id: 'coder', name: 'Hephaestus', systemPrompt: t('persona.hephaestus.desc'), tags: ['coding', 'technical'] },
+    { id: 'analyst', name: 'Athena', systemPrompt: t('persona.athena.desc'), tags: ['analysis', 'strategy'] },
+    { id: 'tutor', name: 'Socrates', systemPrompt: t('persona.socrates.desc'), tags: ['education', 'learning'] },
+    { id: 'friend', name: 'Companion', systemPrompt: t('persona.companion.desc'), tags: ['casual', 'support'] },
+  ]
+
+  const filtered = PRESETS.filter((p) =>
+    !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.tags.some((t) => t.includes(search.toLowerCase()))
+  )
+
+  const select = (persona: Persona) => { setPersona(persona); onDone() }
 
   return (
-    <div className="persona-view">
-      <div className="settings-header">
-        <button onClick={onDone} className="icon-btn"><ArrowLeft size={20} /></button>
-        <h2>选择人设</h2>
-        <button onClick={() => setShowAdd(!showAdd)} className="icon-btn">
-          {showAdd ? <X size={20} /> : <Plus size={20} />}
-        </button>
-      </div>
-
-      {showAdd && (
-        <div className="persona-add-form">
-          <input type="text" value={newName} onChange={e => setNewName(e.target.value)} placeholder="人设名称" />
-          <textarea value={newPrompt} onChange={e => setNewPrompt(e.target.value)} placeholder="系统提示词：描述这个人设的性格和说话方式..." rows={4} />
-          <button onClick={handleAdd} className="primary-btn">添加</button>
+    <div className="h-full flex flex-col" style={{ background: '#0f0f23' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a1a3a' }}>
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#666688' }} />
+          <input type="text" placeholder={t('persona.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full outline-none" style={{ background: '#1a1a3a', border: '1px solid #2a2a4a', borderRadius: 10, padding: '8px 12px 8px 36px', fontSize: 14, color: '#e0e0e0' }} />
         </div>
-      )}
-
-      <div className="persona-list">
-        {personas.map(p => (
-          <div
-            key={p.id}
-            className={`persona-card ${p.id === config.persona.id ? 'active' : ''}`}
-            onClick={() => switchPersona(p.id)}
-          >
-            <div className="persona-card-name">{p.name}</div>
-            <div className="persona-card-preview">{p.systemPrompt.slice(0, 60)}...</div>
-            <div className="persona-card-tags">
-              {p.tags.map(t => <span key={t} className="tag">{t}</span>)}
+      </div>
+      <div className="flex-1 overflow-y-auto" style={{ padding: '12px 16px' }}>
+        {filtered.map((p) => (
+          <button key={p.id} onClick={() => select(p)} className="w-full flex items-center gap-3" style={{ background: current.id === p.id ? '#e9456010' : '#1a1a3a', border: '1px solid ' + (current.id === p.id ? '#e9456040' : '#2a2a4a'), borderRadius: 12, padding: '12px 16px', marginBottom: 8, cursor: 'pointer', color: '#e0e0e0', textAlign: 'left' }}>
+            <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 40, height: 40, background: current.id === p.id ? '#e9456020' : '#2a2a4a', color: current.id === p.id ? '#e94560' : '#8888aa', fontSize: 16, fontWeight: 600 }}>{p.name[0]}</div>
+            <div className="flex-1 min-w-0">
+              <div style={{ fontSize: 14, fontWeight: 500 }}>{p.name}</div>
+              <div style={{ fontSize: 12, color: '#666688', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.systemPrompt}</div>
+              <div className="flex gap-1 mt-1">
+                {p.tags.map((tag) => <span key={tag} style={{ fontSize: 10, color: '#8888aa', background: '#2a2a4a', borderRadius: 4, padding: '1px 6px' }}>{tag}</span>)}
+              </div>
             </div>
-          </div>
+            <ChevronRight size={16} className="shrink-0" style={{ color: '#666688' }} />
+          </button>
         ))}
+        <button className="w-full flex items-center justify-center gap-2" style={{ background: 'transparent', border: '1px dashed #2a2a4a', borderRadius: 12, padding: 16, cursor: 'pointer', color: '#666688', fontSize: 14, marginTop: 4 }}>
+          <Plus size={16} /> {t('persona.create')}
+        </button>
       </div>
     </div>
   )

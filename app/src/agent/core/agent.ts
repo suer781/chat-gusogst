@@ -2,8 +2,8 @@
  * Agent Core - 驱动 Agent Loop
  * 修复：provider registry + 流式输出 + 外部 tools
  */
-import type { Message, AgentConfig, AgentEvent, ToolCall } from '../../shared/types'
-import type { ProviderAdapter } from '../../shared/types'
+import type { Message, AgentConfig, AgentEvent, ToolCall } from '../../shared/agent-types'
+import type { ProviderAdapter } from '../../shared/agent-types'
 import { MemoryManager } from '../memory/manager'
 import { ToolRegistry } from '../tools/registry'
 import { getProvider as getProviderFromRegistry } from '../providers'
@@ -38,11 +38,11 @@ export class Agent {
       const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: userContent, timestamp: Date.now() }
       this.history.push(userMsg)
       const context = await this.buildContext(userContent)
-      const toolDefs = this.tools.getToolDefinitions()
+      const toolDefs = this.tools.getDefinitions()
       const maxRounds = this.config.maxRounds || 10
 
       for (let round = 0; round < maxRounds; round++) {
-        if (this.abortController.signal.aborted) { yield { type: 'error', data: '请求已中止' }; return }
+        if (this.abortController.signal.aborted) { yield { type: 'error', error: '请求已中止' }; return }
         const provider = this.getProvider()
         const { content, toolCalls } = await this.callModelStreaming(provider, context, toolDefs)
 
@@ -50,30 +50,30 @@ export class Agent {
           const assistantMsg: Message = { id: crypto.randomUUID(), role: 'assistant', content: content || '', timestamp: Date.now(), tool_calls: toolCalls }
           this.history.push(assistantMsg)
           for (const tc of toolCalls) {
-            yield { type: 'tool_call', data: tc }
+            yield { type: 'tool_call', name: tc.function.name, args: JSON.parse(tc.function.arguments || '{}') }
             try {
               const result = await this.tools.execute(tc.function.name, JSON.parse(tc.function.arguments || '{}'))
               const toolMsg: Message = { id: crypto.randomUUID(), role: 'tool', content: result, timestamp: Date.now(), tool_call_id: tc.id }
               this.history.push(toolMsg)
-              yield { type: 'tool_result', data: { id: tc.id, result } }
+              yield { type: 'tool_result', name: tc.function.name, content: typeof result === 'string' ? result : JSON.stringify(result) }
             } catch (error: any) {
               const errText = `工具执行失败: ${error.message}`
               this.history.push({ id: crypto.randomUUID(), role: 'tool', content: errText, timestamp: Date.now(), tool_call_id: tc.id })
-              yield { type: 'tool_result', data: { id: tc.id, result: errText } }
+              yield { type: 'tool_result', name: tc.function.name, content: errText }
             }
           }
           continue
         }
         const assistantMsg: Message = { id: crypto.randomUUID(), role: 'assistant', content: content || '', timestamp: Date.now() }
         this.history.push(assistantMsg)
-        yield { type: 'token', data: content || '' }
-        yield { type: 'done', data: '' }
+        yield { type: 'token', content: content || '' }
+        yield { type: 'done', message: assistantMsg }
         this.saveMemory(userContent, content || '').catch(() => {})
         return
       }
-      yield { type: 'error', data: `达到最大轮次 ${maxRounds}，请简化请求` }
+      yield { type: 'error', error: `达到最大轮次 ${maxRounds}，请简化请求` }
     } catch (error: any) {
-      yield { type: 'error', data: error.message || '未知错误' }
+      yield { type: 'error', error: error.message || '未知错误' }
     } finally {
       this.abortController = null
     }
@@ -90,7 +90,7 @@ export class Agent {
       this.resolvedProvider = p
       return p
     } catch {
-      const fallback = { name: providerName, displayName: providerName, apiMode: 'chat_completions' as const, baseUrl: this.config.model.baseUrl, authType: 'api_key' as const } as ProviderAdapter
+      const fallback = { name: providerName, displayName: providerName, apiMode: 'chat_completions' as const, baseUrl: this.config.model.baseUrl, authType: 'api_key' as const } as unknown as ProviderAdapter
       this.resolvedProvider = fallback
       return fallback
     }
@@ -162,7 +162,7 @@ export class Agent {
     const result: Message[] = []
     for (let i = this.history.length - 1; i >= 0; i--) {
       const msg = this.history[i]
-      const msgChars = msg.content.length + (msg.tool_calls ? JSON.stringify(msg.tool_calls).length : 0)
+      const msgChars = (msg.content ?? '').length + (msg.tool_calls ? JSON.stringify(msg.tool_calls).length : 0)
       if (totalChars + msgChars > maxChars) break
       totalChars += msgChars
       result.unshift(msg)
