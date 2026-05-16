@@ -1,5 +1,5 @@
 // 记忆提取器 — 从对话中自动提取值得记住的信息
-import type { ModelConfig, Persona, Message } from '../../lib/types'
+import type { ModelConfig, Persona, Message } from '../lib/types'
 import { memoryStore } from './store'
 
 /**
