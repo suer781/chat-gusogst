@@ -1,20 +1,20 @@
-/**
- * Bridge — 连接 Agent 和 UI
- * 在 Android (Capacitor) 和桌面 (Electron) 中统一使用
- */
 import { Agent } from '../agent/core/agent'
+import { ToolRegistry } from '../agent/tools/registry'
 import type { AgentConfig, AgentEvent, Persona } from '../shared/types'
 
 class AgentBridge {
   private agent: Agent | null = null
   private config: AgentConfig | null = null
+  private toolRegistry: ToolRegistry | null = null
 
-  async init(config: AgentConfig): Promise<void> {
+  async init(config: AgentConfig, toolRegistry?: ToolRegistry): Promise<void> {
     this.config = config
-    this.agent = new Agent(config)
+    this.toolRegistry = toolRegistry || new ToolRegistry()
+    this.agent = new Agent(config, this.toolRegistry)
   }
 
   isReady(): boolean { return this.agent !== null }
+  getToolRegistry(): ToolRegistry | null { return this.toolRegistry }
 
   updateConfig(patch: Partial<AgentConfig>) {
     if (!this.agent || !this.config) return
@@ -38,6 +38,5 @@ class AgentBridge {
   }
 }
 
-// 单例
 export const bridge = new AgentBridge()
 export type { AgentBridge }

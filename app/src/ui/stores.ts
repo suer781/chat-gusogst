@@ -149,7 +149,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       }
 
       // 初始化 bridge
-      await bridge.init(config)
+      await bridge.init(config, toolRegistry)
 
       set({ config, initialized: true })
     } catch (err: any) {
