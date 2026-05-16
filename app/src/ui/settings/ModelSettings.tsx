@@ -18,6 +18,17 @@ const PROVIDER_GROUPS = [
       { id: 'bytedance', name: '字节豆包', desc: 'Doubao' },
       { id: 'minimax', name: 'MiniMax', desc: 'M1' },
       { id: 'yi', name: '零一万物', desc: 'Yi' },
+      { id: 'stepfun', name: '阶跃星辰', desc: 'Step' },
+      { id: 'zai', name: 'Zai', desc: 'Zai AI' },
+      { id: 'copilot', name: 'GitHub Copilot', desc: '代码助手' },
+      { id: 'xai', name: 'xAI', desc: 'Grok' },
+      { id: 'mistral', name: 'Mistral', desc: 'Mixtral/Le Chat' },
+      { id: 'perplexity', name: 'Perplexity', desc: '搜索增强' },
+      { id: 'cohere', name: 'Cohere', desc: 'Command R' },
+      { id: 'nvidia', name: 'NVIDIA', desc: 'NIM 推理' },
+      { id: 'xiaomi', name: 'MIMO', desc: '小米自研大模型' },
+      { id: 'huggingface', name: 'HuggingFace', desc: '开源模型' },
+      { id: 'kilocode', name: 'Kilocode', desc: '代码生成' },
     ],
   },
   {
@@ -76,6 +87,43 @@ const MODEL_PRESETS: Record<string, { name: string; tokens?: string }[]> = {
     { name: 'llama3.1', tokens: '4K' },
     { name: 'qwen2.5', tokens: '4K' },
   ],
+  xai: [
+    { name: 'grok-3', tokens: '131K' },
+    { name: 'grok-3-mini', tokens: '131K' },
+    { name: 'grok-2', tokens: '131K' },
+  ],
+  mistral: [
+    { name: 'mistral-large-latest', tokens: '128K' },
+    { name: 'mistral-small-latest', tokens: '128K' },
+    { name: 'codestral-latest', tokens: '32K' },
+    { name: 'pixtral-large-latest', tokens: '128K' },
+  ],
+  perplexity: [
+    { name: 'sonar-pro', tokens: '8K' },
+    { name: 'sonar', tokens: '8K' },
+    { name: 'sonar-deep-research', tokens: '8K' },
+  ],
+  cohere: [
+    { name: 'command-r-plus', tokens: '4K' },
+    { name: 'command-r', tokens: '4K' },
+    { name: 'command-a', tokens: '8K' },
+  ],
+  nvidia: [
+    { name: 'nvidia/llama-3.1-nemotron-70b-instruct', tokens: '4K' },
+    { name: 'deepseek-ai/deepseek-r1', tokens: '8K' },
+  ],
+  stepfun: [
+    { name: 'step-2-16k', tokens: '16K' },
+    { name: 'step-1-flash', tokens: '8K' },
+  ],
+  copilot: [
+    { name: 'gpt-4o', tokens: '16K' },
+    { name: 'claude-3.5-sonnet', tokens: '8K' },
+  ],
+  huggingface: [
+    { name: 'meta-llama/Llama-3.1-70B-Instruct', tokens: '4K' },
+    { name: 'Qwen/Qwen2.5-72B-Instruct', tokens: '4K' },
+  ],
 }
 
 const DEFAULT_ENDPOINTS: Record<string, string> = {
@@ -100,6 +148,17 @@ const DEFAULT_ENDPOINTS: Record<string, string> = {
   lmstudio: 'http://localhost:1234/v1',
   llamacpp: 'http://localhost:8080/v1',
   custom: '',
+  stepfun: 'https://api.stepfun.com/v1',
+  zai: 'https://api.zai.com/v1',
+  copilot: 'https://api.githubcopilot.com',
+  xai: 'https://api.x.ai/v1',
+  mistral: 'https://api.mistral.ai/v1',
+  perplexity: 'https://api.perplexity.ai',
+  cohere: 'https://api.cohere.com/v2',
+  nvidia: 'https://integrate.api.nvidia.com/v1',
+  xiaomi: 'https://api.xiaomi.com/v1',
+  huggingface: 'https://api-inference.huggingface.co',
+  kilocode: 'https://api.kilocode.com/v1',
 }
 
 export default function ModelSettings({ onBack }: Props) {

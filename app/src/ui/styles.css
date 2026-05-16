@@ -449,3 +449,90 @@ html, body, #root {
 .password {
   font-family: monospace; letter-spacing: 2px;
 }
+
+/* ── 动画增强（2026-05-16）───────────────── */
+
+/* 页面切换淡入 */
+.settings-container, .settings-view, .persona-view {
+  animation: fadeSlideIn 0.25s ease-out;
+}
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 按钮统一动效 */
+button, .setting-item, .tag, .persona-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+button:active, .setting-item:active {
+  transform: scale(0.96);
+}
+button:hover {
+  filter: brightness(1.1);
+}
+
+/* 设置项卡片悬浮 */
+.setting-item:hover {
+  background: var(--bg-card);
+  box-shadow: 0 2px 8px rgba(233, 69, 96, 0.1);
+}
+
+/* 选项按钮选中动画 */
+.setting-options button.active {
+  animation: popIn 0.2s ease-out;
+}
+@keyframes popIn {
+  0% { transform: scale(0.9); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* 展开收起动画 */
+.setting-section > div[style*="grid"],
+.setting-section > div[style*="flex"] {
+  animation: expandIn 0.2s ease-out;
+}
+@keyframes expandIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
+}
+
+/* 消息气泡入场 */
+.message {
+  animation: bubbleIn 0.3s ease-out;
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 搜索引擎标签选中 */
+.search-engine-tag.selected {
+  animation: popIn 0.15s ease-out;
+  background: var(--accent);
+  color: white;
+}
+
+/* Provider 卡片选中脉冲 */
+.provider-card.active {
+  box-shadow: 0 0 0 2px var(--accent), 0 0 12px rgba(233, 69, 96, 0.3);
+}
+
+/* 输入框聚焦光晕 */
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.3);
+  transition: box-shadow 0.2s;
+}
+
+/* 骨架屏加载 */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-card) 50%, var(--bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

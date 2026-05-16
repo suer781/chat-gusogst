@@ -53,3 +53,7 @@ export function registerProvider(p: ProviderAdapter) {
 }
 
 export { findPreset, PROVIDER_PRESETS, type ProviderPreset }
+export { fetchModels, fetchChatModels } from './fetch-models'
+export type { FetchedModel } from './fetch-models'
+
+export type { ApiType } from './fetch-models'

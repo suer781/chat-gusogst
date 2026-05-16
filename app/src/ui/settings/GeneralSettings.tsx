@@ -64,7 +64,7 @@ export default function GeneralSettings({ onBack }: Props) {
           <label>字体大小: {currentFontSize}px</label>
           <div className="setting-options">
             {FONT_SIZES.map((f) => (
-              <button key={f.value} className={currentFontSize === Number(f.value) ? 'active' : ''} onClick={() => setCurrentFontSize(f.value as any)}>{f.label}</button>
+              <button key={f.value} className={Number(currentFontSize) === Number(f.value) ? 'active' : ''} onClick={() => setCurrentFontSize(f.value as any)}>{f.label}</button>
             ))}
           </div>
         </div>
