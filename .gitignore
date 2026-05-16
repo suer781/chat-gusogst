@@ -1,5 +1,4 @@
 chatbox-frontend/
-hermes-backend/
 app/node_modules/
 app/dist/
 app/.vite/
@@ -11,10 +10,11 @@ android-app/
 chatbox-upstream/
 app/src/agent/providers/openai.ts.bak
 _gen.py
-chatbox-frontend/
-hermes-backend/
-app/node_modules/
-app/dist/
-app/.vite/
-*.log
-.DS_Store
+
+# hermes-backend: 忽略大部分，只跟踪核心文件
+hermes-backend/*
+!hermes-backend/agent/
+!hermes-backend/agent/endpoint_prober.py
+!hermes-backend/agent/endpoint_integration.py
+!hermes-backend/tests/
+!hermes-backend/tests/test_endpoint_prober.py
