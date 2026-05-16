@@ -1,75 +1,80 @@
+/**
+ * 搜索工具 — 支持 Tavily / DuckDuckGo / 百度
+ * 基于 Hermes websearch.py 重写
+ */
 import { ToolRegistry } from './registry'
-import { SearchDispatcher } from '../../search/dispatcher'
-import type { SearchOptions } from '../../search/types'
 
-const searchInputSchema = {
-  type: 'object' as const,
-  properties: {
-    query: {
-      type: 'string',
-      description: '搜索关键词（支持中英文）'
+export function registerSearchTools(registry: ToolRegistry, config: {
+  engine: string
+  apiKey?: string
+}) {
+  registry.register(
+    {
+      type: 'function',
+      function: {
+        name: 'web_search',
+        description: '搜索互联网获取实时信息。当用户询问新闻、实时数据、你不了解的信息时使用。',
+        parameters: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: '搜索关键词' },
+            max_results: { type: 'number', description: '返回结果数量，默认5' },
+          },
+          required: ['query'],
+        },
+      },
     },
-    count: {
-      type: 'number',
-      description: '返回结果数量，默认 5',
-      default: 5
-    },
-    timeRange: {
-      type: 'string',
-      enum: ['day', 'week', 'month', 'year'],
-      description: '时间范围过滤'
-    },
-    language: {
-      type: 'string',
-      enum: ['zh', 'en'],
-      description: "语言偏好，如 'zh' 或 'en'"
-    }
-  },
-  required: ['query']
-}
+    async (_name: string, args: Record<string, unknown>) => {
+      const query = args.query as string
+      const maxResults = (args.max_results as number) || 5
 
-/** 创建搜索工具 */
-function createSearchTool(dispatcher: SearchDispatcher) {
-  return {
-    name: 'search',
-    description: '联网搜索：搜索互联网获取实时信息（新闻、百科、技术文档等）',
-    parameters: searchInputSchema,
-    execute: async (args: Record<string, unknown>) => {
       try {
-        const query = String(args.query ?? '')
-        const options: SearchOptions = {
-          count: typeof args.count === 'number' ? args.count : 5,
-          timeRange: args.timeRange as 'day' | 'week' | 'month' | 'year' | undefined,
-          language: args.language as string | undefined
+        if (config.engine === 'tavily' && config.apiKey) {
+          return await searchTavily(query, config.apiKey, maxResults)
         }
-        const results = await dispatcher.search(query, options)
-        return formatResults(results)
-      } catch (err) {
-        return `搜索失败: ${String(err)}`
+        return await searchDuckDuckGo(query, maxResults)
+      } catch (err: any) {
+        return JSON.stringify({ error: err.message })
       }
-    }
-  }
+    },
+  )
 }
 
-function formatResults(results: Array<{ title: string; url: string; snippet: string; source?: string }>): string {
-  if (!results.length) return '未找到相关结果'
-  return results.map((r, i) =>
-    `${i + 1}. ${r.title}\n   ${r.url}\n   ${r.snippet}${r.source ? `\n   来源: ${r.source}` : ''}`
-  ).join('\n\n')
+async function searchTavily(query: string, apiKey: string, maxResults: number): Promise<string> {
+  const resp = await fetch('https://api.tavily.com/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      api_key: apiKey,
+      query,
+      max_results: maxResults,
+      include_answer: true,
+    }),
+  })
+  if (!resp.ok) throw new Error(`Tavily error: ${resp.status}`)
+  const data = await resp.json()
+  const results = (data.results || []).map((r: any) => ({
+    title: r.title,
+    url: r.url,
+    snippet: r.content?.slice(0, 200),
+  }))
+  return JSON.stringify({ answer: data.answer, results })
 }
 
-/** 注册搜索工具到 ToolRegistry */
-export function registerSearchTools(
-  registry: ToolRegistry,
-  options: { engine?: string; apiKey?: string } = {}
-): void {
-  const dispatcherOpts: Record<string, unknown> = {}
-  if (options.engine && options.apiKey) {
-    dispatcherOpts.engineConfigs = {
-      [options.engine]: { id: options.engine, name: options.engine, apiKey: options.apiKey }
+async function searchDuckDuckGo(query: string, maxResults: number): Promise<string> {
+  // DuckDuckGo Instant Answer API (免费，无需 key)
+  const params = new URLSearchParams({ q: query, format: 'json', no_html: '1', skip_disambig: '1' })
+  const resp = await fetch(`https://api.duckduckgo.com/?${params}`)
+  if (!resp.ok) throw new Error(`DuckDuckGo error: ${resp.status}`)
+  const data = await resp.json()
+  const results: Array<{ title: string; snippet: string }> = []
+  if (data.Abstract) {
+    results.push({ title: data.Heading || query, snippet: data.Abstract })
+  }
+  for (const topic of (data.RelatedTopics || []).slice(0, maxResults)) {
+    if (topic.Text) {
+      results.push({ title: topic.Text?.slice(0, 80), snippet: topic.Text })
     }
   }
-  const dispatcher = new SearchDispatcher(dispatcherOpts)
-  const tool = createSearchTool(dispatcher)
-  registry.register(tool.name, tool.description, tool.parameters as any, tool.execute)
+  return JSON.stringify({ results })
 }

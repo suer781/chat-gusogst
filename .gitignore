@@ -11,3 +11,10 @@ android-app/
 chatbox-upstream/
 app/src/agent/providers/openai.ts.bak
 _gen.py
+chatbox-frontend/
+hermes-backend/
+app/node_modules/
+app/dist/
+app/.vite/
+*.log
+.DS_Store

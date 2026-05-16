@@ -1,22 +1,13 @@
 /**
  * Anthropic Claude Provider
  */
-import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../../shared/types'
+import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../../shared/agent-types'
 
 export class AnthropicProvider implements ProviderAdapter {
-  readonly displayName = 'Anthropic'
-  readonly apiMode = 'anthropic_messages' as const
-  readonly authType = 'api_key' as const
-  readonly name: string
-  readonly baseUrl: string
-
-  constructor(name = 'anthropic', baseUrl = 'https://api.anthropic.com') {
-    this.name = name
-    this.baseUrl = baseUrl
-  }
+  readonly name = 'anthropic'
 
   private getEndpoint(config: ModelConfig): string {
-    const host = (config.apiHost || this.baseUrl).replace(/\/+$/, '')
+    const host = (config.apiHost || 'https://api.anthropic.com').replace(/\/+$/, '')
     return `${host}/v1/messages`
   }
 
@@ -57,9 +48,9 @@ export class AnthropicProvider implements ProviderAdapter {
   private convertTools(tools?: ToolDefinition[]): unknown[] | undefined {
     if (!tools?.length) return undefined
     return tools.map(t => ({
-      name: t.name,
-      description: t.description,
-      input_schema: t.parameters,
+      name: t.function.name,
+      description: t.function.description,
+      input_schema: t.function.parameters,
     }))
   }
 
@@ -98,53 +89,12 @@ export class AnthropicProvider implements ProviderAdapter {
         })
       }
     }
-    return { id: crypto.randomUUID(), role: 'assistant', content: text ?? '', tool_calls: toolCalls?.length ? toolCalls : undefined, timestamp: Date.now() }
+    return { role: 'assistant', content: text || null, tool_calls: toolCalls?.length ? toolCalls : undefined, timestamp: Date.now() }
   }
 
   async *chatStream(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): AsyncGenerator<string> {
-    const endpoint = this.getEndpoint(config)
-    const body: Record<string, unknown> = {
-      model: config.model,
-      max_tokens: config.maxTokens ?? 4096,
-      messages: this.convertMessages(messages),
-      stream: true
-    }
-    if (config.temperature !== undefined) body.temperature = config.temperature
-    if (config.systemPrompt) body.system = config.systemPrompt
-    if (tools && tools.length > 0) body.tools = this.convertTools(tools)
-
-    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' }
-    if (config.apiKey) headers['x-api-key'] = config.apiKey
-
-    const resp = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) })
-    if (!resp.ok) throw new Error(`Anthropic stream error ${resp.status}: ${await resp.text()}`)
-    if (!resp.body) throw new Error('No response body for streaming')
-
-    const reader = resp.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() ?? ''
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          const data = line.slice(6).trim()
-          if (data === '[DONE]') return
-          try {
-            const evt = JSON.parse(data)
-            if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
-              yield evt.delta.text
-            }
-          } catch { /* skip malformed SSE lines */ }
-        }
-      }
-    } finally {
-      reader.releaseLock()
-    }
+    // Anthropic SSE streaming — simplified, expand as needed
+    const result = await this.chat(messages, config, tools)
+    if (result.content) yield result.content
   }
 }

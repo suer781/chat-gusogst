@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useSettingsStore, useChatStore } from './stores'
 import { ChatView } from './chat/ChatView'
-import SettingsView from './settings/SettingsView'
-import PersonaView from './persona/PersonaView'
-import { MemoryView } from './memory/MemoryView'
+import { SettingsView } from './settings/SettingsView'
+import { PersonaView } from './persona/PersonaView'
 
-type View = 'chat' | 'settings' | 'persona' | 'memory'
+type View = 'chat' | 'settings' | 'persona'
 
 export default function App() {
   const [view, setView] = useState<View>('chat')
@@ -26,15 +25,14 @@ export default function App() {
 
   // 未配置 API Key 时强制跳到设置
   if (!config.model.apiKey) {
-    return <SettingsView />
+    return <SettingsView onDone={() => setView('chat')} />
   }
 
   return (
     <div className="app">
-      {view === 'chat' && <ChatView onOpenSettings={() => setView('settings')} onOpenPersona={() => setView('persona')} onOpenMemory={() => setView('memory')} />}
-      {view === 'settings' && <SettingsView />}
+      {view === 'chat' && <ChatView onOpenSettings={() => setView('settings')} onOpenPersona={() => setView('persona')} />}
+      {view === 'settings' && <SettingsView onDone={() => setView('chat')} />}
       {view === 'persona' && <PersonaView onDone={() => setView('chat')} />}
-      {view === 'memory' && <MemoryView onDone={() => setView('chat')} />}
     </div>
   )
 }

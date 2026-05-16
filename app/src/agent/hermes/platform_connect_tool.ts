@@ -1,63 +1,63 @@
-import { identifyPlatform } from './platform_keywords'
-import type { PlatformInfo } from './types'
-import { PLATFORM_PRESETS } from './types'
-import { getConnectablePlatforms } from './connector'
-import { getChaquopyClient } from './chaquopy'
+import type { ToolDefinition } from '../../shared/agent-types'
+import { matchPlatform, getConnectablePlatforms } from './connector'
+import type { HermesBridge } from './bridge'
 
-export function createPlatformConnectTool() {
+export function createPlatformConnectTool(bridge?: HermesBridge) {
   return {
-    name: 'platform_connect',
-    description: '连接社交平台，当用户想在某个平台联系你时调用',
-    parameters: {
-      type: 'object' as const,
-      properties: {
-        platform: { type: 'string', description: '平台标识' },
-        action: { type: 'string', enum: ['connect', 'disconnect', 'status'], default: 'connect' },
+    definition: {
+      type: 'function' as const,
+      function: {
+        name: 'platform_connect',
+        description: '引导用户连接社交平台（微信、QQ、Telegram、飞书、Discord、钉钉）。当用户说「加微信」「加QQ」「连接xx」时调用。返回步骤数据，用你的语气引导用户。',
+        parameters: {
+          type: 'object',
+          properties: {
+            platform: {
+              type: 'string',
+              description: '平台名：qq/weixin/telegram/feishu/discord/dingtalk，或用户原话',
+            },
+            action: {
+              type: 'string',
+              enum: ['get_steps', 'list_platforms', 'check_status'],
+              description: 'get_steps=获取步骤, list_platforms=列出平台, check_status=查状态',
+            },
+          },
+          required: ['action'],
+        },
       },
     },
-    execute: async (args: Record<string, unknown>) => {
-      const chaquopy = getChaquopyClient()
-      const action = String(args.action || 'connect')
-      const platform = args.platform as string | undefined
-      if (!platform) {
-        const platforms = getConnectablePlatforms()
-        return JSON.stringify({
-          status: 'need_platform',
-          message: '请告诉我要连接哪个平台',
-          available: platforms.map(p => ({ id: p.platform, name: p.displayName, icon: p.icon })),
-        })
-      }
-      const preset = PLATFORM_PRESETS[platform]
-      if (!preset) return JSON.stringify({ status: 'error', message: '不支持平台：' + platform })
-      try {
-        switch (action) {
-          case 'connect': {
-            const result = await chaquopy.connectPlatform(platform)
-            return JSON.stringify({ status: 'connected', platform: preset.displayName, icon: preset.icon, detail: result })
-          }
-          case 'disconnect': {
-            await chaquopy.disconnectPlatform(platform)
-            return JSON.stringify({ status: 'disconnected', platform: preset.displayName })
-          }
-          case 'status': {
-            const allStatus = await chaquopy.getPlatformStatus()
-            return JSON.stringify({ status: allStatus[platform] ? 'connected' : 'disconnected', platform: preset.displayName })
-          }
-          default:
-            return JSON.stringify({ status: 'error', message: '未知操作：' + action })
+
+    handler: async (_name: string, args: any) => {
+      const { action, platform } = args
+
+      if (action === 'list_platforms') {
+        return {
+          platforms: getConnectablePlatforms().map(f => ({
+            name: f.platform,
+            displayName: f.displayName,
+            icon: f.icon,
+          })),
         }
-      } catch (e: any) {
-        return JSON.stringify({ status: 'error', message: e.message })
       }
-    }
+
+      if (action === 'check_status') {
+        if (!bridge) return { error: 'Hermes not started' }
+        try {
+          const platforms = await bridge.getPlatforms()
+          return {
+            connected: platforms.filter(p => p.connected),
+            available: platforms.filter(p => !p.connected),
+          }
+        } catch (e: any) {
+          return { error: e.message }
+        }
+      }
+
+      const flow = matchPlatform(platform ?? '')
+      if (!flow) {
+        return { supported: ['qq', 'weixin', 'telegram', 'feishu', 'discord', 'dingtalk'] }
+      }
+      return { platform: flow.displayName, icon: flow.icon, steps: flow.steps }
+    },
   }
 }
-
-export function registerPlatformConnectTools(registry: { register: Function }) {
-  const tool = createPlatformConnectTool()
-  registry.register(tool.name, tool.description, tool.parameters, tool.execute)
-}
-
-export { getConnectablePlatforms, matchPlatform } from './connector'
-export { PLATFORM_PRESETS } from './types'
-export type { PlatformInfo } from './types'
