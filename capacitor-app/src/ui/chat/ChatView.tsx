@@ -169,7 +169,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
       </div>
 
       {/* ─── 消息列表 ─── */}
-      <div className="flex-1 overflow-y-auto" style={{ padding: '16px' }}>
+      <div className="flex-1 overflow-y-auto" style={{ padding: '16px', overscrollBehavior: 'contain' }}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full" style={{ color: '#444' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>✦</div>

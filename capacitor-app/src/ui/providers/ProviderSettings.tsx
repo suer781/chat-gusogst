@@ -78,7 +78,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
           <input type="text" placeholder={t('provider.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full outline-none" style={{ background: '#1a1a3a', border: '1px solid #2a2a4a', borderRadius: 10, padding: '8px 12px 8px 36px', fontSize: 14, color: '#e0e0e0' }} />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto" style={{ padding: '8px 16px' }}>
+      <div className="flex-1 overflow-y-auto" style={{ padding: "8px 16px", overscrollBehavior: "contain" }}>
         {filtered.map((p) => {
           const expanded = expandedId === p.id; const hasKey = !!apiKeys[p.id]; const isSelected = currentModel.provider === p.id
           return (

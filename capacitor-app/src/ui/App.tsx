@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { initApp } from './init'
 import { useSettingsStore } from './stores'
 import { ChatView } from './chat/ChatView'
 import { SettingsView } from './settings/SettingsView'
@@ -7,6 +8,7 @@ import PersonaProfileView from './persona/PersonaProfileView'
 import { ProviderSettings } from './providers/ProviderSettings'
 import { ChevronLeft, Settings, MessageSquare, Users, Server } from 'lucide-react'
 import { t, onLangChange } from './i18n'
+import TestDisclaimer from './components/TestDisclaimer'
 
 type View = 'chat' | 'settings' | 'persona' | 'personaProfile' | 'providers'
 
@@ -19,7 +21,7 @@ export default function App() {
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 
   const viewTitles: Record<View, string> = {
-    chat: persona.name,
+    chat: t('nav.chat'),
     settings: t('nav.settings'),
     persona: t('nav.persona'),
     providers: t('nav.providers'),
@@ -27,14 +29,14 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col" style={{ background: '#0f0f23', color: '#e0e0e0' }}>
-      <header className="shrink-0 flex items-center" style={{ height: 48, padding: '0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
-        {view !== 'chat' ? (
-          <button onClick={() => setView('chat')} className="flex items-center gap-1" style={{ color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: '#0f0f23', color: '#e0e0e0', overflow: 'hidden' }}>
+      <header style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
+        {view === 'personaProfile' ? (
+          <button onClick={() => setView('chat')} style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
           </button>
         ) : <div style={{ width: 60 }} />}
-        <div className="flex-1 text-center" style={{ fontSize: 16, fontWeight: 600 }}>{viewTitles[view]}</div>
+        <div style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{viewTitles[view]}</div>
         {view === 'chat' ? (
           <button onClick={() => setView('settings')} style={{ color: '#8888aa', background: 'none', border: 'none', cursor: 'pointer' }}>
             <Settings size={20} />
@@ -42,12 +44,7 @@ export default function App() {
         ) : <div style={{ width: 60 }} />}
       </header>
 
-      {/* ⚠️ 测试版声明 - 非最终发布版本 */}
-      <div style={{ background: '#e94560', color: '#fff', textAlign: 'center', padding: '4px 8px', fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>
-        ⚠️ 测试版 · 非最终发布版本 · 仅供测试评估
-      </div>
-
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {view === 'chat' && <ChatView onNavigate={setView} />}
         {view === 'settings' && <SettingsView onDone={() => setView('chat')} />}
         {view === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}
@@ -55,18 +52,21 @@ export default function App() {
         {view === 'providers' && <ProviderSettings onDone={() => setView('settings')} />}
       </div>
 
-      <nav className="shrink-0 flex items-center justify-around" style={{ height: 56, paddingBottom: 'env(safe-area-inset-bottom)', background: '#0a0a1a', borderTop: '1px solid #1a1a3a' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexShrink: 0, height: 56, paddingBottom: 'env(safe-area-inset-bottom, 0px)', background: '#0a0a1a', borderTop: '1px solid #1a1a3a' }}>
         {[{ id: 'chat' as View, icon: MessageSquare, labelKey: 'nav.chat' },
           { id: 'persona' as View, icon: Users, labelKey: 'nav.persona' },
           { id: 'providers' as View, icon: Server, labelKey: 'nav.providers' },
           { id: 'settings' as View, icon: Settings, labelKey: 'nav.settings' }].map((item) => (
-          <button key={item.id} onClick={() => setView(item.id)} className="flex flex-col items-center gap-0.5"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', color: view === item.id ? '#e94560' : '#666688' }}>
+          <button key={item.id} onClick={() => setView(item.id)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', color: view === item.id ? '#e94560' : '#666688' }}>
             <item.icon size={20} />
             <span style={{ fontSize: 10 }}>{t(item.labelKey)}</span>
           </button>
         ))}
       </nav>
+
+      <TestDisclaimer />
     </div>
   )
 }
+// rebuild trigger $(date)
