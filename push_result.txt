@@ -1,5 +1,3 @@
-Trying: https://ghfast.top/https://github.com/suer781/chat-gusogst.git
+push_result.txt
 To https://ghfast.top/https://github.com/suer781/chat-gusogst.git
-   5db8743..33d91c7  main -> main
-SUCCESS: https://ghfast.top/https://github.com/suer781/chat-gusogst.git
-DONE
+   33d91c7..7534fee  main -> main
