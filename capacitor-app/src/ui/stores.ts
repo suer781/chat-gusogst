@@ -50,6 +50,16 @@ export type SettingsState = {
   setShowMemoryHints: (v: boolean) => void
   setShowSearchSources: (v: boolean) => void
   setShowErrorDetails: (v: boolean) => void
+  themeMode: string
+  setThemeMode: (m: string) => void
+  fontSize: number
+  setFontSize: (s: number) => void
+  eyeCareEnabled: boolean
+  setEyeCareEnabled: (v: boolean) => void
+  eyeCareColors: Record<string, string>
+  setEyeCareColors: (c: Record<string, string>) => void
+  glassEnabled: boolean
+  setGlassEnabled: (v: boolean) => void
 }
 
 export const useSettingsStore = create<SettingsState>()((set) => ({
@@ -67,6 +77,11 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
     showSearchSources: false,
     showErrorDetails: false,
   },
+  themeMode: 'dark',
+  fontSize: 14,
+  eyeCareEnabled: false,
+  eyeCareColors: { white: '#F5F0E8', lightGray: '#D4C9B8', darkGray: '#1A1A1A', black: '#000000' },
+  glassEnabled: true,
   language: 'zh' as Lang,
   setModel: (provider, model, apiKey, baseUrl) => set((s) => ({ config: { ...s.config, model: { ...s.config.model, provider, model, ...(apiKey !== undefined ? { apiKey } : {}), ...(baseUrl !== undefined ? { baseUrl } : {}) } } })),
   setApiKey: (key) => set((s) => ({ config: { ...s.config, model: { ...s.config.model, apiKey: key } } })),
@@ -82,6 +97,11 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   setShowMemoryHints: (v) => set((s) => ({ config: { ...s.config, showMemoryHints: v } })),
   setShowSearchSources: (v) => set((s) => ({ config: { ...s.config, showSearchSources: v } })),
   setShowErrorDetails: (v) => set((s) => ({ config: { ...s.config, showErrorDetails: v } })),
+  setThemeMode: (m) => set({ themeMode: m }),
+  setFontSize: (s) => set({ fontSize: s }),
+  setEyeCareEnabled: (v) => set({ eyeCareEnabled: v }),
+  setEyeCareColors: (c) => set({ eyeCareColors: c }),
+  setGlassEnabled: (v) => set({ glassEnabled: v }),
   setLanguage: (lang) => {
     setLang(lang)
     notifyLangChange()
