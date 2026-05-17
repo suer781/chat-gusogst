@@ -30,7 +30,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col" style={{ background: '#0f0f23', color: '#e0e0e0' }}>
+    <div className="flex flex-col" style={{ height: "100dvh", background: "#0f0f23", color: "#e0e0e0" }}>
       <header className="shrink-0 flex items-center" style={{ height: 48, padding: '0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
         {view === 'personaProfile' ? (
           <button onClick={() => setView('chat')} className="flex items-center gap-1" style={{ color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
@@ -53,7 +53,7 @@ export default function App() {
         {view === 'providers' && <ProviderSettings onDone={() => setView('settings')} />}
       </div>
 
-      <nav className="shrink-0 flex items-center justify-around" style={{ height: 56, background: '#0a0a1a', borderTop: '1px solid #1a1a3a' }}>
+      <nav className="shrink-0 flex items-center justify-around" style={{ height: 56, paddingBottom: "env(safe-area-inset-bottom, 0px)", background: "#0a0a1a", borderTop: "1px solid #1a1a3a" }}>
         {[{ id: 'chat' as View, icon: MessageSquare, labelKey: 'nav.chat' },
           { id: 'persona' as View, icon: Users, labelKey: 'nav.persona' },
           { id: 'providers' as View, icon: Server, labelKey: 'nav.providers' },

@@ -22,7 +22,7 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 
   return (
-    <div className="h-full overflow-y-auto" style={{ background: '#0f0f23' }}>
+    <div className="h-full overflow-y-auto" style={{ background: "#0f0f23", overscrollBehavior: "contain" }}>
       <div style={{ padding: 16 }}>
 
         {/* Language */}

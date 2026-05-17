@@ -35,7 +35,7 @@ export function PersonaView({ onDone, onProfile }: { onDone: () => void; onProfi
           <input type="text" placeholder={t('persona.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full outline-none" style={{ background: '#1a1a3a', border: '1px solid #2a2a4a', borderRadius: 10, padding: '8px 12px 8px 36px', fontSize: 14, color: '#e0e0e0' }} />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto" style={{ padding: '12px 16px' }}>
+      <div className="flex-1 overflow-y-auto" style={{ padding: "12px 16px", overscrollBehavior: "contain" }}>
         {filtered.map((p) => (
           <button key={p.id} onClick={() => select(p)} className="w-full flex items-center gap-3" style={{ background: current.id === p.id ? '#e9456010' : '#1a1a3a', border: '1px solid ' + (current.id === p.id ? '#e9456040' : '#2a2a4a'), borderRadius: 12, padding: '12px 16px', marginBottom: 8, cursor: 'pointer', color: '#e0e0e0', textAlign: 'left' }}>
             <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 40, height: 40, background: current.id === p.id ? '#e9456020' : '#2a2a4a', color: current.id === p.id ? '#e94560' : '#8888aa', fontSize: 16, fontWeight: 600 }}>{p.name[0]}</div>
