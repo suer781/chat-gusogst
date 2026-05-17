@@ -3,13 +3,8 @@
  * Lightweight JSON-RPC 2.0 based protocol for tool integration
  */
 
-export interface MCPServerConfig {
-  name: string
-  url: string
-  headers?: Record<string, string>
-  enabled?: boolean
-  timeout?: number  // ms, default 30000
-}
+import type { MCPServerConfig } from '../../shared/agent-types'
+export type { MCPServerConfig }
 
 export interface MCPToolDefinition {
   name: string

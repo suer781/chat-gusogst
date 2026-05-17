@@ -1,4 +1,5 @@
 import { ToolRegistry } from './registry'
+import type { SearchConfig } from '../../shared/types'
 
 interface SearchResult {
   title: string
@@ -11,12 +12,7 @@ interface SearchResponse {
   results: SearchResult[]
 }
 
-export type SearchEngine = 'tavily' | 'duckduckgo' | 'auto'
 
-export interface SearchConfig {
-  engine: SearchEngine
-  tavilyApiKey?: string
-}
 
 async function searchTavily(query: string, apiKey: string, maxResults = 5): Promise<SearchResponse> {
   const resp = await fetch('https://api.tavily.com/search', {
