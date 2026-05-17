@@ -29,7 +29,7 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col" style={{ background: '#0f0f23', color: '#e0e0e0' }}>
       <header className="shrink-0 flex items-center" style={{ height: 48, padding: '0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
-        {view !== 'chat' ? (
+        {view === 'personaProfile' ? (
           <button onClick={() => setView('chat')} className="flex items-center gap-1" style={{ color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
           </button>
