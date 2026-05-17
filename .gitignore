@@ -18,3 +18,4 @@ hermes-backend/*
 !hermes-backend/agent/endpoint_integration.py
 !hermes-backend/tests/
 !hermes-backend/tests/test_endpoint_prober.py
+hermes-backend/

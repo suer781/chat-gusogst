@@ -1,30 +1,34 @@
 {
-  "name": "chat-gusogst",
+  "name": "capacitor-app",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
-    "@capacitor/core": "^6.2.0",
-    "@capacitor/android": "^6.2.0",
-    "@capacitor/preferences": "^6.0.2",
-    "@capacitor/filesystem": "^6.0.2",
-    "@capacitor/local-notifications": "^6.1.1",
-    "@capacitor/haptics": "^6.0.2"
+    "@capacitor/android": "7.2.0",
+    "@capacitor/app": "7.0.1",
+    "@capacitor/core": "7.2.0",
+    "@capacitor/haptics": "7.0.1",
+    "@capacitor/keyboard": "7.0.2",
+    "@capacitor/status-bar": "7.0.1",
+    "lucide-react": "0.469.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-markdown": "10.1.0",
+    "zustand": "5.0.5"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.6.3",
-    "vite": "^6.0.3",
-    "@capacitor/cli": "^6.2.0"
+    "@capacitor/cli": "7.2.0",
+    "@tailwindcss/vite": "4.1.4",
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2",
+    "@vitejs/plugin-react": "4.4.1",
+    "tailwindcss": "4.1.4",
+    "typescript": "5.8.3",
+    "vite": "6.3.2"
   }
 }
