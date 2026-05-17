@@ -19,3 +19,29 @@ hermes-backend/*
 !hermes-backend/tests/
 !hermes-backend/tests/test_endpoint_prober.py
 hermes-backend/
+
+# Build artifacts
+*.apk
+*.jks
+keystore.properties
+ci_logs/
+ci_logs.zip
+check_ci*.py
+download_apk.sh
+download_result.txt
+push_fix.sh
+push_result.txt
+__pycache__/
+
+# Build artifacts
+*.apk
+*.jks
+keystore.properties
+ci_logs/
+ci_logs.zip
+check_ci*.py
+download_apk.sh
+download_result.txt
+push_fix.sh
+push_result.txt
+__pycache__/

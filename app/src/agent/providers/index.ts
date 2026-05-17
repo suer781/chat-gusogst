@@ -1,4 +1,5 @@
 import type { ProviderAdapter } from '../../shared/types'
+export type { ProviderAdapter, ModelConfig, Message, ToolDefinition } from '../../shared/types'
 import { OpenAIProvider } from './openai'
 import { AnthropicProvider } from './anthropic'
 

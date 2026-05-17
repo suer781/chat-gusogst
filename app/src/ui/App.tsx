@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { initApp } from './init'
 import { useSettingsStore } from './stores'
 import { ChatView } from './chat/ChatView'
 import { SettingsView } from './settings/SettingsView'
@@ -13,7 +13,6 @@ import TestDisclaimer from './components/TestDisclaimer'
 type View = 'chat' | 'settings' | 'persona' | 'personaProfile' | 'providers'
 
 export default function App() {
-  useLocation()
   const [view, setView] = useState<View>('chat')
   const [selectedPersona, setSelectedPersona] = useState<any>(null)
   const [, forceUpdate] = useState(0)
@@ -30,8 +29,8 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col" style={{ height: "100dvh", background: "#0f0f23", color: "#e0e0e0" }}>
-      <header className="shrink-0 flex items-center" style={{ height: 48, padding: '0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
+    <div className="flex flex-col" style={{ height: "100%", background: "#0f0f23", color: "#e0e0e0" }}>
+      <header className="shrink-0 flex items-center" style={{ height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
         {view === 'personaProfile' ? (
           <button onClick={() => setView('chat')} className="flex items-center gap-1" style={{ color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}

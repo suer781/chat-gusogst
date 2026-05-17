@@ -14,8 +14,15 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
     Keyboard: {
-      resize: 'body',
+      resize: 'none',
       resizeOnFullScreen: true,
+    },
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#0f0f23',
+    },
+    NavigationBar: {
+      color: '#0a0a1a',
     },
   },
 }

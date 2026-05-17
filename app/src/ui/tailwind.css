@@ -1,15 +1,91 @@
 @import "tailwindcss";
 
+/* === Compatibility: Lock viewport, prevent all unwanted gestures === */
 html, body {
-  margin: 0; padding: 0;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
   position: fixed;
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
+  /* Lock font size — prevent system large font from breaking layout */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Prevent tap highlight, double-tap zoom */
   -webkit-tap-highlight-color: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+  touch-action: manipulation;
+  /* Smooth text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Base font */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e0e0e0;
+  background: #0f0f23;
 }
-* { box-sizing: border-box; }
-::-webkit-scrollbar { width: 4px; }
+
+* {
+  box-sizing: border-box;
+  /* Prevent long-press context menu on mobile */
+  -webkit-touch-callout: none;
+}
+
+/* === Root container === */
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* === Only allow vertical scrolling inside designated containers === */
+.overflow-y-auto {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  -webkit-overscroll-behavior: contain;
+}
+
+/* === Prevent text selection on UI elements === */
+nav, button, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* === Allow text selection in message content === */
+.msg-content {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 2px; }
+
+/* === Placeholder color for input === */
+input::placeholder, textarea::placeholder {
+  color: #555577;
+  -webkit-text-fill-color: #555577;
+}
+
+/* === Focus style for inputs === */
+input:focus, textarea:focus {
+  outline: none;
+}
+
+/* === Disable resize on textareas === */
+textarea {
+  resize: none;
+}
+
+/* === Animation: reduce motion if user prefers === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

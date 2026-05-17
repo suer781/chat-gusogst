@@ -1,91 +1,131 @@
-/**
- * Bridge — 连接 UI 和 Agent Core
- * UI 调用 bridge.chat() → Agent.sendMessage() → StreamEvent
- */
 import { Agent } from './agent/core/agent'
-import type { AgentConfig, AgentEvent } from './shared/agent-types'
+import type { AgentConfig, AgentEvent, Message } from './agent/core/agent'
+import type { SearchEngine } from './agent/tools/search'
 
-// UI 侧的事件类型（ChatView 消费）
-type StreamEvent =
+export interface BridgeConfig {
+  model: {
+    provider: string
+    model: string
+    apiKey: string
+    apiHost?: string
+    temperature?: number
+    maxTokens?: number
+  }
+  persona?: {
+    name: string
+    systemPrompt: string
+    avatar?: string
+  }
+  memory?: {
+    enabled: boolean
+  }
+  search?: {
+    engine: SearchEngine
+    tavilyApiKey?: string
+  }
+  mcpServers?: any[]
+}
+
+// Match ChatView's expected event format
+export type StreamEvent =
   | { type: 'text_delta'; data: string }
   | { type: 'thinking'; data: string }
   | { type: 'tool_use'; data: { tool: string; input: any } }
   | { type: 'tool_result'; data: { tool: string; output: string } }
   | { type: 'error'; data: string }
-  | { type: 'done'; data?: any }
+  | { type: 'done' }
 
 class Bridge {
   private agent: Agent | null = null
   private _abortController: AbortController | null = null
 
-  async init(config: any, toolRegistry?: any) {
+  init(config: BridgeConfig) {
     try {
-      // UI config → AgentConfig 映射
       const agentConfig: AgentConfig = {
-        model: {
-          provider: config.model?.provider ?? 'openai',
-          model: config.model?.model ?? 'gpt-4o',
-          apiKey: config.model?.apiKey ?? '',
-          apiHost: config.model?.apiHost ?? config.model?.baseUrl,
-          baseUrl: config.model?.baseUrl,
-          temperature: config.model?.temperature ?? 0.7,
-          maxTokens: config.model?.maxTokens ?? 4096,
-        },
-        persona: config.persona ?? { id: 'default', name: 'Assistant', systemPrompt: 'You are a helpful assistant.', tags: [] },
-        provider: null as any, // Agent.resolveProvider() 会自动解析
-        memory: { enabled: config.memoryEnabled ?? true, maxEntries: config.maxHistoryTokens ?? 50 },
-        memoryEnabled: config.memoryEnabled ?? true,
-        maxRounds: config.maxRounds ?? 5,
-        maxHistoryTokens: config.maxHistoryTokens ?? 8000,
-        searchEnabled: config.searchEnabled ?? false,
-        searchEngine: config.searchEngine ?? 'duckduckgo',
-        searchApiKey: config.searchApiKey,
+        model: config.model,
+        persona: config.persona ? {
+          id: 'default',
+          name: config.persona.name,
+          systemPrompt: config.persona.systemPrompt,
+          avatar: config.persona.avatar || '',
+          tags: [],
+          isDefault: false,
+        } : undefined,
+        memory: config.memory || { enabled: true },
+        search: config.search || { engine: 'auto' },
+        mcpServers: config.mcpServers,
       }
       this.agent = new Agent(agentConfig)
-      console.log('[bridge] Agent initialized')
-    } catch (err: any) {
-      console.error('[bridge] init failed:', err)
+      return true
+    } catch (e) {
+      console.error('Bridge init failed:', e)
       this.agent = null
+      return false
     }
   }
 
-  async *chat(content: string, config?: any): AsyncGenerator<StreamEvent> {
+  async *chat(content: string, cfg?: any): AsyncGenerator<StreamEvent> {
+    // If cfg is passed, re-init with it
+    if (cfg && cfg.model) {
+      this.init(cfg)
+    }
+
     if (!this.agent) {
-      yield { type: 'error', data: 'Agent not initialized. Please configure a model provider first.' }
+      yield { type: 'error', data: 'Agent not initialized' }
       return
     }
+
     this._abortController = new AbortController()
+
     try {
-      for await (const evt of this.agent.sendMessage(content)) {
-        if (this._abortController?.signal.aborted) break
-        // AgentEvent → StreamEvent 映射
-        switch (evt.type) {
+      for await (const event of this.agent.sendMessage(content)) {
+        if (this._abortController.signal.aborted) break
+
+        switch (event.type) {
           case 'token':
-            yield { type: 'text_delta', data: evt.content }
+            yield { type: 'text_delta', data: event.content }
+            break
+          case 'thinking':
+            yield { type: 'thinking', data: event.content }
             break
           case 'tool_call':
-            yield { type: 'tool_use', data: { tool: evt.name, input: evt.args } }
+            yield {
+              type: 'tool_use',
+              data: {
+                tool: event.name,
+                input: typeof event.arguments === 'string' ? JSON.parse(event.arguments || '{}') : event.arguments,
+              },
+            }
             break
           case 'tool_result':
-            yield { type: 'tool_result', data: { tool: evt.name, output: evt.content } }
+            yield {
+              type: 'tool_result',
+              data: { tool: event.name, output: event.result },
+            }
             break
           case 'error':
-            yield { type: 'error', data: evt.error }
+            yield { type: 'error', data: event.error }
             break
           case 'done':
             yield { type: 'done' }
             break
         }
       }
-    } catch (err: any) {
-      yield { type: 'error', data: err.message || 'Agent error' }
+    } catch (e: any) {
+      if (!this._abortController.signal.aborted) {
+        yield { type: 'error', data: e.message }
+      }
+    } finally {
+      this._abortController = null
     }
   }
 
   abort() {
     this._abortController?.abort()
-    this._abortController = null
+    this.agent?.abort()
   }
+
+  getAgent() { return this.agent }
 }
 
 export const bridge = new Bridge()

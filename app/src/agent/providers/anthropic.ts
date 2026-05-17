@@ -1,52 +1,53 @@
-/**
- * Anthropic Claude Provider
- */
-import type { Message, ModelConfig, ProviderAdapter, ToolDefinition } from '../../shared/types'
+import type { ProviderAdapter, ModelConfig, Message, ToolDefinition } from '../../shared/types'
 
 export class AnthropicProvider implements ProviderAdapter {
-  readonly name = 'anthropic'
+  name = 'anthropic'
 
   private getEndpoint(config: ModelConfig): string {
-    const host = (config.apiHost || 'https://api.anthropic.com').replace(/\/+$/, '')
-    return `${host}/v1/messages`
+    const host = (config.apiHost || 'https://api.anthropic.com').replace(/\/$/, '')
+    return host + '/v1/messages'
   }
 
-  private convertMessages(messages: Message[]): { system?: string; messages: unknown[] } {
+  private convertMessages(messages: Message[]): { system?: string; messages: any[] } {
     let system: string | undefined
-    const converted: unknown[] = []
-    for (const m of messages) {
-      if (m.role === 'system') {
-        system = m.content ?? undefined
+    const converted: any[] = []
+
+    for (const msg of messages) {
+      if (msg.role === 'system') {
+        system = (system ? system + '\n' : '') + msg.content
         continue
       }
-      if (m.role === 'tool') {
+      if (msg.role === 'tool') {
         converted.push({
           role: 'user',
-          content: [{ type: 'tool_result', tool_use_id: m.tool_call_id, content: m.content }],
+          content: [{
+            type: 'tool_result',
+            tool_use_id: msg.tool_call_id,
+            content: msg.content,
+          }],
         })
         continue
       }
-      const msg: Record<string, unknown> = { role: m.role }
-      if (m.tool_calls && m.tool_calls.length > 0) {
-        const parts: unknown[] = []
-        if (m.content) parts.push({ type: 'text', text: m.content })
-        for (const tc of m.tool_calls) {
-          parts.push({
-            type: 'tool_use', id: tc.id, name: tc.function.name,
-            input: JSON.parse(tc.function.arguments),
-          })
+      if (msg.role === 'assistant' && msg.tool_calls) {
+        const content: any[] = []
+        if (msg.content) content.push({ type: 'text', text: msg.content })
+        for (const tc of msg.tool_calls) {
+          let parsed: any
+          try { parsed = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : tc.function.arguments }
+          catch { parsed = {} }
+          content.push({ type: 'tool_use', id: tc.id, name: tc.function.name, input: parsed })
         }
-        msg.content = parts
-      } else {
-        msg.content = m.content
+        converted.push({ role: 'assistant', content })
+        continue
       }
-      converted.push(msg)
+      converted.push({ role: msg.role, content: msg.content })
     }
+
     return { system, messages: converted }
   }
 
-  private convertTools(tools?: ToolDefinition[]): unknown[] | undefined {
-    if (!tools?.length) return undefined
+  private convertTools(tools?: ToolDefinition[]): any[] | undefined {
+    if (!tools || tools.length === 0) return undefined
     return tools.map(t => ({
       name: t.function.name,
       description: t.function.description,
@@ -55,11 +56,11 @@ export class AnthropicProvider implements ProviderAdapter {
   }
 
   async chat(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): Promise<Message> {
-    const { system, messages: msgs } = this.convertMessages(messages)
-    const body: Record<string, unknown> = {
+    const { system, messages: convertedMsgs } = this.convertMessages(messages)
+    const body: any = {
       model: config.model,
-      messages: msgs,
-      max_tokens: config.maxTokens ?? 8192,
+      messages: convertedMsgs,
+      max_tokens: config.maxTokens || 4096,
     }
     if (system) body.system = system
     if (config.temperature != null) body.temperature = config.temperature
@@ -70,30 +71,47 @@ export class AnthropicProvider implements ProviderAdapter {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': config.apiKey ?? '',
+        'x-api-key': config.apiKey || '',
         'anthropic-version': '2023-06-01',
-      },
+      } as any,
       body: JSON.stringify(body),
     })
-    if (!resp.ok) throw new Error(`[anthropic] ${resp.status}: ${await resp.text()}`)
+    if (!resp.ok) {
+      const err = await resp.text().catch(() => '')
+      throw new Error('Anthropic error ' + resp.status + ': ' + err)
+    }
     const data = await resp.json()
+
+    const result: Message = {
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+    }
+
     const contentBlocks = data.content || []
-    let text = ''
-    const toolCalls: Message['tool_calls'] = []
+    const toolCalls: any[] = []
+
     for (const block of contentBlocks) {
-      if (block.type === 'text') text += block.text
-      if (block.type === 'tool_use') {
-        toolCalls!.push({
-          id: block.id, type: 'function',
-          function: { name: block.name, arguments: JSON.stringify(block.input) },
+      if (block.type === 'text') {
+        result.content += block.text
+      } else if (block.type === 'tool_use') {
+        toolCalls.push({
+          id: block.id,
+          type: 'function',
+          function: {
+            name: block.name,
+            arguments: JSON.stringify(block.input),
+          },
         })
       }
     }
-    return { role: 'assistant', content: text || null, tool_calls: toolCalls?.length ? toolCalls : undefined, timestamp: Date.now() }
+
+    if (toolCalls.length > 0) result.tool_calls = toolCalls
+    return result
   }
 
   async *chatStream(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): AsyncGenerator<string> {
-    // Anthropic SSE streaming — simplified, expand as needed
+    // Anthropic streaming is complex, use non-streaming for now
     const result = await this.chat(messages, config, tools)
     if (result.content) yield result.content
   }

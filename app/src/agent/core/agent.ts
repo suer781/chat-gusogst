@@ -1,30 +1,73 @@
-import { getProvider } from '../providers/index'
+import { getProvider } from '../providers'
+import type { Persona, ProviderAdapter, ToolDefinition } from '../../shared/types'
 import { MemoryManager } from '../memory/manager'
 import { ToolRegistry } from '../tools/registry'
+import { registerSearchTools, type SearchConfig } from '../tools/search'
 import { MCPManager } from '../mcp/manager'
-import { matchPlatform, getConnectablePlatforms } from '../hermes/connector'
-import type {
-  AgentConfig, AgentEvent, Message, ToolDefinition,
-  Persona, ProviderAdapter, ModelConfig
-} from '../../shared/types'
 import type { MCPServerConfig } from '../mcp/types'
+import { createPlatformConnectTool } from '../hermes/platform_connect_tool'
+import type { HermesBridge } from '../hermes/bridge'
+
+export interface Message {
+  role: 'system' | 'user' | 'assistant' | 'tool'
+  content: string
+  tool_calls?: { id: string; type: 'function'; function: { name: string; arguments: string } }[]
+  tool_call_id?: string
+  name?: string
+  timestamp?: number
+}
+
+export interface ModelConfig {
+  provider: string
+  model: string
+  apiKey: string
+  apiHost?: string
+  temperature?: number
+  maxTokens?: number
+  topP?: number
+}
+
+export interface AgentConfig {
+  model: ModelConfig
+  persona?: Persona
+  memory?: { enabled: boolean }
+  mcpServers?: MCPServerConfig[]
+  search?: SearchConfig
+  maxHistoryTokens?: number
+}
+
+export type AgentEvent =
+  | { type: 'token'; content: string }
+  | { type: 'thinking'; content: string }
+  | { type: 'tool_call'; id: string; name: string; arguments: any }
+  | { type: 'tool_result'; id: string; name: string; result: string }
+  | { type: 'error'; error: string }
+  | { type: 'done'; message: Message }
+
+// Helper to build ToolDefinition in the nested format registry expects
+function makeToolDef(name: string, description: string, parameters: Record<string, any>): ToolDefinition {
+  return { type: 'function', function: { name, description, parameters } }
+}
 
 export class Agent {
-  private provider: ProviderAdapter
+  private provider!: ProviderAdapter
   private modelConfig: ModelConfig
   private tools: ToolRegistry
   private memory: MemoryManager
   private config: AgentConfig
   private history: Message[] = []
-  private persona: Persona
+  private persona: Persona | null
   private mcpManager: MCPManager
   private mcpInitialized = false
+  private bridge: HermesBridge | undefined
   private aborted = false
+  private maxHistoryTokens: number
 
   constructor(config: AgentConfig) {
     this.config = config
     this.modelConfig = config.model
-    this.persona = config.persona
+    this.persona = config.persona || null
+    this.maxHistoryTokens = config.maxHistoryTokens || 8000
     this.provider = getProvider(config.model.provider)
     this.tools = new ToolRegistry()
     this.memory = new MemoryManager()
@@ -32,188 +75,156 @@ export class Agent {
     this.registerBuiltinTools()
   }
 
-  // ── MCP ──
-  async initMCP(configs?: MCPServerConfig[]): Promise<void> {
-    if (this.mcpInitialized) return
-    const serverConfigs = configs ?? []
-    if (serverConfigs.length === 0) {
-      this.mcpInitialized = true
-      return
-    }
-    this.mcpManager.loadConfigs(serverConfigs)
-    await this.mcpManager.connectAll()
-    this.tools.setMCPManager(this.mcpManager)
-    this.tools.registerMCPTools()
-    this.mcpInitialized = true
-  }
-
-  getMCPManager(): MCPManager { return this.mcpManager }
-
-  // ── 内置工具 ──
   private registerBuiltinTools() {
-    this.tools.register(
-      {
-        type: 'function',
-        function: {
-          name: 'search',
-          description: '搜索互联网获取最新信息',
-          parameters: {
-            type: 'object',
-            properties: { query: { type: 'string', description: '搜索关键词' } },
-            required: ['query']
-          }
-        }
-      },
-      async (_name, args) => ({ result: `搜索「${args.query}」— 搜索引擎待接入` })
-    )
+    const searchConfig = this.config.search || { engine: 'auto' as const }
+    registerSearchTools(this.tools, searchConfig)
 
+    // Time tool
     this.tools.register(
-      {
-        type: 'function',
-        function: {
-          name: 'get_current_time',
-          description: '获取当前时间',
-          parameters: { type: 'object', properties: {}, required: [] }
-        }
-      },
-      async () => ({ time: new Date().toISOString(), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })
-    )
-
-    this.tools.register(
-      {
-        type: 'function',
-        function: {
-          name: 'platform_connect',
-          description: '引导用户连接社交平台（微信、QQ、Telegram、飞书、Discord、钉钉）。当用户说「加微信」「加QQ」时调用。返回步骤数据。',
-          parameters: {
-            type: 'object',
-            properties: {
-              platform: { type: 'string', description: '平台名：qq/weixin/telegram/feishu/discord/dingtalk' },
-              action: { type: 'string', enum: ['get_steps', 'list_platforms', 'check_status'] },
-            },
-            required: ['action'],
-          },
-        },
-      },
-      async (_name, args) => {
-        const { action, platform } = args
-        if (action === 'list_platforms') {
-          return { platforms: getConnectablePlatforms().map(f => ({ name: f.platform, displayName: f.displayName, icon: f.icon })) }
-        }
-        const flow = matchPlatform(platform ?? '')
-        if (!flow) return { supported: ['qq', 'weixin', 'telegram', 'feishu', 'discord', 'dingtalk'] }
-        return { platform: flow.displayName, icon: flow.icon, steps: flow.steps }
+      makeToolDef('get_current_time', 'Get the current date and time', {}),
+      async () => {
+        const now = new Date()
+        return JSON.stringify({ datetime: now.toISOString(), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, formatted: now.toLocaleString('zh-CN') })
       }
     )
+
+    // Memory save
+    this.tools.register(
+      makeToolDef('memory_save', 'Save important information to long-term memory', {
+        content: { type: 'string', description: 'Information to remember' },
+        type: { type: 'string', enum: ['fact', 'preference', 'event', 'emotion', 'context'] },
+        importance: { type: 'number', description: '0-1, default 0.5' },
+        tags: { type: 'array', items: { type: 'string' } },
+      }),
+      async (_n: string, args: any) => {
+        const entry = await this.memory.add(args.content, args.type || 'fact', args.importance ?? 0.5, args.tags || [])
+        return JSON.stringify({ id: entry.id, saved: true })
+      }
+    )
+
+    // Memory search
+    this.tools.register(
+      makeToolDef('memory_search', 'Search long-term memory for previously saved information', {
+        query: { type: 'string', description: 'Search keywords' },
+        limit: { type: 'number', description: 'Max results, default 5' },
+      }),
+      async (_n: string, args: any) => {
+        const results = await this.memory.search(args.query, args.limit || 5)
+        if (results.length === 0) return 'No memories found'
+        return results.map((r, i) => (i + 1) + '. [' + r.type + '] ' + r.content).join('\n')
+      }
+    )
+
+    // Calculator
+    this.tools.register(
+      makeToolDef('calculator', 'Evaluate a math expression', {
+        expression: { type: 'string', description: 'Math expression, e.g. 2+3*4, sqrt(16)' },
+      }),
+      async (_n: string, args: any) => {
+        try {
+          const safe = args.expression.replace(/[^0-9+\-*/().%\s,a-z]/gi, '')
+          const defs = 'const sqrt=Math.sqrt,pow=Math.pow,abs=Math.abs,ceil=Math.ceil,floor=Math.floor,round=Math.round,PI=Math.PI,E=Math.E,sin=Math.sin,cos=Math.cos,tan=Math.tan,log=Math.log,min=Math.min,max=Math.max'
+          return String(new Function(defs + ';return ' + safe)())
+        } catch (e: any) { return 'Error: ' + e.message }
+      }
+    )
+
+    // Platform connect (full version with bridge status)
+    const platTool = createPlatformConnectTool(this.bridge)
+    this.tools.register(platTool.definition, platTool.handler)
   }
 
-  // ── 消息发送 ──
-  async *sendMessage(content: string): AsyncGenerator<AgentEvent> {
-    if (!this.mcpInitialized) await this.initMCP()
-    this.aborted = false
-
-    if (content) {
-      const userMsg: Message = { role: 'user', content, timestamp: Date.now() }
-      this.history.push(userMsg)
-    }
-
-    const context = await this.buildContext()
-    const toolDefs = this.tools.getDefinitions()
-
+  async initMCP(configs?: MCPServerConfig[]) {
+    if (this.mcpInitialized) return
+    const servers = configs || this.config.mcpServers || []
+    if (servers.length === 0) return
     try {
-      const response = await this.provider.chat(context, this.modelConfig, toolDefs)
+      await this.mcpManager.loadConfigs(servers)
+      await this.mcpManager.connectAll()
+      this.tools.setMCPManager(this.mcpManager)
+      this.tools.registerMCPTools()
+      this.mcpInitialized = true
+    } catch (e) { console.warn('MCP init failed:', e) }
+  }
 
-      if (this.aborted) return
+  getMCPManager() { return this.mcpManager }
+  setBridge(bridge: HermesBridge) {
+    this.bridge = bridge
+    const platTool = createPlatformConnectTool(bridge)
+    this.tools.register(platTool.definition, platTool.handler)
+  }
 
-      // Handle tool calls
+  private truncateHistory(): void {
+    let totalChars = 0
+    const maxChars = this.maxHistoryTokens * 2
+    const systemMsgs = this.history.filter(m => m.role === 'system')
+    const nonSystem = this.history.filter(m => m.role !== 'system')
+    let keepFrom = nonSystem.length
+    for (let i = nonSystem.length - 1; i >= 0; i--) {
+      totalChars += (nonSystem[i].content || '').length
+      if (totalChars > maxChars) { keepFrom = i + 1; break }
+    }
+    if (keepFrom < nonSystem.length) {
+      const dropped = nonSystem.slice(0, keepFrom)
+      const summary = dropped.slice(-3).map(m => (m.content || '').substring(0, 50)).join('; ')
+      this.history = [...systemMsgs, { role: 'system' as const, content: '[Earlier: ' + summary + ']', timestamp: Date.now() }, ...nonSystem.slice(keepFrom)]
+    }
+  }
+
+  private buildContext(): Message[] {
+    const messages: Message[] = []
+    let sys = this.persona ? this.persona.systemPrompt + '\nYour name is ' + this.persona.name + '.' : 'You are a helpful AI assistant.'
+    const toolNames = this.tools.names
+    if (toolNames.length > 0) sys += '\nAvailable tools: ' + toolNames.join(', ') + '.'
+    messages.push({ role: 'system', content: sys, timestamp: Date.now() })
+    messages.push(...this.history)
+    return messages
+  }
+
+  async *sendMessage(content: string): AsyncGenerator<AgentEvent> {
+    this.aborted = false
+    await this.initMCP()
+    if (content) this.history.push({ role: 'user', content, timestamp: Date.now() })
+    this.truncateHistory()
+    const messages = this.buildContext()
+    const toolDefs = this.tools.getDefinitions()
+    try {
+      const response = await this.provider.chat(messages, this.modelConfig, toolDefs.length > 0 ? toolDefs : undefined)
       if (response.tool_calls && response.tool_calls.length > 0) {
-        yield { type: 'tool_call', name: response.tool_calls[0].function.name, args: JSON.parse(response.tool_calls[0].function.arguments) }
-
+        this.history.push({ role: 'assistant', content: response.content || '', tool_calls: response.tool_calls, timestamp: Date.now() })
+        if (response.content) yield { type: 'thinking', content: response.content }
         for (const tc of response.tool_calls) {
-          const parsedArgs = JSON.parse(tc.function.arguments)
-          const result = await this.tools.execute(tc.function.name, parsedArgs)
-          const resultStr = typeof result === 'string' ? result : JSON.stringify(result)
-
-          yield { type: 'tool_result', name: tc.function.name, content: resultStr }
-
-          this.history.push({
-            role: 'tool', tool_call_id: tc.id, content: resultStr, timestamp: Date.now()
-          })
+          if (this.aborted) break
+          yield { type: 'tool_call', id: tc.id, name: tc.function.name, arguments: tc.function.arguments }
+          let result: string
+          try {
+            const args = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : tc.function.arguments
+            result = await this.tools.execute(tc.function.name, args)
+          } catch (e: any) { result = 'Error: ' + e.message }
+          yield { type: 'tool_result', id: tc.id, name: tc.function.name, result }
+          this.history.push({ role: 'tool', content: result, tool_call_id: tc.id, name: tc.function.name, timestamp: Date.now() })
         }
-
-        // Recursive call for follow-up
-        yield* this.sendMessage('')
+        if (!this.aborted) yield* this.sendMessage('')
         return
       }
-
-      // Normal response
-      if (response.content) {
-        yield { type: 'token', content: response.content }
-        this.history.push({ role: 'assistant', content: response.content, timestamp: Date.now() })
-        yield { type: 'done', message: this.history[this.history.length - 1] }
-      }
-
-      // Memory extraction (background, non-blocking)
-      if (this.config.memoryEnabled && this.history.length % 10 === 0) {
-        this.memory.extractAndSave(this.history).catch(() => {})
-      }
-    } catch (error: any) {
-      if (!this.aborted) {
-        yield { type: 'error', error: error.message || String(error) }
-      }
+      const msg: Message = { role: 'assistant', content: response.content || '', timestamp: Date.now() }
+      this.history.push(msg)
+      if (response.content) yield { type: 'token', content: response.content }
+      yield { type: 'done', message: msg }
+      if (this.config.memory?.enabled && this.history.length % 10 === 0) this.memory.extractAndSave(this.history).catch(() => {})
+    } catch (e: any) {
+      if (!this.aborted) yield { type: 'error', error: e.message }
     }
   }
 
-  private async buildContext(): Promise<Message[]> {
-    const context: Message[] = []
-
-    // System prompt with persona
-    let systemPrompt = ''
-    if (this.persona) {
-      systemPrompt += `## 你是谁\n${this.persona.systemPrompt}\n\n`
-      if (this.persona.name) systemPrompt += `你的名字是${this.persona.name}。\n\n`
-    }
-    const toolDefs = this.tools.getDefinitions()
-    if (toolDefs.length > 0) {
-      systemPrompt += '## 可用工具\n'
-      toolDefs.forEach(def => { systemPrompt += `- ${def.function.name}: ${def.function.description}\n` })
-    }
-    if (systemPrompt) {
-      context.push({ role: 'system', content: systemPrompt, timestamp: Date.now() })
-    }
-
-    // Memory context
-    if (this.config.memoryEnabled) {
-      const recent = this.history.slice(-3).map(m => m.content).join(' ')
-      if (recent) {
-        const memories = await this.memory.search(recent, 3)
-        if (memories.length > 0) {
-          context.push({
-            role: 'system',
-            content: `相关记忆：\n${memories.map(m => `- ${m.content}`).join('\n')}`,
-            timestamp: Date.now()
-          })
-        }
-      }
-    }
-
-    context.push(...this.history)
-    return context
-  }
-
-  // ── Public API (bridge calls these) ──
   abort() { this.aborted = true }
-
   clearHistory() { this.history = [] }
-
   getHistory(): Message[] { return [...this.history] }
-
   updateConfig(patch: Partial<AgentConfig>) {
-    if (patch.model) {
-      this.modelConfig = patch.model
-      this.provider = getProvider(patch.model.provider)
-    }
+    if (patch.model) { this.modelConfig = patch.model; this.provider = getProvider(patch.model.provider) }
     if (patch.persona) this.persona = patch.persona
-    Object.assign(this.config, patch)
+    if (patch.search) registerSearchTools(this.tools, patch.search)
   }
+  getMemory() { return this.memory }
+  getTools() { return this.tools }
 }
