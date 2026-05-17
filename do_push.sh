@@ -1,22 +1,26 @@
 #!/bin/bash
-set -e
-DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$DIR"
+cd ~/project/github.com/chat-gusogst
 
-# Extract token value from .env (skip comments)
-TOKEN=$(grep -v '^#' ~/mcp/mcpkeys/git_token.env | grep GIT_TOKEN | cut -d'=' -f2 | tr -d '\n')
-
-if [ -z "$TOKEN" ]; then
-  echo "[push] ERROR: no token found"
+# 读 token
+GIT_TOKEN=$(cat ~/mcp/mcpkeys/git_token.env 2>/dev/null | grep -oP '(?<=GIT_TOKEN=).*' | tr -d '"\n')
+if [ -z "$GIT_TOKEN" ]; then
+  echo 'NO_TOKEN' > push_result.txt
   exit 1
 fi
 
-REMOTE_URL="https://${TOKEN}@ghfast.top/https://github.com/suer781/chat-gusogst.git"
-BRANCH=$(git branch --show-current)
-echo "[push] branch=$BRANCH"
-git remote set-url upstream "$REMOTE_URL"
-echo "[push] pushing..."
-git push upstream "$BRANCH" 2>&1
-echo "[push] done!"
-git remote set-url upstream "https://ghfast.top/https://github.com/suer781/chat-gusogst.git"
-echo "[push] URL cleaned"
+# 试多个镜像
+for mirror in \
+  "https://ghfast.top/https://github.com/suer781/chat-gusogst.git" \
+  "https://ghproxy.net/https://github.com/suer781/chat-gusogst.git" \
+  "https://gh-proxy.com/https://github.com/suer781/chat-gusogst.git" \
+  "https://github.com/suer781/chat-gusogst.git"; do
+  echo "Trying: $mirror" >> push_result.txt
+  URL=$(echo "$mirror" | sed "s|https://|https://suer781:${GIT_TOKEN}@|1")
+  git remote set-url origin "$URL"
+  timeout 60 git push origin main >> push_result.txt 2>&1
+  if [ $? -eq 0 ]; then
+    echo "SUCCESS: $mirror" >> push_result.txt
+    break
+  fi
+done
+echo 'DONE' >> push_result.txt
