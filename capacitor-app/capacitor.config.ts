@@ -1,12 +1,16 @@
-import type { CapacitorConfig } from '@capacitor/cli'
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.gusogst.chat',
   appName: 'chat-gusogst',
   webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  }
-}
+  plugins: {
+    StatusBar: {
+      overlaysWebView: true,
+      backgroundColor: '#00000000',
+      style: 'DARK',
+    },
+  },
+};
 
-export default config
+export default config;
