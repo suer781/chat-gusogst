@@ -32,7 +32,7 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: '#0f0f23', color: '#e0e0e0', overflow: 'hidden' }}>
       <header style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
         {view === 'personaProfile' ? (
-          <button onClick={() => setView('chat')} style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+          <button onClick={() => setView('persona')} style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
           </button>
         ) : <div style={{ width: 60 }} />}
@@ -58,7 +58,7 @@ export default function App() {
           { id: 'providers' as View, icon: Server, labelKey: 'nav.providers' },
           { id: 'settings' as View, icon: Settings, labelKey: 'nav.settings' }].map((item) => (
           <button key={item.id} onClick={() => setView(item.id)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', color: view === item.id ? '#e94560' : '#666688' }}>
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', color: (view === item.id || (view === 'personaProfile' && item.id === 'persona')) ? '#e94560' : '#666688' }}>
             <item.icon size={20} />
             <span style={{ fontSize: 10 }}>{t(item.labelKey)}</span>
           </button>
