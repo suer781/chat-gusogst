@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.chatgusogst.app',
-  appName: 'chat-gusogst',
+  appName: 'chat-gusogst (测试版)',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

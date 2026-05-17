@@ -42,6 +42,11 @@ export default function App() {
         ) : <div style={{ width: 60 }} />}
       </header>
 
+      {/* ⚠️ 测试版声明 - 非最终发布版本 */}
+      <div style={{ background: '#e94560', color: '#fff', textAlign: 'center', padding: '4px 8px', fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>
+        ⚠️ 测试版 · 非最终发布版本 · 仅供测试评估
+      </div>
+
       <div className="flex-1 overflow-hidden">
         {view === 'chat' && <ChatView onNavigate={setView} />}
         {view === 'settings' && <SettingsView onDone={() => setView('chat')} />}
