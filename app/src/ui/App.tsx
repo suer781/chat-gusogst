@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useSettingsStore } from './stores'
 import { ChatView } from './chat/ChatView'
 import { SettingsView } from './settings/SettingsView'
@@ -7,10 +8,12 @@ import PersonaProfileView from './persona/PersonaProfileView'
 import { ProviderSettings } from './providers/ProviderSettings'
 import { ChevronLeft, Settings, MessageSquare, Users, Server } from 'lucide-react'
 import { t, onLangChange } from './i18n'
+import TestDisclaimer from './components/TestDisclaimer'
 
 type View = 'chat' | 'settings' | 'persona' | 'personaProfile' | 'providers'
 
 export default function App() {
+  useLocation()
   const [view, setView] = useState<View>('chat')
   const [selectedPersona, setSelectedPersona] = useState<any>(null)
   const [, forceUpdate] = useState(0)
@@ -19,7 +22,7 @@ export default function App() {
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 
   const viewTitles: Record<View, string> = {
-    chat: persona.name,
+    chat: t('nav.chat'),
     settings: t('nav.settings'),
     persona: t('nav.persona'),
     providers: t('nav.providers'),
@@ -42,11 +45,6 @@ export default function App() {
         ) : <div style={{ width: 60 }} />}
       </header>
 
-      {/* ⚠️ 测试版声明 - 非最终发布版本 */}
-      <div style={{ background: '#e94560', color: '#fff', textAlign: 'center', padding: '4px 8px', fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>
-        ⚠️ 测试版 · 非最终发布版本 · 仅供测试评估
-      </div>
-
       <div className="flex-1 overflow-hidden">
         {view === 'chat' && <ChatView onNavigate={setView} />}
         {view === 'settings' && <SettingsView onDone={() => setView('chat')} />}
@@ -67,6 +65,8 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      <TestDisclaimer />
     </div>
   )
 }
