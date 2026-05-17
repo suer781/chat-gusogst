@@ -1,32 +1,8 @@
 import { Agent } from './agent/core/agent'
-import type { AgentConfig, AgentEvent, Message } from './agent/core/agent'
-import type { SearchEngine } from './agent/tools/search'
+import type { AgentConfig, AgentEvent } from './shared/agent-types'
+import type { AppSettings } from './ui/types'
 
-export interface BridgeConfig {
-  model: {
-    provider: string
-    model: string
-    apiKey: string
-    apiHost?: string
-    temperature?: number
-    maxTokens?: number
-  }
-  persona?: {
-    name: string
-    systemPrompt: string
-    avatar?: string
-  }
-  memory?: {
-    enabled: boolean
-  }
-  search?: {
-    engine: SearchEngine
-    tavilyApiKey?: string
-  }
-  mcpServers?: any[]
-}
-
-// Match ChatView's expected event format
+// StreamEvent format that ChatView consumes
 export type StreamEvent =
   | { type: 'text_delta'; data: string }
   | { type: 'thinking'; data: string }
@@ -35,43 +11,69 @@ export type StreamEvent =
   | { type: 'error'; data: string }
   | { type: 'done' }
 
+// Convert AppSettings to AgentConfig for the Agent
+function settingsToAgentConfig(s: AppSettings): AgentConfig {
+  return {
+    model: {
+      provider: s.model.provider,
+      model: s.model.model,
+      apiKey: s.model.apiKey,
+      baseUrl: s.model.baseUrl || undefined,
+      apiHost: s.model.apiHost || undefined,
+      temperature: s.model.temperature,
+      maxTokens: s.model.maxTokens,
+    },
+    persona: s.persona,
+    memory: { enabled: s.memoryEnabled },
+    maxHistoryTokens: s.maxHistoryTokens,
+  }
+}
+
 class Bridge {
   private agent: Agent | null = null
   private _abortController: AbortController | null = null
+  private _initialized = false
 
-  init(config: BridgeConfig) {
+  /** Initialize agent from AppSettings */
+  init(settings: AppSettings): boolean {
     try {
-      const agentConfig: AgentConfig = {
-        model: config.model,
-        persona: config.persona ? {
-          id: 'default',
-          name: config.persona.name,
-          systemPrompt: config.persona.systemPrompt,
-          avatar: config.persona.avatar || '',
-          tags: [],
-          isDefault: false,
-        } : undefined,
-        memory: config.memory || { enabled: true },
-        search: config.search || { engine: 'auto' },
-        mcpServers: config.mcpServers,
-      }
+      const agentConfig = settingsToAgentConfig(settings)
       this.agent = new Agent(agentConfig)
+      this._initialized = true
+      console.log('[Bridge] Agent initialized:', settings.model.provider + '/' + settings.model.model)
       return true
     } catch (e) {
-      console.error('Bridge init failed:', e)
+      console.error('[Bridge] init failed:', e)
       this.agent = null
+      this._initialized = false
       return false
     }
   }
 
-  async *chat(content: string, cfg?: any): AsyncGenerator<StreamEvent> {
-    // If cfg is passed, re-init with it
-    if (cfg && cfg.model) {
-      this.init(cfg)
+  /** Re-init if settings changed (compare key fields) */
+  private _lastKey = ''
+  ensureInit(settings: AppSettings): boolean {
+    const key = [settings.model.provider, settings.model.model, settings.model.apiKey,
+      settings.persona?.id, settings.memoryEnabled, settings.searchEnabled].join('|')
+    if (key !== this._lastKey || !this._initialized) {
+      this._lastKey = key
+      return this.init(settings)
+    }
+    return true
+  }
+
+  /** Stream chat events */
+  async *chat(content: string, settings?: AppSettings): AsyncGenerator<StreamEvent> {
+    // Auto-init if settings provided
+    if (settings) {
+      if (!this.ensureInit(settings)) {
+        yield { type: 'error', data: 'Agent initialization failed. Check your API key and model settings.' }
+        return
+      }
     }
 
     if (!this.agent) {
-      yield { type: 'error', data: 'Agent not initialized' }
+      yield { type: 'error', data: 'Agent not initialized. Please configure your model in settings.' }
       return
     }
 
@@ -93,14 +95,16 @@ class Bridge {
               type: 'tool_use',
               data: {
                 tool: event.name,
-                input: typeof event.arguments === 'string' ? JSON.parse(event.arguments || '{}') : event.arguments,
+                input: typeof event.arguments === 'string'
+                  ? JSON.parse(event.arguments || '{}')
+                  : (event.arguments || {}),
               },
             }
             break
           case 'tool_result':
             yield {
               type: 'tool_result',
-              data: { tool: event.name, output: event.result },
+              data: { tool: event.name, output: event.result || '' },
             }
             break
           case 'error':
@@ -113,7 +117,7 @@ class Bridge {
       }
     } catch (e: any) {
       if (!this._abortController.signal.aborted) {
-        yield { type: 'error', data: e.message }
+        yield { type: 'error', data: e.message || 'Unknown error' }
       }
     } finally {
       this._abortController = null
@@ -125,6 +129,7 @@ class Bridge {
     this.agent?.abort()
   }
 
+  isReady() { return this._initialized && this.agent !== null }
   getAgent() { return this.agent }
 }
 

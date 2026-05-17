@@ -10,7 +10,7 @@ const PRESETS = [
 ]
 
 export function PersonaSettings({ onBack }: { onBack: () => void }) {
-  const persona = useSettingsStore((s) => s.config.persona)
+  const persona = useSettingsStore((s) => s.persona)
   const setPersona = useSettingsStore((s) => s.setPersona)
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(persona.name)

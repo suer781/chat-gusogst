@@ -1,48 +1,15 @@
 import { getProvider } from '../providers'
-import type { Persona, ProviderAdapter, ToolDefinition } from '../../shared/types'
+import type { Persona, ProviderAdapter, ToolDefinition, Message, ModelConfig, AgentConfig, AgentEvent } from '../../shared/types'
 import { MemoryManager } from '../memory/manager'
 import { ToolRegistry } from '../tools/registry'
-import { registerSearchTools, type SearchConfig } from '../tools/search'
+import { registerSearchTools } from '../tools/search'
+import type { SearchConfig } from '../../shared/types'
 import { MCPManager } from '../mcp/manager'
-import type { MCPServerConfig } from '../mcp/types'
+import type { MCPServerConfig } from '../../shared/types'
 import { createPlatformConnectTool } from '../hermes/platform_connect_tool'
 import type { HermesBridge } from '../hermes/bridge'
 
-export interface Message {
-  role: 'system' | 'user' | 'assistant' | 'tool'
-  content: string
-  tool_calls?: { id: string; type: 'function'; function: { name: string; arguments: string } }[]
-  tool_call_id?: string
-  name?: string
-  timestamp?: number
-}
-
-export interface ModelConfig {
-  provider: string
-  model: string
-  apiKey: string
-  apiHost?: string
-  temperature?: number
-  maxTokens?: number
-  topP?: number
-}
-
-export interface AgentConfig {
-  model: ModelConfig
-  persona?: Persona
-  memory?: { enabled: boolean }
-  mcpServers?: MCPServerConfig[]
-  search?: SearchConfig
-  maxHistoryTokens?: number
-}
-
-export type AgentEvent =
-  | { type: 'token'; content: string }
-  | { type: 'thinking'; content: string }
-  | { type: 'tool_call'; id: string; name: string; arguments: any }
-  | { type: 'tool_result'; id: string; name: string; result: string }
-  | { type: 'error'; error: string }
-  | { type: 'done'; message: Message }
+// Types imported from shared/agent-types.ts
 
 // Helper to build ToolDefinition in the nested format registry expects
 function makeToolDef(name: string, description: string, parameters: Record<string, any>): ToolDefinition {

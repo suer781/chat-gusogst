@@ -16,7 +16,37 @@ export default function App() {
   const [view, setView] = useState<View>('chat')
   const [selectedPersona, setSelectedPersona] = useState<any>(null)
   const [, forceUpdate] = useState(0)
-  const persona = useSettingsStore((s) => s.config.persona)
+  const persona = useSettingsStore((s) => s.persona)
+  const themeMode = useSettingsStore((s) => s.themeMode)
+  const fontSize = useSettingsStore((s) => s.fontSize)
+  const eyeCareEnabled = useSettingsStore((s) => s.eyeCareEnabled)
+  const eyeCareColors = useSettingsStore((s) => s.eyeCareColors)
+  const glassEnabled = useSettingsStore((s) => s.glassEnabled)
+
+  useEffect(() => {
+    const root = document.documentElement
+    const body = document.body
+    root.setAttribute('data-theme', themeMode)
+    if (themeMode === 'light') {
+      body.style.background = '#f5f5f5'; body.style.color = '#222'
+    } else if (themeMode === 'pureWhite') {
+      body.style.background = '#ffffff'; body.style.color = '#222'
+    } else if (themeMode === 'pureBlack') {
+      body.style.background = '#000000'; body.style.color = '#e0e0e0'
+    } else {
+      body.style.background = '#0f0f23'; body.style.color = '#e0e0e0'
+    }
+    root.style.setProperty('--app-font-size', fontSize + 'px')
+    body.style.fontSize = fontSize + 'px'
+    if (eyeCareEnabled) {
+      root.style.setProperty('--eyecare-bg', eyeCareColors.darkGray || '#1A1A1A')
+      root.style.setProperty('--eyecare-text', eyeCareColors.white || '#F5F0E8')
+      root.setAttribute('data-eyecare', 'on')
+    } else {
+      root.removeAttribute('data-eyecare')
+    }
+    root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
+  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, glassEnabled])
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 
@@ -37,11 +67,7 @@ export default function App() {
           </button>
         ) : <div style={{ width: 60 }} />}
         <div style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{viewTitles[view]}</div>
-        {view === 'chat' ? (
-          <button onClick={() => setView('settings')} style={{ color: '#8888aa', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <Settings size={20} />
-          </button>
-        ) : <div style={{ width: 60 }} />}
+        <div style={{ width: 60 }} />
       </header>
 
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>

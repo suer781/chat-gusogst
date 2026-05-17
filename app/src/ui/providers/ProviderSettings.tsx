@@ -27,7 +27,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
   const [connected, setConnected] = useState<Record<string, boolean>>({})
   const [, forceUpdate] = useState(0)
   const setModel = useSettingsStore((s) => s.setModel)
-  const currentModel = useSettingsStore((s) => s.config.model)
+  const currentModel = useSettingsStore((s) => s.model)
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 

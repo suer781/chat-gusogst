@@ -1,20 +1,18 @@
 import { useState } from 'react'
-import { Palette, Bot, User, Link2, Brain, Search, Info } from 'lucide-react'
+import { Palette, Bot, Link2, Brain, Search, Info } from 'lucide-react'
 import { t } from '../i18n'
 import { BasicSettings } from './BasicSettings'
 import { ModelSettings } from './ModelSettings'
-import { PersonaSettings } from './PersonaSettings'
 import { PlatformSettings } from './PlatformSettings'
 import { MemorySettings } from './MemorySettings'
 import { SearchSettings } from './SearchSettings'
 import { AboutSettings } from './AboutSettings'
 
-type SubPage = null | 'basic' | 'model' | 'persona' | 'platform' | 'memory' | 'search' | 'about'
+type SubPage = null | 'basic' | 'model' | 'platform' | 'memory' | 'search' | 'about'
 
 const CARDS = [
   { key: 'basic',    icon: Palette, label: '基础设置',   desc: '主题、字号、护眼、视觉效果', color: '#e94560' },
   { key: 'model',    icon: Bot,     label: 'AI 模型',    desc: 'Provider、模型选择、参数调节',  color: '#6C5CE7' },
-  { key: 'persona',  icon: User,    label: '人设管理',   desc: '名称、头像、系统提示词',      color: '#00B894' },
   { key: 'platform', icon: Link2,   label: '平台连接',   desc: '微信、QQ、Telegram 等 16 个', color: '#0984E3' },
   { key: 'memory',   icon: Brain,   label: '记忆',       desc: '记忆开关、容量管理',          color: '#FDCB6E' },
   { key: 'search',   icon: Search,  label: '搜索',       desc: '搜索引擎、API Key',          color: '#E17055' },
@@ -26,7 +24,6 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
 
   if (subPage === 'basic')    return <BasicSettings onBack={() => setSubPage(null)} />
   if (subPage === 'model')    return <ModelSettings onBack={() => setSubPage(null)} />
-  if (subPage === 'persona')  return <PersonaSettings onBack={() => setSubPage(null)} />
   if (subPage === 'platform') return <PlatformSettings onBack={() => setSubPage(null)} />
   if (subPage === 'memory')   return <MemorySettings onBack={() => setSubPage(null)} />
   if (subPage === 'search')   return <SearchSettings onBack={() => setSubPage(null)} />

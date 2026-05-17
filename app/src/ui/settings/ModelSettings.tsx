@@ -9,7 +9,7 @@ const PROVIDERS = [
 ]
 
 export function ModelSettings({ onBack }: { onBack: () => void }) {
-  const model = useSettingsStore((s) => s.config.model)
+  const model = useSettingsStore((s) => s.model)
   const setModel = useSettingsStore((s) => s.setModel)
   const setApiKey = useSettingsStore((s) => s.setApiKey)
   const setBaseUrl = useSettingsStore((s) => s.setBaseUrl)

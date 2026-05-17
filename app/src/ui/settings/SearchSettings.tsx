@@ -9,7 +9,7 @@ const ENGINES = [
 ]
 
 export function SearchSettings({ onBack }: { onBack: () => void }) {
-  const searchEnabled = useSettingsStore((s) => s.config.searchEnabled)
+  const searchEnabled = useSettingsStore((s) => s.searchEnabled)
   const setSearchEnabled = useSettingsStore((s) => s.setSearchEnabled)
 
   return (

@@ -2,7 +2,7 @@ import { useSettingsStore } from '../stores'
 import { Brain, Trash2, HardDrive } from 'lucide-react'
 
 export function MemorySettings({ onBack }: { onBack: () => void }) {
-  const memoryEnabled = useSettingsStore((s) => s.config.memoryEnabled)
+  const memoryEnabled = useSettingsStore((s) => s.memoryEnabled)
   const setMemoryEnabled = useSettingsStore((s) => s.setMemoryEnabled)
 
   return (

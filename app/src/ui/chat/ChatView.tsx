@@ -1,7 +1,7 @@
 import { bridge } from '../../bridge'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useChatStore, useSettingsStore } from '../stores'
-import type { Message, ToolCall } from '../types'
+import type { UIMessage as Message, UIToolCall as ToolCall } from '../types'
 import { Plus, Search, Database, Send, Copy, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronRight, Square, Wrench, CheckCircle2, XCircle } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { t, onLangChange } from '../i18n'
@@ -88,9 +88,10 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   const clearMessages = useChatStore((s) => s.clearMessages)
   const setStreaming = useChatStore((s) => s.setStreaming)
   const setError = useChatStore((s) => s.setError)
-  const persona = useSettingsStore((s) => s.config.persona)
-  const showThinking = useSettingsStore((s) => s.config.showThinking)
-  const showToolCalls = useSettingsStore((s) => s.config.showToolCalls)
+  const persona = useSettingsStore((s) => s.persona)
+  const showThinking = useSettingsStore((s) => s.showThinking)
+  const showToolCalls = useSettingsStore((s) => s.showToolCalls)
+  const showMemoryHints = useSettingsStore((s) => s.showMemoryHints)
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)) }, [])
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streaming])
@@ -102,7 +103,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
     addMessage({ id: genId(), role: 'user', content, timestamp: Date.now() })
     setStreaming(true)
     setError(null)
-    const cfg = useSettingsStore.getState().config
+    const cfg = useSettingsStore.getState()
     const assistantId = genId()
     let accumulated = ''
     let currentThinking = ''
@@ -162,8 +163,8 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.search')}><Search size={18} style={{ color: '#666' }} /></button>
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('settings.memory')}><Database size={18} style={{ color: '#666' }} /></button>
+          <button onClick={() => onNavigate?.('settings')} className="p-2 rounded-lg hover:bg-white/5" title={t('chat.search')}><Search size={18} style={{ color: '#666' }} /></button>
+          <button onClick={() => { const s = useSettingsStore.getState(); s.setShowMemoryHints(!s.showMemoryHints) }} className="p-2 rounded-lg hover:bg-white/5" title={t('settings.memory')}><Database size={18} style={{ color: '#666' }} /></button>
           <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={clearMessages}><Plus size={18} style={{ color: '#666' }} /></button>
         </div>
       </div>
@@ -181,11 +182,11 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
             {messages.map((msg) => (
               <div key={msg.id} className="flex flex-col" style={{ alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                 {/* 思考块 */}
-                {msg.thinking?.map(th => (
+                {msg.thinking?.map((th: any) => (
                   <ThinkingBlock key={th.id} content={th.content} showThinking={showThinking} />
                 ))}
                 {/* 工具调用 */}
-                {msg.toolCalls?.map(tc => (
+                {msg.toolCalls?.map((tc: any) => (
                   <ToolCallCard key={tc.id} tc={tc} showToolCalls={showToolCalls} />
                 ))}
                 {/* 消息气泡 */}

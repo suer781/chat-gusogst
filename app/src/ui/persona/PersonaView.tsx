@@ -8,7 +8,7 @@ export function PersonaView({ onDone, onProfile }: { onDone: () => void; onProfi
   const [search, setSearch] = useState('')
   const [, forceUpdate] = useState(0)
   const setPersona = useSettingsStore((s) => s.setPersona)
-  const current = useSettingsStore((s) => s.config.persona)
+  const current = useSettingsStore((s) => s.persona)
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 
@@ -49,7 +49,7 @@ export function PersonaView({ onDone, onProfile }: { onDone: () => void; onProfi
             <ChevronRight size={16} className="shrink-0" style={{ color: '#666688' }} />
           </button>
         ))}
-        <button className="w-full flex items-center justify-center gap-2" style={{ background: 'transparent', border: '1px dashed #2a2a4a', borderRadius: 12, padding: 16, cursor: 'pointer', color: '#666688', fontSize: 14, marginTop: 4 }}>
+        <button onClick={() => { const custom = { id: 'custom-' + Date.now(), name: 'Custom', systemPrompt: 'You are a helpful assistant.', tags: ['custom'], emoji: '\u{1F3AD}' }; if (onProfile) { onProfile(custom) } else { setPersona(custom); onDone() } }} className="w-full flex items-center justify-center gap-2" style={{ background: 'transparent', border: '1px dashed #2a2a4a', borderRadius: 12, padding: 16, cursor: 'pointer', color: '#666688', fontSize: 14, marginTop: 4 }}>
           <Plus size={16} /> {t('persona.create')}
         </button>
       </div>
