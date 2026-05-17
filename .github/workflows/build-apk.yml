@@ -1,4 +1,3 @@
-# Build chat-gusogst APK
 name: Build APK
 
 on:
@@ -27,6 +26,12 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 35
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
 
       - name: Install dependencies
         run: |
