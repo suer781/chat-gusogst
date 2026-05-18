@@ -148,12 +148,3 @@ function ToggleRow({ label, desc, checked, onChange }: { label: string; desc?: s
     </div>
   )
 }
-/div>
-        {desc && <div style={{ color: 'var(--gray-400)', fontSize: 12, marginTop: 2 }}>{desc}</div>}
-      </div>
-      <div style={{ width: 46, height: 26, borderRadius: 13, background: checked ? 'var(--accent)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.25s', flexShrink: 0, marginLeft: 12 }}>
-        <div style={{ width: 22, height: 22, borderRadius: 11, background: 'var(--text-primary)', position: 'absolute', top: 2, left: checked ? 22 : 2, transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
-      </div>
-    </div>
-  )
-}
