@@ -20,6 +20,7 @@ export interface UIToolCall {
   input: any
   output?: string
   status: "running" | "done" | "error"
+  agentEventId?: string
 }
 
 export interface UIMessage extends _MSG {

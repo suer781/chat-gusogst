@@ -99,7 +99,7 @@ textarea {
   --bg-secondary:   #151538;
   --bg-tertiary:    #1a1a3a;
   --bg-elevated:    #22224a;
-  --bg-overlay:     rgba(0, 0, 0, 0.6);
+  --bg-overlay:     rgba(0, 0, 0, 0.25);
   /* 保留兼容 */
   --bg-card:        #151538;
 
@@ -284,8 +284,8 @@ body {
   -webkit-backdrop-filter: blur(8px) !important;
   background-color: rgba(255,255,255,0.05) !important;
 }
-[data-glass="true"] input,
-[data-glass="true"] textarea {
+[data-glass="on"] input,
+[data-glass="on"] textarea {
   backdrop-filter: blur(6px) !important;
   -webkit-backdrop-filter: blur(6px) !important;
   background-color: rgba(255,255,255,0.03) !important;

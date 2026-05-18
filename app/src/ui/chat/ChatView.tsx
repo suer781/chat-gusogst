@@ -117,11 +117,14 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
           currentThinking += evt.data
           addMessage({ id: assistantId, role: 'assistant', content: accumulated, timestamp: Date.now(), thinking: [{ id: 't', content: currentThinking, collapsed: true }], toolCalls: toolCalls.length ? toolCalls : undefined }, true)
         } else if (evt.type === 'tool_use') {
-          const tc: ToolCall = { id: genId(), tool: evt.data.tool, input: evt.data.input, status: 'running' }
+          const tc: ToolCall = { id: genId(), tool: evt.data.tool, input: evt.data.input, status: 'running', agentEventId: evt.data.id }
           toolCalls = [...toolCalls, tc]
           addMessage({ id: assistantId, role: 'assistant', content: accumulated, timestamp: Date.now(), thinking: currentThinking ? [{ id: 't', content: currentThinking, collapsed: true }] : undefined, toolCalls }, true)
         } else if (evt.type === 'tool_result') {
-          toolCalls = toolCalls.map(tc => tc.tool === evt.data.tool && tc.status === 'running' ? { ...tc, output: evt.data.output, status: 'done' as const } : tc)
+          toolCalls = toolCalls.map(tc => {
+            const match = evt.data.id ? tc.agentEventId === evt.data.id : (tc.tool === evt.data.tool && tc.status === 'running');
+            return match ? { ...tc, output: evt.data.output, status: (evt.data.isError ? 'error' : 'done') as ToolCall['status'] } : tc;
+          })
           addMessage({ id: assistantId, role: 'assistant', content: accumulated, timestamp: Date.now(), toolCalls }, true)
         } else if (evt.type === 'error') {
           setError(evt.data)

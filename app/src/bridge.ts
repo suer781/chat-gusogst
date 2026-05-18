@@ -7,9 +7,9 @@ export type StreamEvent =
   | { type: 'text_delta'; data: string }
   | { type: 'thinking'; data: string }
   | { type: 'tool_use'; data: { tool: string; input: any } }
-  | { type: 'tool_result'; data: { tool: string; output: string } }
+  | { type: 'tool_result'; data: { tool: string; output: string; id?: string; isError?: boolean } }
   | { type: 'error'; data: string }
-  | { type: 'done' }
+  | { type: 'done'; message?: any }
 
 // Convert AppSettings to AgentConfig for the Agent
 function settingsToAgentConfig(s: AppSettings): AgentConfig {
@@ -112,14 +112,14 @@ class Bridge {
           case 'tool_result':
             yield {
               type: 'tool_result',
-              data: { tool: event.name, output: event.result || '' },
+              data: { tool: event.name, output: event.result || '', id: event.id, isError: (event as any).is_error },
             }
             break
           case 'error':
             yield { type: 'error', data: event.error }
             break
           case 'done':
-            yield { type: 'done' }
+            yield { type: 'done', message }
             break
         }
       }
