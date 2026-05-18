@@ -1,330 +1,233 @@
-@import "tailwindcss";
+/* CSS variables and eye-care color replacement — v0.4.1 */
 
-/* === Compatibility: Lock viewport, prevent all unwanted gestures === */
-html, body {
+:root {
+  /* Gray scale — Dark theme defaults */
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-850: #1e1e1e;
+  --gray-900: #171717;
+  --gray-950: #0a0a0a;
+
+  /* Semantic colors — Dark theme defaults */
+  --bg-primary: var(--gray-950);
+  --bg-secondary: var(--gray-900);
+  --bg-elevated: var(--gray-850);
+  --bg-surface: var(--gray-800);
+  --border-color: var(--gray-800);
+  --text-primary: var(--gray-50);
+  --text-secondary: var(--gray-400);
+  --text-muted: var(--gray-500);
+  --accent: #e94560;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --message-user-bg: #1a1a2e;
+  --message-user-border: #2a2a4a;
+  --message-ai-bg: #1e1e1e;
+  --message-ai-border: #2e2e2e;
+  --code-bg: #1e1e2e;
+  --code-text: #e2e8f0;
+  --code-header-bg: #2d2d3f;
+
+  /* Glass defaults */
+  --glass-bg: rgba(30, 30, 30, 0.7);
+  --glass-bg-hover: rgba(40, 40, 40, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 20px;
+
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* ─── Splash screen ─── */
+#splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+}
+#splash.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ─── Eye care: color replacement ─── */
+/*
+ * Injected as CSS custom properties by App.tsx:
+ *   --eyecare-src-0, --eyecare-tgt-0  (up to 49 pairs)
+ *   --eyecare-intensity (0–1)
+ *
+ * In dark themes, black text on dark bg is unreadable.
+ * We fix it by using eye care colors for text and background
+ * when the eye care filter is active.
+ */
+
+[data-eyecare="on"] {
+  /* In eye care mode, text and background should use eye care colors
+     for better readability. App.tsx sets --eyecare-bg and --eyecare-text
+     based on the filter colors. */
+}
+
+/* ─── Eye care toggle animation ─── */
+/* Smooth cross-fade when toggling eye care on/off */
+html,
+html * {
+  transition: filter 0.6s ease, color 0.4s ease, background-color 0.4s ease !important;
+}
+
+/* ─── Glass mode ─── */
+/*
+ * Glass morphism effect
+ * Controlled by: data-glass="on|off" and --glass-opacity
+ *
+ * When glass is ON, the page background uses the wallpaper image
+ * (set by native via --wallpaper-url), and containers become
+ * semi-transparent with backdrop blur.
+ *
+ * Structure:
+ *   .app-root  → wallpaper background (when glass on)
+ *     .app-header → semi-transparent with blur
+ *       .app-icon, .app-title, .header-btn
+ *     .app-content → transparent to show wallpaper
+ *       .glass-card → cards with glass effect
+ *       .glass-input-bar → input bar with glass effect
+ *     .app-nav → semi-transparent with blur
+ *       .nav-item → transparent, .nav-item.active gets accent glow
+ */
+
+/* Page-level wallpaper background (set by App.tsx) */
+[data-glass="on"] body {
+  background-image: var(--wallpaper-url) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+}
+
+/* Glass containers: semi-transparent with blur */
+[data-glass="on"] .app-header,
+[data-glass="on"] .app-nav {
+  background: rgba(15, 15, 15, var(--glass-opacity, 0.7)) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  border-color: var(--glass-border) !important;
+}
+
+/* Content area: transparent to show wallpaper */
+[data-glass="on"] .app-content {
+  background: transparent !important;
+}
+
+/* Glass cards */
+[data-glass="on"] .glass-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+[data-glass="on"] .glass-card:hover {
+  background: var(--glass-bg-hover) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Glass input bar */
+[data-glass="on"] .glass-input-bar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Nav items in glass mode: active gets accent glow, no white background leak */
+[data-glass="on"] .nav-item.active {
+  background: rgba(233, 69, 96, 0.1) !important;
+  box-shadow: 0 0 12px rgba(233, 69, 96, 0.15) !important;
+}
+[data-glass="on"] .nav-item {
+  background: transparent !important;
+}
+
+/* Glass mode: input buttons */
+[data-glass="on"] .input-btn {
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+}
+[data-glass="on"] .input-btn:hover {
+  background: var(--glass-bg-hover) !important;
+}
+[data-glass="on"] .input-btn.send {
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+[data-glass="on"] .input-btn.send:hover {
+  background: rgba(233, 69, 96, 0.1) !important;
+}
+
+/* ─── Font size dynamic tokens (set by App.tsx) ─── */
+/* App.tsx reads fontSize from settings and sets:
+   --app-font-size: 14       (number, for calc)
+   --app-font-size-px: 14px  (string, for direct use)
+
+   .ui-font    → 'font-size: var(--app-font-size-px)'
+   .ui-h1      → 'font-size: calc(var(--app-font-size) * 1.6)px' etc.
+
+   This ensures the font scale switch in Settings takes effect immediately.
+*/
+
+/* ─── Keyboard handling ─── */
+/* When mobile keyboard opens, the viewport height shrinks.
+   We need the chat area to shrink with it, not get covered. */
+html {
+  height: 100%;
+  overflow: hidden;
+  /* Prevent pull-to-refresh and overscroll bounce */
+  overscroll-behavior: none;
+}
+
+body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  overscroll-behavior: none;
-  -webkit-overscroll-behavior: none;
-  position: fixed;
-  width: 100%;
   height: 100%;
-  /* Lock font size — prevent system large font from breaking layout */
+  overflow: hidden;
   -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  /* Prevent tap highlight, double-tap zoom */
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  /* Smooth text rendering */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Base font */
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: var(--app-font-size-px, 14px);
-  line-height: 1.5;
-  color: #e0e0e0;
-  background: #0f0f23;
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  font-size: var(--app-font-size, 14px) !important;
+  transition: background-color 0.4s ease, color 0.4s ease !important;
 }
 
+#root {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Reset default browser styles */
 * {
   box-sizing: border-box;
-  /* Prevent long-press context menu on mobile */
-  -webkit-touch-callout: none;
 }
 
-/* === Root container === */
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  zoom: calc(var(--app-font-size, 14) / 14);
+/* Button base styles for consistency */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--text-primary);
+  transition: background-color 0.2s ease;
 }
-
-/* === Only allow vertical scrolling inside designated containers === */
-.overflow-y-auto {
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  -webkit-overscroll-behavior: contain;
-}
-
-/* === Prevent text selection on UI elements === */
-nav, button, [role="button"] {
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* === Allow text selection in message content === */
-.msg-content {
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-/* === Scrollbar === */
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 2px; }
-
-/* === Placeholder color for input === */
-input::placeholder, textarea::placeholder {
-  color: #555577;
-  -webkit-text-fill-color: #555577;
-}
-
-/* === Focus style for inputs === */
-input:focus, textarea:focus {
-  outline: none;
-}
-
-/* === Disable resize on textareas === */
-textarea {
-  resize: none;
-}
-
-/* === Animation: reduce motion if user prefers === */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ===== Theme System ===== */
-/* ===== Design Tokens ===== */
-:root {
-  transition: background-color 0.35s ease, color 0.35s ease;
-  /* ── 背景层级 ── */
-  --bg-primary:     #0d0d2b;
-  --bg-secondary:   #151538;
-  --bg-tertiary:    #1a1a3a;
-  --bg-elevated:    #22224a;
-  --bg-overlay:     rgba(0, 0, 0, 0.25);
-  /* 保留兼容 */
-  --bg-card:        #151538;
-
-  /* ── 文字层级 ── */
-  --text-primary:   #ffffff;
-  --text-secondary: #a0a0b8;
-  --text-tertiary:  #6b6b80;
-  --text-disabled:  #4a4a5e;
-  --text-inverse:   #0d0d2b;
-  /* 保留兼容 */
-  --border-color:   rgba(255,255,255,0.08);
-
-  /* ── 主题色 ── */
-  --accent:         #e94560;
-  --accent-hover:   #c73e54;
-  --accent-soft:    rgba(233, 69, 96, 0.12);
-  --accent-glow:    rgba(233, 69, 96, 0.25);
-
-  /* ── 功能色 ── */
-  --purple:         #6C5CE7;
-  --purple-soft:    rgba(108, 92, 231, 0.12);
-  --yellow:         #FDCB6E;
-  --yellow-soft:    rgba(253, 203, 110, 0.12);
-  --success:        #4CAF50;
-  --success-soft:   rgba(76, 175, 80, 0.12);
-  --danger:         #FF5252;
-  --danger-soft:    rgba(255, 82, 82, 0.12);
-  --warning:        #FF9800;
-  --warning-soft:   rgba(255, 152, 0, 0.12);
-  --teal:           #00b894;
-  --teal-soft:      rgba(0, 184, 148, 0.12);
-  --blue:           #3498db;
-  --blue-soft:      rgba(52, 152, 219, 0.12);
-
-  /* ── 深色灰度 ── */
-  --gray-50:    #f0f0f5;
-  --gray-100:   #d8d8e8;
-  --gray-200:   #b0b0c0;
-  --gray-300:   #8888a0;
-  --gray-400:   #6b6b80;
-  --gray-500:   #4e4e65;
-  --gray-600:   #3a3a50;
-  --gray-700:   #2a2a40;
-  --gray-800:   #1e1e35;
-  --gray-900:   #141428;
-
-  /* ── 边框与分割 ── */
-  --border:         #2a2a4a;
-  --border-focus:   var(--accent);
-  --border-soft:    #1e1e3e;
-  --divider:        rgba(255, 255, 255, 0.06);
-
-  /* ── 圆角 ── */
-  --radius-xs:    4px;
-  --radius-sm:    6px;
-  --radius-md:    10px;
-  --radius-lg:    16px;
-  --radius-xl:    24px;
-  --radius-full:  9999px;
-
-  /* ── 阴影 ── */
-  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-
-  /* ── 间距阶梯（4px 倍数） ── */
-  --space-0:   0;
-  --space-1:   4px;
-  --space-2:   8px;
-  --space-3:   12px;
-  --space-4:   16px;
-  --space-5:   20px;
-  --space-6:   24px;
-  --space-8:   32px;
-  --space-10:  40px;
-  --space-12:  48px;
-  --space-16:  64px;
-
-  /* ── 字号体系（12 档） ── */
-  --text-2xs:  9px;
-  --text-xs:   10px;
-  --text-sm:   12px;
-  --text-base: 14px;
-  --text-md:   15px;
-  --text-lg:   16px;
-  --text-xl:   18px;
-  --text-2xl:  20px;
-  --text-3xl:  24px;
-  --text-4xl:  32px;
-  --text-5xl:  40px;
-  --text-6xl:  48px;
-
-  /* ── 字重 ── */
-  --font-normal:   400;
-  --font-medium:   500;
-  --font-semibold: 600;
-  --font-bold:     700;
-
-  /* ── 动效 ── */
-  --ease-default:    cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in:         cubic-bezier(0.4, 0, 1, 1);
-  --ease-out:        cubic-bezier(0, 0, 0.2, 1);
-  --ease-bounce:     cubic-bezier(0.34, 1.56, 0.64, 1);
-  --duration-fast:   150ms;
-  --duration-normal: 250ms;
-  --duration-slow:   400ms;
-
-  /* ── z-index ── */
-  --z-base:      0;
-  --z-dropdown:  1000;
-  --z-sticky:    2000;
-  --z-drawer:    5000;
-  --z-modal:     6000;
-  --z-tooltip:   7000;
-  --z-toast:     8000;
-  --z-loading:   9000;
-}
-
-[data-theme="dark"] {
-  --bg-primary: #0f0f23;
-  --text-primary: #e0e0e0;
-}
-[data-theme="light"] {
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #e8e8e8;
-  --bg-card: #ffffff;
-  --text-primary: #222;
-  --text-secondary: #555;
-  --border-color: rgba(0,0,0,0.1);
-}
-[data-theme="pureWhite"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f0f0f0;
-  --bg-card: #ffffff;
-  --text-primary: #222;
-  --text-secondary: #555;
-  --border-color: rgba(0,0,0,0.08);
-}
-[data-theme="pureBlack"] {
-  --bg-primary: #000000;
-  --text-primary: #e0e0e0;
-}
-
-/* Apply theme to body */
-body {
-  background: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-  font-size: var(--app-font-size, 14px) !important;
-}
-
-/* Force theme on all containers */
-#root,
-#root > div,
-#root > div > div {
-  background: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Font size inheritance */
-#root * {
-  font-size: inherit;
-}
-#root button, #root input, #root textarea, #root select {
-  font-size: var(--app-font-size, 14px) !important;
-}
-
-/* ===== Eye Care Mode ===== */
-[data-eyecare="on"]::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 200, 100, 0.08);
-  pointer-events: none;
-  z-index: 99999;
-}
-
-/* ===== Liquid Glass Effect ===== */
-
-/* header / nav — 最厚的玻璃 */
-[data-glass="on"] header,
-[data-glass="on"] nav {
-  backdrop-filter: blur(30px) saturate(1.6) brightness(1.05) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(1.6) brightness(1.05) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(13,13,43,0.45) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 24px rgba(0,0,0,0.2) !important;
-}
-
-/* 模态框 / 面板容器 — 液态玻璃核心 */
-[data-glass="on"] .glass-panel {
-  backdrop-filter: blur(28px) saturate(1.5) brightness(1.03) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(1.5) brightness(1.03) !important;
-  background: linear-gradient(165deg, rgba(255,255,255,0.10) 0%, rgba(13,13,43,0.50) 60%, rgba(13,13,43,0.60) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.20),
-    inset 0 -1px 0 rgba(255,255,255,0.05),
-    0 8px 40px rgba(0,0,0,0.35) !important;
-}
-
-/* 按钮 / 通用背景元素 */
-[data-glass="on"] button,
-[data-glass="on"] [style*="background"] {
-  backdrop-filter: blur(20px) saturate(1.3) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-/* 输入框 / 文本区 — 稍深的底色保证可读性 */
-[data-glass="on"] input,
-[data-glass="on"] textarea {
-  backdrop-filter: blur(16px) saturate(1.2) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
-  background-color: rgba(13, 13, 43, 0.50) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: var(--text-primary) !important;
-}
-
-/* 文字防混叠 — 玻璃模式下给文字加微阴影 */
-[data-glass="on"] label,
-[data-glass="on"] span,
-[data-glass="on"] p,
-[data-glass="on"] div {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+button:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
