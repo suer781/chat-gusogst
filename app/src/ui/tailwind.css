@@ -93,6 +93,7 @@ textarea {
 /* ===== Theme System ===== */
 /* ===== Design Tokens ===== */
 :root {
+  transition: background-color 0.35s ease, color 0.35s ease;
   /* ── 背景层级 ── */
   --bg-primary:     #0d0d2b;
   --bg-secondary:   #151538;

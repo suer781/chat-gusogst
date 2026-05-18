@@ -2,15 +2,16 @@ import { useState } from 'react'
 import { useSettingsStore, DEFAULT_EYE_CARE_MAPPINGS, genMappingId } from '../stores'
 import { EyeCareColorMapper } from './EyeCareColorMapper'
 import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette } from 'lucide-react'
+import { t } from '../i18n'
 
 type ThemeMode = 'system' | 'light' | 'dark' | 'pureWhite' | 'pureBlack'
 
-const THEME_OPTIONS: { key: ThemeMode; icon: typeof Sun; label: string }[] = [
-  { key: 'system', icon: Monitor, label: '系统' },
-  { key: 'light', icon: Sun, label: '浅色' },
-  { key: 'dark', icon: Moon, label: '深色' },
-  { key: 'pureWhite', icon: Sun, label: '纯白' },
-  { key: 'pureBlack', icon: Moon, label: '纯黑' },
+const THEME_OPTIONS: { key: ThemeMode; icon: typeof Sun; labelKey: string }[] = [
+  { key: 'system', icon: Monitor, labelKey: 'settings.basic.system' as const },
+  { key: 'light', icon: Sun, labelKey: 'settings.basic.light' as const },
+  { key: 'dark', icon: Moon, labelKey: 'settings.basic.dark' as const },
+  { key: 'pureWhite', icon: Sun, labelKey: 'settings.basic.pureWhite' as const },
+  { key: 'pureBlack', icon: Moon, labelKey: 'settings.basic.pureBlack' as const },
 ]
 
 const FONT_SIZES = [12, 13, 14, 15, 16, 17, 18, 20, 22]
@@ -45,12 +46,12 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
           fontSize: 20, cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>←</button>
-        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>基础设置</span>
+        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{t('settings.basic.pageTitle')}</span>
       </div>
 
       <Section title="主题模式" icon={<Palette size={18} />}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-          {THEME_OPTIONS.map(({ key, icon: Icon, label }) => (
+          {THEME_OPTIONS.map(({ key, icon: Icon, labelKey }) => (
             <button key={key} onClick={() => setThemeMode(key)} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
               padding: '14px 4px', borderRadius: 14,
@@ -60,13 +61,13 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
               cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             }}>
               <Icon size={22} />
-              <span style={{ fontSize: 11, fontWeight: themeMode === key ? 600 : 400 }}>{label}</span>
+              <span style={{ fontSize: 11, fontWeight: themeMode === key ? 600 : 400 }}>{t(labelKey)}</span>
             </button>
           ))}
         </div>
       </Section>
 
-      <Section title="字体大小" icon={<Type size={18} />}>
+      <Section title={t('settings.basic.fontSize')} icon={<Type size={18} />}> 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ color: 'var(--gray-400)', fontSize: 12, minWidth: 20 }}>A</span>
           <div style={{ flex: 1 }}>
@@ -88,8 +89,8 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
         </div>
       </Section>
 
-      <Section title="护眼色彩映射" icon={<Eye size={18} />}>
-        <ToggleRow label="开启护眼模式" desc="将界面色温调整为暖色调，减少蓝光"
+      <Section title={t('settings.basic.eyeCare')} icon={<Eye size={18} />}> 
+        <ToggleRow label={t('settings.basic.eyeCareToggle')} desc={t('settings.basic.eyeCareDesc')}
           checked={eyeCareEnabled} onChange={setEyeCareEnabled} />
         {eyeCareEnabled && (
           <div style={{ marginTop: 12 }}>
@@ -100,7 +101,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
               cursor: 'pointer', textAlign: 'left',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
-              <span>自定义映射色</span>
+              <span>{t('settings.basic.customMapping')}</span>
               <span style={{ transform: showEyeCareDetail ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>›</span>
             </button>
           <EyeCareColorMapper
@@ -113,8 +114,8 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
         )}
       </Section>
 
-      <Section title="视觉效果" icon={<Droplets size={18} />}>
-        <ToggleRow label="毛玻璃效果" desc="开启半透明模糊背景，关闭后使用纯色背景以提升性能"
+      <Section title={t('settings.basic.glassTitle')} icon={<Droplets size={18} />}> 
+        <ToggleRow label={t('settings.basic.glassLabel')} desc={t('settings.basic.glassDesc')}
           checked={glassEnabled} onChange={setGlassEnabled} />
       </Section>
     </div>

@@ -43,7 +43,7 @@
 
 ## documentation
 
-- docs/INTERFACE_SPEC.md — 接口规范 + 功能地图 + 类型冲突记录 + 修改规则
+- docs/UI_ADAPTER.md — 接口规范 + 类型映射 + 类型冲突记录 + 修改规则 + 文件地图
 - docs/REFACTOR_STATUS.md — 本文件
 
 ## key decisions

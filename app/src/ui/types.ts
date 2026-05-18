@@ -38,7 +38,7 @@ export interface ThinkingBlock {
 export type ThinkingMap = Record<string, ThinkingBlock[]>
 
 // UI AgentConfig extends the base with display preferences
-import type { AgentConfig as BaseAgentConfig, Persona } from '../shared/agent-types'
+import type { AgentConfig as BaseAgentConfig, MCPServerConfig, Persona } from '../shared/agent-types'
 
 export interface AppSettings {
   // Agent config (passed to bridge)
@@ -55,6 +55,7 @@ export interface AppSettings {
   searchEnabled: boolean
   searchEngine: string
   searchApiKey: string
+  mcpServers: MCPServerConfig[]
   channel: string
   maxRounds: number
   memoryEnabled: boolean

@@ -79,6 +79,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   searchEnabled: false,
   searchEngine: 'duckduckgo',
   searchApiKey: '',
+  mcpServers: [],
   channel: 'default',
   maxRounds: 10,
   memoryEnabled: true,

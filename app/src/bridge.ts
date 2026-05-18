@@ -1,5 +1,5 @@
 import { Agent } from './agent/core/agent'
-import type { AgentConfig, AgentEvent } from './shared/agent-types'
+import type { AgentConfig, AgentEvent, MCPServerConfig } from './shared/agent-types'
 import type { AppSettings } from './ui/types'
 
 // StreamEvent format that ChatView consumes
@@ -25,6 +25,13 @@ function settingsToAgentConfig(s: AppSettings): AgentConfig {
     },
     persona: s.persona,
     memory: { enabled: s.memoryEnabled },
+    search: s.searchEnabled
+      ? {
+          engine: s.searchEngine as 'tavily' | 'duckduckgo' | 'auto',
+          tavilyApiKey: s.searchApiKey || undefined,
+        }
+      : undefined,
+    mcpServers: s.mcpServers?.filter(m => m.enabled !== false) || undefined,
     maxHistoryTokens: s.maxHistoryTokens,
   }
 }
@@ -54,7 +61,8 @@ class Bridge {
   private _lastKey = ''
   ensureInit(settings: AppSettings): boolean {
     const key = [settings.model.provider, settings.model.model, settings.model.apiKey,
-      settings.persona?.id, settings.memoryEnabled, settings.searchEnabled].join('|')
+      settings.persona?.id, settings.memoryEnabled, settings.searchEnabled,
+      JSON.stringify(settings.mcpServers)].join('|')
     if (key !== this._lastKey || !this._initialized) {
       this._lastKey = key
       return this.init(settings)
