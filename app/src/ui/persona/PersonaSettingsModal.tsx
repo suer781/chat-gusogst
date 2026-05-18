@@ -99,7 +99,7 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
   const model = useSettingsStore((s) => s.model);
 
   useEffect(() => { setPrompt(persona.systemPrompt || ''); }, [persona.systemPrompt]);
-  useEffect(() => { initialStateRef.current = stateKey(prompt, sliders, overrideGlobal, autoMode); }, [visible]);
+  useEffect(() => { initialStateRef.current = stateKey(persona.systemPrompt || '', sliders, overrideGlobal, autoMode); }, [visible]);
 
   // crash recovery: check for snapshot on open
   useEffect(() => {
