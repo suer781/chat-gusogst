@@ -269,7 +269,7 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
               {overrideGlobal ? '使用本角色独立参数（覆盖全局）' : '跟随全局模型设置'}
             </div>
           </div>
-          <button onClick={() => { hapticMedium(); setOverrideGlobal((v: boolean) => { const nv = !v; autoSave(prompt, sliders, nv, autoMode); return nv; })} style={{
+          <button onClick={() => { hapticMedium(); setOverrideGlobal((v: boolean) => { const nv = !v; autoSave(prompt, sliders, nv, autoMode); return nv; })}} style={{
             width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', position: 'relative',
             background: overrideGlobal ? 'var(--accent)' : 'var(--gray-600)', transition: 'background 0.2s',
           }}>

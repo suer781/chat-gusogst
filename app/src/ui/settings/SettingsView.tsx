@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Palette, Bot, Link2, Brain, Search, Info } from 'lucide-react'
 import { t } from '../i18n'
+import { light as hapticLight } from '../haptics'
 import { BasicSettings } from './BasicSettings'
 import { ModelSettings } from './ModelSettings'
 import { PlatformSettings } from './PlatformSettings'
@@ -85,10 +86,6 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-    </div>
-  )
-}
-tyle>
     </div>
   )
 }
