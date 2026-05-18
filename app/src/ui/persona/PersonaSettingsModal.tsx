@@ -149,8 +149,8 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
   );
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: 16 }}>
-      <div style={{ background: 'var(--bg-primary)', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '85vh', overflow: 'auto', padding: 20, border: '1px solid var(--border-soft)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="glass-panel" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: 16, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+      <div className="glass-panel" style={{ borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '85vh', overflow: 'auto', padding: 20, border: '1px solid rgba(255,255,255,0.15)', display: 'flex', flexDirection: 'column', gap: 16, background: 'linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(13,13,43,0.55) 100%)' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

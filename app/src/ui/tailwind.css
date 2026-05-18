@@ -278,14 +278,31 @@ body {
   z-index: 99999;
 }
 
-/* ===== Glass Effect ===== */
+/* ===== Liquid Glass Effect ===== */
+
+/* header / nav — 最厚的玻璃 */
 [data-glass="on"] header,
 [data-glass="on"] nav {
-  backdrop-filter: blur(24px) saturate(1.4) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
-  background-color: rgba(13, 13, 43, 0.55) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(30px) saturate(1.6) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(1.6) brightness(1.05) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(13,13,43,0.45) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 24px rgba(0,0,0,0.2) !important;
 }
+
+/* 模态框 / 面板容器 — 液态玻璃核心 */
+[data-glass="on"] .glass-panel {
+  backdrop-filter: blur(28px) saturate(1.5) brightness(1.03) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.5) brightness(1.03) !important;
+  background: linear-gradient(165deg, rgba(255,255,255,0.10) 0%, rgba(13,13,43,0.50) 60%, rgba(13,13,43,0.60) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    inset 0 -1px 0 rgba(255,255,255,0.05),
+    0 8px 40px rgba(0,0,0,0.35) !important;
+}
+
+/* 按钮 / 通用背景元素 */
 [data-glass="on"] button,
 [data-glass="on"] [style*="background"] {
   backdrop-filter: blur(20px) saturate(1.3) !important;
@@ -293,10 +310,21 @@ body {
   background-color: rgba(255, 255, 255, 0.06) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
+
+/* 输入框 / 文本区 — 稍深的底色保证可读性 */
 [data-glass="on"] input,
 [data-glass="on"] textarea {
   backdrop-filter: blur(16px) saturate(1.2) !important;
   -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(13, 13, 43, 0.50) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 文字防混叠 — 玻璃模式下给文字加微阴影 */
+[data-glass="on"] label,
+[data-glass="on"] span,
+[data-glass="on"] p,
+[data-glass="on"] div {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
