@@ -21,7 +21,7 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   /* Base font */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: 14px;
+  font-size: var(--app-font-size-px, 14px);
   line-height: 1.5;
   color: #e0e0e0;
   background: #0f0f23;
@@ -39,6 +39,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   position: relative;
+  zoom: calc(var(--app-font-size, 14) / 14);
 }
 
 /* === Only allow vertical scrolling inside designated containers === */
@@ -278,15 +279,24 @@ body {
 }
 
 /* ===== Glass Effect ===== */
+[data-glass="on"] header,
+[data-glass="on"] nav {
+  backdrop-filter: blur(24px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
+  background-color: rgba(13, 13, 43, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
 [data-glass="on"] button,
 [data-glass="on"] [style*="background"] {
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  background-color: rgba(255,255,255,0.05) !important;
+  backdrop-filter: blur(20px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 [data-glass="on"] input,
 [data-glass="on"] textarea {
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
-  background-color: rgba(255,255,255,0.03) !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }

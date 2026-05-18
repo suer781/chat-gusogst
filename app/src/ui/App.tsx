@@ -29,7 +29,8 @@ export default function App() {
     const body = document.body
     root.setAttribute('data-theme', themeMode)
     // 主题颜色由 CSS 变量接管，不再设 inline style
-    root.style.setProperty('--app-font-size', fontSize + 'px')
+    root.style.setProperty('--app-font-size', String(fontSize))
+    root.style.setProperty('--app-font-size-px', fontSize + 'px')
     body.style.fontSize = fontSize + 'px'
     if (eyeCareEnabled) {
       // 生成颜色映射 CSS 变量
@@ -89,7 +90,7 @@ export default function App() {
           { id: 'providers' as View, icon: Server, labelKey: 'nav.providers' },
           { id: 'settings' as View, icon: Settings, labelKey: 'nav.settings' }].map((item) => (
           <button key={item.id} onClick={() => setView(item.id)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', color: (view === item.id || (view === 'personaProfile' && item.id === 'persona')) ? 'var(--accent)' : 'var(--gray-400)' }}>
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', padding: '10px 18px', minWidth: 64, minHeight: 48, color: (view === item.id || (view === 'personaProfile' && item.id === 'persona')) ? 'var(--accent)' : 'var(--gray-400)' }}>
             <item.icon size={20} />
             <span style={{ fontSize: 10 }}>{t(item.labelKey)}</span>
           </button>
