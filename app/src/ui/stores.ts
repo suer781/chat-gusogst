@@ -102,6 +102,7 @@ interface SettingsState extends AppSettings {
   glassEnabled: boolean
   glassOpacity: number  // 0-100, 毛玻璃透明度
   hapticEnabled: boolean  // 转子马达触觉反馈
+  hdrEnabled: boolean  // HDR高动态玻璃质感
 
   // Model setters
   setModel: (provider: string, model: string, apiKey?: string, baseUrl?: string) => void
@@ -136,6 +137,7 @@ interface SettingsState extends AppSettings {
   setGlassEnabled: (v: boolean) => void
   setGlassOpacity: (v: number) => void
   setHapticEnabled: (v: boolean) => void
+  setHdrEnabled: (v: boolean) => void
   setLanguage: (lang: Lang) => void
 
   // Bulk update
@@ -155,6 +157,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   glassEnabled: true,
   glassOpacity: 80,
   hapticEnabled: true,
+  hdrEnabled: true,
 
   // Model
   setModel: (provider, model, apiKey, baseUrl) => set((s) => ({
@@ -191,6 +194,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setGlassEnabled: (glassEnabled) => set({ glassEnabled }),
   setGlassOpacity: (glassOpacity) => set({ glassOpacity }),
   setHapticEnabled: (hapticEnabled) => set({ hapticEnabled }),
+  setHdrEnabled: (hdrEnabled) => set({ hdrEnabled }),
   setLanguage: (lang) => {
     setLang(lang)
     notifyLangChange()

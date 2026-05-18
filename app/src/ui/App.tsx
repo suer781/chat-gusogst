@@ -33,6 +33,7 @@ export default function App() {
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
   const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
+  const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
 
   // 导航指示器位置
   const activeIdx = NAV_ITEMS.findIndex((item) =>
@@ -65,7 +66,8 @@ export default function App() {
     root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
     root.style.setProperty('--glass-opacity', String(glassOpacity / 100))
     setHapticEnabled(hapticEnabled)
-  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled])
+    root.setAttribute('data-hdr', hdrEnabled ? 'on' : 'off')
+  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled, hdrEnabled])
 
   useEffect(() => {
     const unsub = onLangChange(() => forceUpdate((n) => n + 1))

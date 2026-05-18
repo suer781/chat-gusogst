@@ -33,6 +33,8 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const setGlassEnabled = useSettingsStore((s) => s.setGlassEnabled)
   const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
   const setHapticEnabled = useSettingsStore((s) => s.setHapticEnabled)
+  const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
+  const setHdrEnabled = useSettingsStore((s) => s.setHdrEnabled)
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
   const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity)
 
@@ -127,6 +129,11 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <Section title="触觉反馈" icon={<Smartphone size={18} />}>
         <ToggleRow label="震动反馈" desc="按钮点击时的转子马达震动（需设备支持）"
           checked={hapticEnabled} onChange={setHapticEnabled} />
+      </Section>
+
+      <Section title="HDR 渲染" icon={<Sun size={18} />}>
+        <ToggleRow label="HDR 玻璃质感" desc="利用屏幕高亮度模拟真实玻璃透光效果（需 HDR 屏幕）"
+          checked={hdrEnabled} onChange={setHdrEnabled} />
       </Section>
     </div>
   )

@@ -462,6 +462,7 @@ input:focus, textarea:focus {
 }
 
 @media (dynamic-range: high) {
+[data-hdr="on"] {
 
   /* 1. 毛玻璃边缘高光 — 模拟真实玻璃的折射亮边 */
   [data-glass="on"] .app-header {
@@ -573,6 +574,7 @@ input:focus, textarea:focus {
       0 0 0 1px color(display-p3 1 1 1 / 0.08);
   }
 
+} /* end [data-hdr="on"] */
 } /* end @media (dynamic-range: high) */
 
 /* ═══════════════════════════════════════════════════
@@ -581,37 +583,37 @@ input:focus, textarea:focus {
    ═══════════════════════════════════════════════════ */
 
 @media (dynamic-range: high) {
-  [data-theme="dark"][data-glass="on"] .app-header {
+  [data-hdr="on"][data-theme="dark"][data-glass="on"] .app-header {
     box-shadow:
       inset 0 1px 0 color(display-p3 1.05 1.05 1.08 / 0.1),
       0 1px 8px color(display-p3 0 0 0 / 0.4);
   }
-  [data-theme="dark"][data-glass="on"] .app-nav {
+  [data-hdr="on"][data-theme="dark"][data-glass="on"] .app-nav {
     box-shadow:
       inset 0 -1px 0 color(display-p3 1.02 1.02 1.04 / 0.06);
   }
-  [data-theme="dark"][data-glass="on"] .glass-card {
+  [data-hdr="on"][data-theme="dark"][data-glass="on"] .glass-card {
     border-top: 1px solid color(display-p3 1.04 1.04 1.06 / 0.06);
     box-shadow:
       inset 0 1px 0 color(display-p3 1.02 1.02 1.04 / 0.04),
       0 4px 16px color(display-p3 0 0 0 / 0.3);
   }
-  [data-theme="dark"] .nav-indicator > div {
+  [data-hdr="on"][data-theme="dark"] .nav-indicator > div {
     background: color(display-p3 1.08 0.38 0.46 / 0.12) !important;
     box-shadow:
       0 0 12px color(display-p3 1.06 0.36 0.44 / 0.12),
       0 0 24px color(display-p3 1.04 0.34 0.42 / 0.04);
   }
-  [data-theme="dark"] button:active {
+  [data-hdr="on"][data-theme="dark"] button:active {
     box-shadow:
       inset 0 0 8px color(display-p3 1.04 1.04 1.06 / 0.08);
   }
-  [data-theme="dark"] input:focus, [data-theme="dark"] textarea:focus {
+  [data-hdr="on"][data-theme="dark"] input:focus, [data-hdr="on"][data-theme="dark"] textarea:focus {
     box-shadow:
       0 0 0 2px color(display-p3 1.04 0.38 0.44 / 0.1),
       0 0 8px color(display-p3 1.04 0.38 0.44 / 0.04);
   }
-  [data-theme="dark"] .app-content::before {
+  [data-hdr="on"][data-theme="dark"] .app-content::before {
     background: radial-gradient(
       ellipse at 50% 100%,
       color(display-p3 1.04 1.04 1.06 / 0.015) 0%,
