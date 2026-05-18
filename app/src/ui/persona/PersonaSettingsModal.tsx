@@ -154,15 +154,15 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: 18, color: '#e0e0e0' }}>{t('persona.settings') || '角色设置'}</h3>
+          <h3 style={{ margin: 0, fontSize: 18, color: '#e0e0e0' }}>{t('persona.settings.title') || '角色设置'}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: 20, cursor: 'pointer' }}>✕</button>
         </div>
 
         {/* 系统提示词 */}
         <div>
-          <label style={labelStyle}>📝 {t('persona.systemPrompt') || '系统提示词'}</label>
+          <label style={labelStyle}>📝 {t('persona.settings.systemPrompt') || '系统提示词'}</label>
           <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={5} style={{ ...textStyle, minHeight: 100 }}
-            placeholder={t('persona.systemPromptPlaceholder') || '输入角色的系统提示词...'} />
+            placeholder={t('persona.settings.promptPlaceholder') || '输入角色的系统提示词...'} />
           <div style={{ textAlign: 'right', fontSize: 12, color: '#666', marginTop: 4 }}>{prompt.length} chars</div>
         </div>
 
@@ -192,9 +192,9 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
           <label style={labelStyle}>🔄 聊天时自动调节</label>
           <div style={{ display: 'flex', gap: 8 }}>
             {([
-              { id: 'off' as AutoMode, label: '无' },
-              { id: 'rule' as AutoMode, label: '规则引擎' },
-              { id: 'llm' as AutoMode, label: '自主理解' },
+              { id: 'off' as AutoMode, label: t('persona.settings.modeOff') },
+              { id: 'rule' as AutoMode, label: t('persona.settings.modeRule') },
+              { id: 'llm' as AutoMode, label: t('persona.settings.modeLlm') },
             ]).map(opt => (
               <button key={opt.id} onClick={() => setAutoMode(opt.id)} style={btnStyle(autoMode === opt.id)}>
                 {opt.label}
@@ -206,10 +206,10 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
         {/* 按钮 */}
         <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
           <button onClick={onClose} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid #333355', background: '#1a1a3a', color: '#8888aa', fontSize: 14, cursor: 'pointer' }}>
-            {t('common.cancel') || '取消'}
+            {t('persona.settings.cancel') || '取消'}
           </button>
           <button onClick={save} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #e94560, #c73e54)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            {t('persona.save') || '保存设置'}
+            {t('persona.settings.save') || '保存设置'}
           </button>
         </div>
       </div>

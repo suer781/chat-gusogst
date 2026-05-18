@@ -2,10 +2,10 @@ import { useSettingsStore } from '../stores'
 import { Search, Key, Globe } from 'lucide-react'
 
 const ENGINES = [
-  { id: 'duckduckgo', label: 'DuckDuckGo', desc: '免费，无需 API Key', free: true },
-  { id: 'tavily',     label: 'Tavily',     desc: 'AI 优化搜索，需要 API Key', free: false },
-  { id: 'serpapi',     label: 'SerpAPI',    desc: 'Google 搜索结果，需要 API Key', free: false },
-  { id: 'bing',        label: 'Bing',       desc: '微软搜索，需要 API Key', free: false },
+  { id: 'duckduckgo', label: 'DuckDuckGo', desc: t('search.duckduckgo.desc'), free: true },
+  { id: 'tavily',     label: 'Tavily',     desc: t('search.tavily.desc'), free: false },
+  { id: 'serpapi',     label: 'SerpAPI',    desc: t('search.serpapi.desc'), free: false },
+  { id: 'bing',        label: 'Bing',       desc: t('search.bing.desc'), free: false },
 ]
 
 export function SearchSettings({ onBack }: { onBack: () => void }) {

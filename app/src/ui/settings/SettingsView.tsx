@@ -11,12 +11,12 @@ import { AboutSettings } from './AboutSettings'
 type SubPage = null | 'basic' | 'model' | 'platform' | 'memory' | 'search' | 'about'
 
 const CARDS = [
-  { key: 'basic',    icon: Palette, label: '基础设置',   desc: '主题、字号、护眼、视觉效果', color: '#e94560' },
-  { key: 'model',    icon: Bot,     label: 'AI 模型',    desc: 'Provider、模型选择、参数调节',  color: '#6C5CE7' },
-  { key: 'platform', icon: Link2,   label: '平台连接',   desc: '微信、QQ、Telegram 等 16 个', color: '#0984E3' },
-  { key: 'memory',   icon: Brain,   label: '记忆',       desc: '记忆开关、容量管理',          color: '#FDCB6E' },
-  { key: 'search',   icon: Search,  label: '搜索',       desc: '搜索引擎、API Key',          color: '#E17055' },
-  { key: 'about',    icon: Info,    label: '关于',       desc: '版本、反馈、开源协议',        color: '#636E72' },
+  { key: 'basic',    icon: Palette, label: t('settings.basic.label'),   desc: t('settings.basic.desc'), color: '#e94560' },
+  { key: 'model',    icon: Bot,     label: t('settings.model.label'),    desc: t('settings.model.desc'),  color: '#6C5CE7' },
+  { key: 'platform', icon: Link2,   label: t('settings.platform.label'),   desc: t('settings.platform.desc'), color: '#0984E3' },
+  { key: 'memory',   icon: Brain,   label: t('settings.memory.label'),       desc: t('settings.memory.cardDesc'),          color: '#FDCB6E' },
+  { key: 'search',   icon: Search,  label: t('settings.search.label'),       desc: t('settings.search.cardDesc'),          color: '#E17055' },
+  { key: 'about',    icon: Info,    label: t('settings.about.label'),       desc: t('settings.about.desc'),        color: '#636E72' },
 ] as const
 
 export function SettingsView({ onDone }: { onDone: () => void }) {

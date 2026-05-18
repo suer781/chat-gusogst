@@ -5,10 +5,10 @@ import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette } from 'lucide-react'
 type ThemeMode = 'system' | 'light' | 'dark' | 'pureWhite' | 'pureBlack'
 
 const THEME_OPTIONS: { key: ThemeMode; icon: typeof Sun; label: string }[] = [
-  { key: 'system', icon: Monitor, label: '跟随系统' },
-  { key: 'light', icon: Sun, label: '浅色' },
-  { key: 'dark', icon: Moon, label: '深色' },
-  { key: 'pureWhite', icon: Sun, label: '纯白' },
+  { key: 'system', icon: Monitor, label: t('theme.system') },
+  { key: 'light', icon: Sun, label: t('theme.light') },
+  { key: 'dark', icon: Moon, label: t('theme.dark') },
+  { key: 'pureWhite', icon: Sun, label: t('theme.pureWhite') },
   { key: 'pureBlack', icon: Moon, label: '纯黑' },
 ]
 

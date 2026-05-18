@@ -5,7 +5,7 @@ const PROVIDERS = [
   { id: 'openai',    label: 'OpenAI',       placeholder: 'sk-...' },
   { id: 'anthropic', label: 'Anthropic',    placeholder: 'sk-ant-...' },
   { id: 'ollama',    label: 'Ollama',       placeholder: '' },
-  { id: 'custom',    label: '自定义',        placeholder: 'API Key' },
+  { id: 'custom',    label: t('provider.custom'),        placeholder: 'API Key' },
 ]
 
 export function ModelSettings({ onBack }: { onBack: () => void }) {
