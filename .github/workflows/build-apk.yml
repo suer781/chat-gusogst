@@ -57,11 +57,17 @@ jobs:
           cd app
           npx cap sync android
 
+      - name: Clean Gradle cache
+        run: |
+          rm -rf ~/.gradle/caches/jars-*
+          rm -rf ~/.gradle/caches/transforms-*
+          rm -rf ~/.gradle/caches/modules-*/files-*/.lock
+
       - name: Build debug APK
         run: |
           cd app/android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
