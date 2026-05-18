@@ -64,11 +64,11 @@ function MessageActions({ msg, onCopy, onRetry }: { msg: Message; onCopy: () => 
     <div className="flex items-center gap-1 mt-1" style={{ opacity: show ? 1 : 0, transition: 'opacity 0.15s' }}
       onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
       <button onClick={onCopy} className="p-1 rounded hover:bg-white/5" title="复制">
-        <Copy size={12} style={{ color: '#666' }} />
+        <Copy size={12} style={{ color: 'var(--text-secondary)' }} />
       </button>
       {onRetry && msg.role === 'assistant' && (
         <button onClick={onRetry} className="p-1 rounded hover:bg-white/5" title="重新生成">
-          <RefreshCw size={12} style={{ color: '#666' }} />
+          <RefreshCw size={12} style={{ color: 'var(--text-secondary)' }} />
         </button>
       )}
     </div>
@@ -152,20 +152,18 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   }
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#0f0f23' }}>
+    <div className="h-full flex flex-col">
       {/* ─── 顶栏 ─── */}
       <div className="shrink-0 flex items-center justify-between" style={{ padding: '8px 16px', borderBottom: '1px solid #1a1a3a' }}>
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center rounded-full" style={{ width: 32, height: 32, background: '#e9456020', color: '#e94560', fontSize: 14, fontWeight: 600 }}>{persona.name[0]}</div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 600 }}>{persona.name}</div>
-            <div style={{ fontSize: 11, color: '#666' }}>{persona.tags?.join(' · ') || t('chat.aiAssistant')}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{persona.tags?.join(' · ') || t('chat.aiAssistant')}</div>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={() => onNavigate?.('settings')} className="p-2 rounded-lg hover:bg-white/5" title={t('chat.search')}><Search size={18} style={{ color: '#666' }} /></button>
-          <button onClick={() => { const s = useSettingsStore.getState(); s.setShowMemoryHints(!s.showMemoryHints) }} className="p-2 rounded-lg hover:bg-white/5" title={t('settings.memory')}><Database size={18} style={{ color: '#666' }} /></button>
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={clearMessages}><Plus size={18} style={{ color: '#666' }} /></button>
+          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={clearMessages}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </div>
 
@@ -217,7 +215,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
             ))}
             {/* 流式加载指示 */}
             {streaming && (
-              <div className="flex items-center gap-2" style={{ color: '#666', fontSize: 13 }}>
+              <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
                 <Loader2 size={14} className="animate-spin" />
                 <span>{t('chat.thinking')}</span>
               </div>
@@ -237,7 +235,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
       </div>
 
       {/* ─── 输入栏 ─── */}
-      <div className="shrink-0" style={{ padding: '12px 16px', borderTop: '1px solid #1a1a3a', background: '#0f0f23' }}>
+      <div className="shrink-0" style={{ padding: '12px 16px', borderTop: '1px solid #1a1a3a', background: 'var(--bg-primary)' }}>
         <div className="flex items-end gap-2">
           <textarea
             className="flex-1 resize-none rounded-xl"

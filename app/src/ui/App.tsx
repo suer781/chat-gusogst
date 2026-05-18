@@ -27,15 +27,7 @@ export default function App() {
     const root = document.documentElement
     const body = document.body
     root.setAttribute('data-theme', themeMode)
-    if (themeMode === 'light') {
-      body.style.background = '#f5f5f5'; body.style.color = '#222'
-    } else if (themeMode === 'pureWhite') {
-      body.style.background = '#ffffff'; body.style.color = '#222'
-    } else if (themeMode === 'pureBlack') {
-      body.style.background = '#000000'; body.style.color = '#e0e0e0'
-    } else {
-      body.style.background = '#0f0f23'; body.style.color = '#e0e0e0'
-    }
+    // 主题颜色由 CSS 变量接管，不再设 inline style
     root.style.setProperty('--app-font-size', fontSize + 'px')
     body.style.fontSize = fontSize + 'px'
     if (eyeCareEnabled) {
@@ -59,8 +51,8 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: '#0f0f23', color: '#e0e0e0', overflow: 'hidden' }}>
-      <header style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: '#0f0f23', borderBottom: '1px solid #1a1a3a' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: '#e0e0e0', overflow: 'hidden' }}>
+      <header style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
         {view === 'personaProfile' ? (
           <button onClick={() => setView('persona')} style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
@@ -78,7 +70,7 @@ export default function App() {
         {view === 'providers' && <ProviderSettings onDone={() => setView('settings')} />}
       </div>
 
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexShrink: 0, height: 56, paddingBottom: 'env(safe-area-inset-bottom, 0px)', background: '#0a0a1a', borderTop: '1px solid #1a1a3a' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexShrink: 0, height: 56, paddingBottom: 'env(safe-area-inset-bottom, 0px)', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)' }}>
         {[{ id: 'chat' as View, icon: MessageSquare, labelKey: 'nav.chat' },
           { id: 'persona' as View, icon: Users, labelKey: 'nav.persona' },
           { id: 'providers' as View, icon: Server, labelKey: 'nav.providers' },

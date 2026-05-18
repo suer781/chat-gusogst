@@ -30,7 +30,7 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
   if (subPage === 'about')    return <AboutSettings onBack={() => setSubPage(null)} />
 
   return (
-    <div style={{ minHeight: '100%', background: '#0f0f23', padding: '0 0 100px' }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '16px 20px', position: 'sticky', top: 0,
@@ -42,7 +42,7 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
           fontSize: 20, cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>
-        <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>设置</span>
+        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>设置</span>
         <div style={{ width: 28 }} />
       </div>
 
@@ -71,7 +71,7 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
               <Icon size={20} color={color} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: '#fff', fontSize: 15, fontWeight: 500 }}>{label}</div>
+              <div style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 500 }}>{label}</div>
               <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>{desc}</div>
             </div>
             <span style={{ color: '#444', fontSize: 18 }}>{'>'}</span>
