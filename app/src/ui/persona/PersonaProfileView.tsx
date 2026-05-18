@@ -21,7 +21,7 @@ export default function PersonaProfileView({ persona, onBack, onStartChat, onUpd
 
   const config = persona.modelParamsConfig;
   const paramsBadge = config
-    ? config.mode === 'rule' ? '⚡ Auto (规则)' : config.mode === 'llm' ? '🧠 Auto (LLM)' : '⚙️ Manual'
+    ? config.autoMode === "rule" ? '⚡ Auto (规则)' : config.autoMode === "llm" ? '🧠 Auto (LLM)' : null
     : null;
 
   return (
