@@ -37,7 +37,7 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)',
         zIndex: 10, borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={onDone} style={{
+        <button onClick={() => { hapticLight(); onDone() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)',
           fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
@@ -85,6 +85,10 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+    </div>
+  )
+}
+tyle>
     </div>
   )
 }

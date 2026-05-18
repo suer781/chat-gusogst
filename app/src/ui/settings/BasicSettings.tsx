@@ -3,7 +3,7 @@ import { useSettingsStore, DEFAULT_EYE_CARE_MAPPINGS, genMappingId } from '../st
 import { EyeCareColorMapper } from './EyeCareColorMapper'
 import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette, Smartphone } from 'lucide-react'
 import { t } from '../i18n'
-import { medium as hapticMedium } from '../haptics'
+import { medium as hapticMedium, light as hapticLight, selectionStart, selectionChangedThrottled, selectionEnd } from '../haptics'
 
 type ThemeMode = 'system' | 'light' | 'dark' | 'pureWhite' | 'pureBlack'
 
@@ -48,7 +48,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)',
         zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
-        <button onClick={onBack} style={{
+        <button onClick={() => { hapticLight(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)',
           fontSize: 20, cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
@@ -59,7 +59,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <Section title="主题模式" icon={<Palette size={18} />}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
           {THEME_OPTIONS.map(({ key, icon: Icon, labelKey }) => (
-            <button key={key} onClick={() => setThemeMode(key)} style={{
+            <button key={key} onClick={() => { hapticLight(); setThemeMode(key) }} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
               padding: '14px 4px', borderRadius: 14,
               background: themeMode === key ? 'rgba(233,69,96,0.15)' : 'rgba(255,255,255,0.04)',
@@ -80,7 +80,9 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
           <div style={{ flex: 1 }}>
             <input type="range" min={0} max={FONT_SIZES.length - 1}
               value={FONT_SIZES.indexOf(fontSize)}
-              onChange={(e) => setFontSize(FONT_SIZES[Number(e.target.value)])}
+              onPointerDown={() => selectionStart()}
+              onChange={(e) => { selectionChangedThrottled(); setFontSize(FONT_SIZES[Number(e.target.value)]) }}
+              onPointerUp={() => selectionEnd()}
               style={{ width: '100%', accentColor: 'var(--accent)', height: 4, touchAction: 'pan-y' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: '0 2px' }}>
               {FONT_SIZES.map((s) => (
@@ -101,7 +103,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
           checked={eyeCareEnabled} onChange={setEyeCareEnabled} />
         {eyeCareEnabled && (
           <div style={{ marginTop: 12 }}>
-            <button onClick={() => setShowEyeCareDetail(!showEyeCareDetail)} style={{
+            <button onClick={() => { hapticLight(); setShowEyeCareDetail(!showEyeCareDetail) }} style={{
               width: '100%', padding: '10px 14px',
               background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 10, color: 'var(--gray-200)', fontSize: 13,
@@ -127,7 +129,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       </Section>
 
       <Section title="触觉反馈" icon={<Smartphone size={18} />}>
-        <ToggleRow label="震动反馈" desc="按钮点击时的转子马达震动（需设备支持）"
+        <ToggleRow label="震动反馈" desc="按钮点击时的线性马达触感反馈（需设备支持）"
           checked={hapticEnabled} onChange={setHapticEnabled} />
       </Section>
 

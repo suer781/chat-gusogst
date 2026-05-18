@@ -1,6 +1,7 @@
 import { useSettingsStore } from '../stores'
 import { t } from '../i18n'
 import { Search, Key, Globe } from 'lucide-react'
+import { light as hapticLight, medium as hapticMedium } from '../haptics'
 
 const ENGINES = [
   { id: 'duckduckgo', label: 'DuckDuckGo', desc: t('search.duckduckgo.desc'), free: true },
@@ -20,7 +21,7 @@ export function SearchSettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
         borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={onBack} style={{
+        <button onClick={() => { hapticLight(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>
@@ -36,7 +37,7 @@ export function SearchSettings({ onBack }: { onBack: () => void }) {
           <Search size={18} />
           <span>联网搜索</span>
         </div>
-        <div onClick={() => setSearchEnabled(!searchEnabled)} style={{
+        <div onClick={() => { hapticMedium(); setSearchEnabled(!searchEnabled) }} style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', cursor: 'pointer',
         }}>
           <div>

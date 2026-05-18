@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { saveSnapshot, loadSnapshot, clearSnapshot, EditSnapshot } from './snapshotStorage';
 import type { Persona } from '../types';
 import { t, onLangChange } from '../i18n';
+import { light as hapticLight, medium as hapticMedium, success as hapticSuccess, selectionStart, selectionChangedThrottled, selectionEnd } from '../haptics';
 import { useSettingsStore } from '../stores';
 
 interface PersonaSettingsModalProps {
@@ -195,6 +196,7 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
   }, [apiKey, baseUrl, apiHost, model.model, prompt]);
 
   const save = () => {
+    hapticSuccess();
     onSave({
       systemPrompt: prompt,
       modelParamsConfig: {
@@ -228,7 +230,9 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontSize: "var(--text-sm)", color: 'var(--gray-400)', minWidth: 30 }}>{min}{unit}</span>
         <input type="range" min={min} max={max} step={step} value={value}
-          onChange={e => onChange(Number(e.target.value))}
+          onPointerDown={() => selectionStart()}
+          onChange={e => { selectionChangedThrottled(); onChange(Number(e.target.value)) }}
+          onPointerUp={() => selectionEnd()}
           style={{ flex: 1, accentColor: 'var(--accent)', touchAction: 'pan-y' }} />
         <span style={{ fontSize: "var(--text-sm)", color: 'var(--gray-400)', minWidth: 30, textAlign: 'right' }}>{max}{unit}</span>
       </div>
@@ -245,7 +249,7 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: "var(--text-xl)", color: 'var(--text-primary)' }}>{t('persona.settings.title') || '角色设置'}</h3>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', color: 'var(--gray-400)', fontSize: "var(--text-2xl)", cursor: 'pointer' }}>✕</button>
+          <button onClick={() => { hapticLight(); handleClose() }} style={{ background: 'none', border: 'none', color: 'var(--gray-400)', fontSize: "var(--text-2xl)", cursor: 'pointer' }}>✕</button>
         </div>
 
         {/* 系统提示词 */}
@@ -265,7 +269,7 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
               {overrideGlobal ? '使用本角色独立参数（覆盖全局）' : '跟随全局模型设置'}
             </div>
           </div>
-          <button onClick={() => setOverrideGlobal((v: boolean) => { const nv = !v; autoSave(prompt, sliders, nv, autoMode); return nv; })} style={{
+          <button onClick={() => { hapticMedium(); setOverrideGlobal((v: boolean) => { const nv = !v; autoSave(prompt, sliders, nv, autoMode); return nv; })} style={{
             width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', position: 'relative',
             background: overrideGlobal ? 'var(--accent)' : 'var(--gray-600)', transition: 'background 0.2s',
           }}>
@@ -283,10 +287,10 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
         <div>
           <label style={labelStyle}>⚡ 快捷预设（分析提示词，一键设参）</label>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={applyRulePreset} style={btnStyle(false)}>
+            <button onClick={() => { hapticMedium(); applyRulePreset() }} style={btnStyle(false)}>
               🔧 规则引擎
             </button>
-            <button onClick={applyLLMPreset} disabled={llmLoading} style={btnStyle(false)}>
+            <button onClick={() => { hapticMedium(); applyLLMPreset() }} disabled={llmLoading} style={btnStyle(false)}>
               {llmLoading ? '⏳ 分析中...' : '🧠 自主理解'}
             </button>
           </div>

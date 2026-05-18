@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useSettingsStore } from '../stores'
 import { t } from '../i18n'
 import { Bot, Key, Globe, Thermometer, Hash, Sparkles, Loader2 } from 'lucide-react'
+import { light as hapticLight, medium as hapticMedium, success as hapticSuccess, error as hapticError, selectionStart, selectionChangedThrottled, selectionEnd } from '../haptics'
 
 const PROVIDERS = [
   { id: 'openai',    label: 'OpenAI',       placeholder: 'sk-...' },
@@ -78,8 +79,10 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
         setPersona({ ...persona, modelParamsConfig: { temperature: newTemp, maxTokens: newTokens, maxRounds: newRounds, analyzedAt: new Date().toISOString() } })
       }
 
+      hapticSuccess()
       setAnalyzeResult(`✅ 已调整: temperature=${newTemp}, maxTokens=${newTokens}, maxRounds=${newRounds}`)
     } catch (e: any) {
+      hapticError()
       setAnalyzeResult('❌ ' + (e.message || '分析失败'))
     } finally {
       setAnalyzing(false)
@@ -96,7 +99,7 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
       <Section title="模型提供商" icon={<Bot size={18} />}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
           {PROVIDERS.map((p) => (
-            <button key={p.id} onClick={() => setModel(p.id, model.model)} style={{
+            <button key={p.id} onClick={() => { hapticLight(); setModel(p.id, model.model) }} style={{
               padding: '12px 4px', borderRadius: "var(--radius-md)", cursor: 'pointer',
               background: model.provider === p.id ? 'var(--purple-soft)' : 'rgba(255,255,255,0.04)',
               border: model.provider === p.id ? '1.5px solid rgba(108, 92, 231, 0.5)' : '1.5px solid transparent',
@@ -138,7 +141,9 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
           <span style={{ color: 'var(--gray-400)', fontSize: "var(--text-sm)", minWidth: 32 }}>精确</span>
           <input type="range" min={0} max={100}
             value={Math.round(model.temperature * 100)}
-            onChange={(e) => setTemperature(Number(e.target.value) / 100)}
+            onPointerDown={() => selectionStart()}
+            onChange={(e) => { selectionChangedThrottled(); setTemperature(Number(e.target.value) / 100) }}
+            onPointerUp={() => selectionEnd()}
             style={{ flex: 1, accentColor: 'var(--purple)', height: 4, touchAction: 'pan-y' }} />
           <span style={{ color: 'var(--gray-400)', fontSize: "var(--text-sm)", minWidth: 32, textAlign: 'right' }}>随机</span>
           <span style={{ color: 'var(--gray-300)', fontSize: "var(--text-base)", fontWeight: 600, minWidth: 32, textAlign: 'right' }}>
@@ -151,7 +156,7 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
       <Section title="最大 Token" icon={<Hash size={18} />}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {[1024, 2048, 4096, 8192, 16384].map((t) => (
-            <button key={t} onClick={() => setMaxTokens(t)} style={{
+            <button key={t} onClick={() => { hapticLight(); setMaxTokens(t) }} style={{
               padding: '8px 12px', borderRadius: "var(--radius-md)", cursor: 'pointer',
               background: model.maxTokens === t ? 'var(--purple-soft)' : 'rgba(255,255,255,0.04)',
               border: model.maxTokens === t ? '1px solid rgba(108,92,231,0.4)' : '1px solid transparent',
@@ -168,7 +173,7 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
         <p style={{ color: 'var(--gray-400)', fontSize: 'var(--text-sm)', margin: '0 0 12px', lineHeight: 1.5 }}>
           {t('settings.model.autoUnderstandDesc') || '根据当前系统提示词描述的性格情绪，调用模型自动推荐最佳参数'}
         </p>
-        <button onClick={autoUnderstand} disabled={analyzing} style={{
+        <button onClick={() => { hapticMedium(); autoUnderstand() }} disabled={analyzing} style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           width: '100%', padding: '12px', borderRadius: 'var(--radius-md)', cursor: analyzing ? 'wait' : 'pointer',
           background: analyzing ? 'var(--purple-soft)' : 'linear-gradient(135deg, var(--purple), #6c5ce7)',
@@ -196,7 +201,7 @@ function Header({ title, onBack }: { title: string; onBack: () => void }) {
       background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
       borderBottom: '1px solid var(--divider)',
     }}>
-      <button onClick={onBack} style={{
+      <button onClick={() => { hapticLight(); onBack() }} style={{
         background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
         display: 'flex', alignItems: 'center',
       }}>{'<-'}</button>

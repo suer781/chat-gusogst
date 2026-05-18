@@ -5,7 +5,7 @@ import type { UIMessage as Message, UIToolCall as ToolCall } from '../types'
 import { Plus, Search, Database, Send, Copy, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronRight, Square, Wrench, CheckCircle2, XCircle } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { t, onLangChange } from '../i18n'
-import { success as hapticSuccess } from '../haptics'
+import { success as hapticSuccess, light as hapticLight, medium as hapticMedium, heavy as hapticHeavy, sendPulse, unfold as hapticUnfold, error as hapticError } from '../haptics'
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 
@@ -15,7 +15,7 @@ function ThinkingBlock({ content, showThinking }: { content: string; showThinkin
   if (!showThinking) return null
   return (
     <div className="my-1 rounded-lg" style={{ background: 'var(--bg-tertiary)', border: '1px solid #2a2a5a' }}>
-      <button onClick={() => setCollapsed(!collapsed)} className="flex items-center gap-1 w-full px-3 py-1.5 text-left" style={{ fontSize: "var(--text-sm)", color: 'var(--gray-300)' }}>
+      <button onClick={() => { hapticUnfold(); setCollapsed(!collapsed) }} className="flex items-center gap-1 w-full px-3 py-1.5 text-left" style={{ fontSize: "var(--text-sm)", color: 'var(--gray-300)' }}>
         {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
         <span>💭 思考过程</span>
         <span style={{ color: 'var(--gray-400)', marginLeft: 'auto', fontSize: "var(--text-xs)" }}>{content.length} 字</span>
@@ -38,7 +38,7 @@ function ToolCallCard({ tc, showToolCalls }: { tc: ToolCall; showToolCalls: bool
     : <XCircle size={12} style={{ color: 'var(--accent)' }} />
   return (
     <div className="my-1 rounded-lg" style={{ background: 'var(--bg-tertiary)', border: '1px solid #2a2a5a' }}>
-      <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-2 w-full px-3 py-1.5 text-left" style={{ fontSize: "var(--text-sm)", color: 'var(--gray-300)' }}>
+      <button onClick={() => { hapticUnfold(); setExpanded(!expanded) }} className="flex items-center gap-2 w-full px-3 py-1.5 text-left" style={{ fontSize: "var(--text-sm)", color: 'var(--gray-300)' }}>
         <Wrench size={12} style={{ color: 'var(--blue)' }} />
         {statusIcon}
         <span style={{ fontFamily: 'monospace' }}>{tc.tool}</span>
@@ -64,11 +64,11 @@ function MessageActions({ msg, onCopy, onRetry }: { msg: Message; onCopy: () => 
   return (
     <div className="flex items-center gap-1 mt-1" style={{ opacity: show ? 1 : 0, transition: 'opacity 0.15s' }}
       onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      <button onClick={onCopy} className="p-1 rounded hover:bg-white/5" title="复制">
+      <button onClick={() => { hapticLight(); onCopy() }} className="p-1 rounded hover:bg-white/5" title="复制">
         <Copy size={12} style={{ color: 'var(--text-secondary)' }} />
       </button>
       {onRetry && msg.role === 'assistant' && (
-        <button onClick={onRetry} className="p-1 rounded hover:bg-white/5" title="重新生成">
+        <button onClick={() => { hapticMedium(); onRetry?.() }} className="p-1 rounded hover:bg-white/5" title="重新生成">
           <RefreshCw size={12} style={{ color: 'var(--text-secondary)' }} />
         </button>
       )}
@@ -141,10 +141,12 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   }, [input, streaming, addMessage, updateMessage, setStreaming, setError])
 
   const handleCopy = (content: string) => {
+    hapticLight()
     navigator.clipboard?.writeText(content).catch(() => {})
   }
 
   const handleRetry = (msg: Message) => {
+    hapticMedium()
     const idx = messages.findIndex(m => m.id === msg.id)
     if (idx < 0) return
     const userMsg = messages.slice(0, idx).reverse().find(m => m.role === 'user')
@@ -152,6 +154,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   }
 
   const handleStop = () => {
+    hapticHeavy()
     bridge.abort()
     setStreaming(false)
   }
@@ -168,7 +171,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={clearMessages}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
+          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={() => { hapticLight(); clearMessages() }}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </div>
 
@@ -230,7 +233,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'var(--accent-soft)', color: 'var(--accent)', fontSize: "var(--text-base)" }}>
                 <AlertCircle size={14} />
                 <span>{error}</span>
-                <button onClick={() => { setError(null); const last = messages[messages.length - 1]; if (last?.role === 'user') send(last.content) }}
+                <button onClick={() => { hapticMedium(); setError(null); const last = messages[messages.length - 1]; if (last?.role === 'user') send(last.content) }}
                   className="ml-auto px-2 py-0.5 rounded text-xs" style={{ background: 'rgba(233, 69, 96, 0.2)', color: 'var(--accent)' }}>重试</button>
               </div>
             )}
@@ -249,7 +252,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
             placeholder={t('chat.placeholder')}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPulse(); send() } }}
           />
           {streaming ? (
             <button onClick={handleStop}
@@ -257,7 +260,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
               <Square size={16} fill="var(--text-primary)" />
             </button>
           ) : (
-            <button onClick={() => send()}
+            <button onClick={() => { sendPulse(); send() }}
               className="flex items-center justify-center rounded-xl" style={{ width: 40, height: 40, background: input.trim() ? 'var(--accent)' : 'var(--border)', color: input.trim() ? 'var(--text-primary)' : 'var(--gray-400)', cursor: input.trim() ? 'pointer' : 'default' }}>
               <Send size={18} />
             </button>

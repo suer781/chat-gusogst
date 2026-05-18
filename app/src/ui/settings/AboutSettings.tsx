@@ -1,4 +1,5 @@
 import { Info, Github, MessageSquare, Heart, ExternalLink, Shield, Code } from 'lucide-react'
+import { light as hapticLight } from '../haptics'
 
 const VERSION = '0.1.0-dev'
 const BUILD = '2026.05.17'
@@ -11,7 +12,7 @@ export function AboutSettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
         borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={onBack} style={{
+        <button onClick={() => { hapticLight(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>

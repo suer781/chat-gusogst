@@ -1,5 +1,6 @@
 import { useSettingsStore } from '../stores'
 import { Brain, Trash2, HardDrive } from 'lucide-react'
+import { light as hapticLight, medium as hapticMedium } from '../haptics'
 
 export function MemorySettings({ onBack }: { onBack: () => void }) {
   const memoryEnabled = useSettingsStore((s) => s.memoryEnabled)
@@ -12,7 +13,7 @@ export function MemorySettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
         borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={onBack} style={{
+        <button onClick={() => { hapticLight(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>
@@ -28,7 +29,7 @@ export function MemorySettings({ onBack }: { onBack: () => void }) {
           <Brain size={18} />
           <span>记忆系统</span>
         </div>
-        <div onClick={() => setMemoryEnabled(!memoryEnabled)} style={{
+        <div onClick={() => { hapticMedium(); setMemoryEnabled(!memoryEnabled) }} style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', cursor: 'pointer',
         }}>
           <div>

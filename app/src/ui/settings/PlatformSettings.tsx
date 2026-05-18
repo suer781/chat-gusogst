@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link2, Wifi, WifiOff, Loader2 } from 'lucide-react'
+import { light as hapticLight, medium as hapticMedium } from '../haptics'
 
 type PlatformStatus = 'disconnected' | 'connecting' | 'connected'
 
@@ -38,7 +39,7 @@ export function PlatformSettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
         borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={onBack} style={{
+        <button onClick={() => { hapticLight(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>
@@ -69,7 +70,7 @@ export function PlatformSettings({ onBack }: { onBack: () => void }) {
                   {status === 'connected' ? '已连接' : status === 'connecting' ? '连接中...' : '未连接'}
                 </div>
               </div>
-              <button onClick={() => handleConnect(p.id)} disabled={status === 'connecting'} style={{
+              <button onClick={() => { hapticMedium(); handleConnect(p.id) }} disabled={status === 'connecting'} style={{
                 padding: '6px 14px', borderRadius: "var(--radius-sm)", border: 'none', cursor: 'pointer',
                 background: status === 'connected' ? 'rgba(0,184,148,0.15)' : 'var(--accent-soft)',
                 color: status === 'connected' ? '#00B894' : 'var(--accent)',
