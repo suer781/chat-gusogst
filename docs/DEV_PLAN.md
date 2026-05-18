@@ -384,3 +384,58 @@ C_i ← max(C_i × D/(f_i + D) + P_fail, C_min)
 
 - **仓库**：`ghfast.top/https://github.com/suer781/chat-gusogst.git`
 - **分支**：`feat/agent-core-integration`
+
+---
+
+## 协议合规与未来规划
+
+### 当前协议
+
+| 组件 | 来源 | 当前协议 | 影响 |
+|------|------|----------|------|
+| 前端壳 | Chatbox (chatboxai/chatbox) | **AGPL-3.0** | 衍生作品必须开源，网络服务也需提供源码 |
+| 后端引擎 | Hermes Agent (NousResearch/hermes-agent) | MIT | 宽松，可商用可闭源 |
+| 自研代码 | chat-gusogst 团队 | 待定 | — |
+
+⚠️ **AGPL-3.0 是强 copyleft 协议**：任何基于 Chatbox 源码的衍生作品，即使仅通过网络提供服务，
+也必须向用户开放全部源码。这对商业化和闭源分发构成硬性限制。
+
+### 剔除计划（阶段目标：摆脱 AGPL 传染）
+
+**核心思路**：逐步替换所有来自 Chatbox 的代码，最终删除上游依赖，
+使项目不再受 AGPL-3.0 约束。
+
+#### Phase 1 — 前端自研化（进行中）
+- [x] 新 UI 从零搭建（`app/src/ui/`，9 文件，零 Chatbox 组件依赖）
+- [x] 状态管理替换：Chatbox 原生 → Zustand
+- [x] 国际化替换：Chatbox i18n → 自研 i18n.ts
+- [x] 聊天引擎替换：Chatbox renderer → 自研 ChatView.tsx
+
+#### Phase 2 — 清理残留引用
+- [ ] 审计 `app/src/` 全目录，标记所有仍在引用 Chatbox 原始代码的文件
+- [ ] 逐一替换或重写，消除 AGPL 传染链
+- [ ] 移除 Chatbox git history（或用新 repo 重新初始化）
+
+#### Phase 3 — 协议切换
+- [ ] 移除根目录 `LICENSE`（AGPL-3.0）
+- [ ] 创建新的 `LICENSE` 文件：**Apache License 2.0**
+- [ ] 更新 `package.json` / `app/package.json` 中的 license 字段
+- [ ] 更新 README 声明新协议
+- [ ] 所有源文件添加 Apache 2.0 头部声明
+
+### 目标协议：Apache License 2.0
+
+选择理由：
+- ✅ 允许商用、闭源分发、修改后不开源
+- ✅ 保留专利授权保护（比 MIT 更完善）
+- ✅ 要求保留版权声明和变更记录（合理约束）
+- ✅ 与 Hermes 后端（MIT）完全兼容
+- ✅ 业界主流（Android、Kotlin、React Native 等均采用 Apache 2.0）
+
+### 时间线
+
+| 阶段 | 目标 | 状态 |
+|------|------|------|
+| Phase 1 | 前端自研化，零 Chatbox 组件依赖 | ✅ 基本完成 |
+| Phase 2 | 清理所有 Chatbox 残留代码 | 📋 待启动 |
+| Phase 3 | 正式切换到 Apache 2.0 | 📋 Phase 2 完成后启动 |
