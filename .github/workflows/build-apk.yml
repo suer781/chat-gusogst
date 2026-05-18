@@ -35,17 +35,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd capacitor-app
+          cd app
           npm install
 
       - name: Build web assets
         run: |
-          cd capacitor-app
+          cd app
           npm run build
 
       - name: Add Android platform
         run: |
-          cd capacitor-app
+          cd app
           if [ ! -d "android" ]; then
             npx cap add android
           else
@@ -54,12 +54,12 @@ jobs:
 
       - name: Sync Capacitor
         run: |
-          cd capacitor-app
+          cd app
           npx cap sync android
 
       - name: Build debug APK
         run: |
-          cd capacitor-app/android
+          cd app/android
           chmod +x gradlew
           ./gradlew assembleDebug
 

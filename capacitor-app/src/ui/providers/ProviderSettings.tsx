@@ -27,7 +27,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
   const [connected, setConnected] = useState<Record<string, boolean>>({})
   const [, forceUpdate] = useState(0)
   const setModel = useSettingsStore((s) => s.setModel)
-  const currentModel = useSettingsStore((s) => s.config.model)
+  const currentModel = useSettingsStore((s) => s.model)
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 
@@ -62,7 +62,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#0f0f23' }}>
+    <div className="h-full flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a1a3a' }}>
         <div className="flex items-center justify-between">
           <div>
@@ -75,7 +75,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
       <div style={{ padding: '8px 16px', borderBottom: '1px solid #1a1a3a' }}>
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#666688' }} />
-          <input type="text" placeholder={t('provider.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full outline-none" style={{ background: '#1a1a3a', border: '1px solid #2a2a4a', borderRadius: 10, padding: '8px 12px 8px 36px', fontSize: 14, color: '#e0e0e0' }} />
+          <input type="text" placeholder={t('provider.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full outline-none" style={{ background: '#1a1a3a', border: '1px solid #2a2a4a', borderRadius: 10, padding: '8px 12px 8px 36px', fontSize: 14, color: 'var(--text-primary)' }} />
         </div>
       </div>
       <div className="flex-1 overflow-y-auto" style={{ padding: "8px 16px", overscrollBehavior: "contain" }}>
@@ -83,7 +83,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
           const expanded = expandedId === p.id; const hasKey = !!apiKeys[p.id]; const isSelected = currentModel.provider === p.id
           return (
             <div key={p.id} style={{ background: '#1a1a3a', border: '1px solid ' + (isSelected ? '#e9456040' : '#2a2a4a'), borderRadius: 12, marginBottom: 8, overflow: 'hidden' }}>
-              <button onClick={() => { setExpandedId(expanded ? null : p.id); setModelSearch('') }} className="w-full flex items-center gap-3" style={{ padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: '#e0e0e0', textAlign: 'left' }}>
+              <button onClick={() => { setExpandedId(expanded ? null : p.id); setModelSearch('') }} className="w-full flex items-center gap-3" style={{ padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)', textAlign: 'left' }}>
                 <div className="flex items-center justify-center rounded-lg shrink-0" style={{ width: 32, height: 32, background: '#2a2a4a' }}>
                   <img src={'https://cdn.models.dev/icons/' + p.id + '.svg'} alt="" style={{ width: 18, height: 18 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                 </div>
@@ -101,11 +101,11 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
                   <div className="grid grid-cols-2 gap-2" style={{ marginBottom: 8 }}>
                     <div>
                       <label style={{ fontSize: 11, color: '#666688', marginBottom: 4, display: 'block' }}>{t('provider.apiKey')} {p.env_key && <span style={{ color: '#4a4a6a' }}>{'(' + p.env_key + ')'}</span>}</label>
-                      <input type="password" placeholder="sk-..." value={apiKeys[p.id] || ''} onChange={(e) => setApiKeys((prev) => ({ ...prev, [p.id]: e.target.value }))} className="w-full outline-none" style={{ background: '#0f0f23', border: '1px solid #2a2a4a', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#e0e0e0' }} />
+                      <input type="password" placeholder="sk-..." value={apiKeys[p.id] || ''} onChange={(e) => setApiKeys((prev) => ({ ...prev, [p.id]: e.target.value }))} className="w-full outline-none" style={{ background: 'var(--bg-primary)', border: '1px solid #2a2a4a', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: 'var(--text-primary)' }} />
                     </div>
                     <div>
                       <label style={{ fontSize: 11, color: '#666688', marginBottom: 4, display: 'block' }}>{t('provider.baseUrl')}</label>
-                      <input type="text" placeholder={p.base_url || 'https://...'} value={baseUrls[p.id] || ''} onChange={(e) => setBaseUrls((prev) => ({ ...prev, [p.id]: e.target.value }))} className="w-full outline-none" style={{ background: '#0f0f23', border: '1px solid #2a2a4a', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#e0e0e0' }} />
+                      <input type="text" placeholder={p.base_url || 'https://...'} value={baseUrls[p.id] || ''} onChange={(e) => setBaseUrls((prev) => ({ ...prev, [p.id]: e.target.value }))} className="w-full outline-none" style={{ background: 'var(--bg-primary)', border: '1px solid #2a2a4a', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: 'var(--text-primary)' }} />
                     </div>
                   </div>
                   <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
@@ -116,7 +116,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
                     {connected[p.id] === false && <X size={14} style={{ color: '#ef4444' }} />}
                     {p.doc && <a href={p.doc} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: '#666688' }}><ExternalLink size={12} style={{ display: 'inline', marginRight: 2 }} /> {t('provider.docs')}</a>}
                   </div>
-                  <input type="text" placeholder={p.models.length + t('provider.searchModels')} value={expandedId === p.id ? modelSearch : ''} onChange={(e) => setModelSearch(e.target.value)} className="w-full outline-none" style={{ background: '#0f0f23', border: '1px solid #2a2a4a', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#e0e0e0', marginBottom: 8 }} />
+                  <input type="text" placeholder={p.models.length + t('provider.searchModels')} value={expandedId === p.id ? modelSearch : ''} onChange={(e) => setModelSearch(e.target.value)} className="w-full outline-none" style={{ background: 'var(--bg-primary)', border: '1px solid #2a2a4a', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: 'var(--text-primary)', marginBottom: 8 }} />
                   <div style={{ maxHeight: 250, overflowY: 'auto' }}>
                     {getDisplayModels(p).map((m) => {
                       const active = currentModel.provider === p.id && currentModel.model === m.id

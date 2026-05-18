@@ -1,7 +1,7 @@
 import { bridge } from '../../bridge'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useChatStore, useSettingsStore } from '../stores'
-import type { Message, ToolCall } from '../types'
+import type { UIMessage as Message, UIToolCall as ToolCall } from '../types'
 import { Plus, Search, Database, Send, Copy, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronRight, Square, Wrench, CheckCircle2, XCircle } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { t, onLangChange } from '../i18n'
@@ -64,11 +64,11 @@ function MessageActions({ msg, onCopy, onRetry }: { msg: Message; onCopy: () => 
     <div className="flex items-center gap-1 mt-1" style={{ opacity: show ? 1 : 0, transition: 'opacity 0.15s' }}
       onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
       <button onClick={onCopy} className="p-1 rounded hover:bg-white/5" title="复制">
-        <Copy size={12} style={{ color: '#666' }} />
+        <Copy size={12} style={{ color: 'var(--text-secondary)' }} />
       </button>
       {onRetry && msg.role === 'assistant' && (
         <button onClick={onRetry} className="p-1 rounded hover:bg-white/5" title="重新生成">
-          <RefreshCw size={12} style={{ color: '#666' }} />
+          <RefreshCw size={12} style={{ color: 'var(--text-secondary)' }} />
         </button>
       )}
     </div>
@@ -88,9 +88,10 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   const clearMessages = useChatStore((s) => s.clearMessages)
   const setStreaming = useChatStore((s) => s.setStreaming)
   const setError = useChatStore((s) => s.setError)
-  const persona = useSettingsStore((s) => s.config.persona)
-  const showThinking = useSettingsStore((s) => s.config.showThinking)
-  const showToolCalls = useSettingsStore((s) => s.config.showToolCalls)
+  const persona = useSettingsStore((s) => s.persona)
+  const showThinking = useSettingsStore((s) => s.showThinking)
+  const showToolCalls = useSettingsStore((s) => s.showToolCalls)
+  const showMemoryHints = useSettingsStore((s) => s.showMemoryHints)
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)) }, [])
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streaming])
@@ -102,7 +103,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
     addMessage({ id: genId(), role: 'user', content, timestamp: Date.now() })
     setStreaming(true)
     setError(null)
-    const cfg = useSettingsStore.getState().config
+    const cfg = useSettingsStore.getState()
     const assistantId = genId()
     let accumulated = ''
     let currentThinking = ''
@@ -151,25 +152,23 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   }
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#0f0f23' }}>
+    <div className="h-full flex flex-col">
       {/* ─── 顶栏 ─── */}
       <div className="shrink-0 flex items-center justify-between" style={{ padding: '8px 16px', borderBottom: '1px solid #1a1a3a' }}>
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center rounded-full" style={{ width: 32, height: 32, background: '#e9456020', color: '#e94560', fontSize: 14, fontWeight: 600 }}>{persona.name[0]}</div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 600 }}>{persona.name}</div>
-            <div style={{ fontSize: 11, color: '#666' }}>{persona.tags?.join(' · ') || t('chat.aiAssistant')}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{persona.tags?.join(' · ') || t('chat.aiAssistant')}</div>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.search')}><Search size={18} style={{ color: '#666' }} /></button>
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('settings.memory')}><Database size={18} style={{ color: '#666' }} /></button>
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={clearMessages}><Plus size={18} style={{ color: '#666' }} /></button>
+          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={clearMessages}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </div>
 
       {/* ─── 消息列表 ─── */}
-      <div className="flex-1 overflow-y-auto" style={{ padding: '16px', overscrollBehavior: 'contain' }}>
+      <div className="flex-1 overflow-y-auto" style={{ padding: "16px", overscrollBehavior: "contain" }}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full" style={{ color: '#444' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>✦</div>
@@ -181,11 +180,11 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
             {messages.map((msg) => (
               <div key={msg.id} className="flex flex-col" style={{ alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                 {/* 思考块 */}
-                {msg.thinking?.map(th => (
+                {msg.thinking?.map((th: any) => (
                   <ThinkingBlock key={th.id} content={th.content} showThinking={showThinking} />
                 ))}
                 {/* 工具调用 */}
-                {msg.toolCalls?.map(tc => (
+                {msg.toolCalls?.map((tc: any) => (
                   <ToolCallCard key={tc.id} tc={tc} showToolCalls={showToolCalls} />
                 ))}
                 {/* 消息气泡 */}
@@ -216,7 +215,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
             ))}
             {/* 流式加载指示 */}
             {streaming && (
-              <div className="flex items-center gap-2" style={{ color: '#666', fontSize: 13 }}>
+              <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
                 <Loader2 size={14} className="animate-spin" />
                 <span>{t('chat.thinking')}</span>
               </div>
@@ -236,7 +235,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
       </div>
 
       {/* ─── 输入栏 ─── */}
-      <div className="shrink-0" style={{ padding: '12px 16px', borderTop: '1px solid #1a1a3a', background: '#0f0f23' }}>
+      <div className="shrink-0" style={{ padding: '12px 16px', borderTop: '1px solid #1a1a3a', background: 'var(--bg-primary)' }}>
         <div className="flex items-end gap-2">
           <textarea
             className="flex-1 resize-none rounded-xl"

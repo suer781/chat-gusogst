@@ -89,3 +89,86 @@ textarea {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== Theme System ===== */
+:root {
+  --bg-primary: #0f0f23;
+  --bg-secondary: #1a1a2e;
+  --bg-card: #16213e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #888;
+  --accent: #e94560;
+  --border-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f0f23;
+  --text-primary: #e0e0e0;
+}
+[data-theme="light"] {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #e8e8e8;
+  --bg-card: #ffffff;
+  --text-primary: #222;
+  --text-secondary: #555;
+  --border-color: rgba(0,0,0,0.1);
+}
+[data-theme="pureWhite"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f0f0f0;
+  --bg-card: #ffffff;
+  --text-primary: #222;
+  --text-secondary: #555;
+  --border-color: rgba(0,0,0,0.08);
+}
+[data-theme="pureBlack"] {
+  --bg-primary: #000000;
+  --text-primary: #e0e0e0;
+}
+
+/* Apply theme to body */
+body {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  font-size: var(--app-font-size, 14px) !important;
+}
+
+/* Force theme on all containers */
+#root,
+#root > div,
+#root > div > div {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Font size inheritance */
+#root * {
+  font-size: inherit;
+}
+#root button, #root input, #root textarea, #root select {
+  font-size: var(--app-font-size, 14px) !important;
+}
+
+/* ===== Eye Care Mode ===== */
+[data-eyecare="on"]::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 200, 100, 0.08);
+  pointer-events: none;
+  z-index: 99999;
+}
+
+/* ===== Glass Effect ===== */
+[data-glass="on"] button,
+[data-glass="on"] [style*="background"] {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  background-color: rgba(255,255,255,0.05) !important;
+}
+[data-glass="true"] input,
+[data-glass="true"] textarea {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  background-color: rgba(255,255,255,0.03) !important;
+}
