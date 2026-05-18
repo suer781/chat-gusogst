@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { initApp } from './init'
-import { useSettingsStore } from './stores'
+import { useSettingsStore, type EyeCareMapping } from './stores'
 import { ChatView } from './chat/ChatView'
 import { SettingsView } from './settings/SettingsView'
 import { PersonaView } from './persona/PersonaView'
@@ -21,6 +21,7 @@ export default function App() {
   const fontSize = useSettingsStore((s) => s.fontSize)
   const eyeCareEnabled = useSettingsStore((s) => s.eyeCareEnabled)
   const eyeCareColors = useSettingsStore((s) => s.eyeCareColors)
+  const eyeCareIntensity = useSettingsStore((s) => s.eyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
 
   useEffect(() => {
@@ -31,14 +32,26 @@ export default function App() {
     root.style.setProperty('--app-font-size', fontSize + 'px')
     body.style.fontSize = fontSize + 'px'
     if (eyeCareEnabled) {
-      root.style.setProperty('--eyecare-bg', eyeCareColors.darkGray || '#1A1A1A')
-      root.style.setProperty('--eyecare-text', eyeCareColors.white || '#F5F0E8')
+      // 生成颜色映射 CSS 变量
+      root.style.setProperty('--eyecare-intensity', String(eyeCareIntensity / 100))
+      eyeCareColors.forEach((m: EyeCareMapping, i: number) => {
+        root.style.setProperty(`--eyecare-src-${i}`, m.sourceColor)
+        root.style.setProperty(`--eyecare-tgt-${i}`, m.targetColor)
+      })
+      // 清理旧的映射变量（防止残留）
+      for (let i = eyeCareColors.length; i < 50; i++) {
+        root.style.removeProperty(`--eyecare-src-${i}`)
+        root.style.removeProperty(`--eyecare-tgt-${i}`)
+      }
+      // 兼容旧版：用前两个映射设 --eyecare-bg 和 --eyecare-text
+      root.style.setProperty('--eyecare-bg', eyeCareColors[0]?.targetColor || 'var(--gray-900)')
+      root.style.setProperty('--eyecare-text', eyeCareColors[2]?.targetColor || 'var(--gray-50)')
       root.setAttribute('data-eyecare', 'on')
     } else {
       root.removeAttribute('data-eyecare')
     }
     root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
-  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, glassEnabled])
+  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled])
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 
@@ -54,7 +67,7 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: '#e0e0e0', overflow: 'hidden' }}>
       <header style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
         {view === 'personaProfile' ? (
-          <button onClick={() => setView('persona')} style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#e94560', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+          <button onClick={() => setView('persona')} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
           </button>
         ) : <div style={{ width: 60 }} />}
@@ -76,7 +89,7 @@ export default function App() {
           { id: 'providers' as View, icon: Server, labelKey: 'nav.providers' },
           { id: 'settings' as View, icon: Settings, labelKey: 'nav.settings' }].map((item) => (
           <button key={item.id} onClick={() => setView(item.id)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', color: (view === item.id || (view === 'personaProfile' && item.id === 'persona')) ? '#e94560' : '#666688' }}>
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', color: (view === item.id || (view === 'personaProfile' && item.id === 'persona')) ? 'var(--accent)' : 'var(--gray-400)' }}>
             <item.icon size={20} />
             <span style={{ fontSize: 10 }}>{t(item.labelKey)}</span>
           </button>

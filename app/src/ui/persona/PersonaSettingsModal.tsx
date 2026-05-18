@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Persona } from '../types';
 import { t, onLangChange } from '../i18n';
 
-interface Props {
+interface PersonaSettingsModalProps {
   visible: boolean;
   persona: Persona;
   onSave: (updates: Partial<Persona>) => void;
@@ -72,7 +72,7 @@ function analyzeWithLLM(prompt: string) {
 
 type AutoMode = 'off' | 'rule' | 'llm';
 
-export default function PersonaSettingsModal({ visible, persona, onSave, onClose }: Props) {
+export default function PersonaSettingsModal({ visible, persona, onSave, onClose }: PersonaSettingsModalProps) {
   const [prompt, setPrompt] = useState(persona.systemPrompt || '');
   const [autoMode, setAutoMode] = useState<AutoMode>(persona.modelParamsConfig?.autoMode || 'off');
   const [sliders, setSliders] = useState({
@@ -121,12 +121,12 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
 
   if (!visible) return null;
 
-  const textStyle: React.CSSProperties = { width: '100%', background: '#1a1a3a', border: '1px solid #333355', borderRadius: 8, color: '#e0e0e0', fontSize: 14, padding: '12px', resize: 'vertical', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const };
-  const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#aaaacc', marginBottom: 8, display: 'block' };
+  const textStyle: React.CSSProperties = { width: '100%', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-primary)', fontSize: "var(--text-base)", padding: '12px', resize: 'vertical', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const };
+  const labelStyle: React.CSSProperties = { fontSize: "var(--text-base)", fontWeight: 600, color: 'var(--gray-100)', marginBottom: 8, display: 'block' };
   const btnStyle = (active: boolean): React.CSSProperties => ({
-    flex: 1, padding: '8px 4px', borderRadius: 8, border: active ? '1px solid #e94560' : '1px solid #333355',
-    background: active ? 'rgba(233,69,96,0.15)' : '#1a1a3a', color: active ? '#e94560' : '#8888aa',
-    fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+    flex: 1, padding: '8px 4px', borderRadius: 8, border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
+    background: active ? 'var(--accent-soft)' : 'var(--bg-tertiary)', color: active ? 'var(--accent)' : 'var(--gray-300)',
+    fontSize: "var(--text-sm)", fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
   });
 
   const Slider = ({ label, emoji, value, min, max, step, unit, onChange }: {
@@ -136,13 +136,13 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
     <div>
       <label style={labelStyle}>{emoji} {label}</label>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontSize: 12, color: '#666', minWidth: 30 }}>{min}{unit}</span>
+        <span style={{ fontSize: "var(--text-sm)", color: 'var(--gray-400)', minWidth: 30 }}>{min}{unit}</span>
         <input type="range" min={min} max={max} step={step} value={value}
           onChange={e => onChange(Number(e.target.value))}
-          style={{ flex: 1, accentColor: '#e94560' }} />
-        <span style={{ fontSize: 12, color: '#666', minWidth: 30, textAlign: 'right' }}>{max}{unit}</span>
+          style={{ flex: 1, accentColor: 'var(--accent)' }} />
+        <span style={{ fontSize: "var(--text-sm)", color: 'var(--gray-400)', minWidth: 30, textAlign: 'right' }}>{max}{unit}</span>
       </div>
-      <div style={{ textAlign: 'center', fontSize: 13, color: '#e94560', marginTop: 4 }}>
+      <div style={{ textAlign: 'center', fontSize: "var(--text-base)", color: 'var(--accent)', marginTop: 4 }}>
         {value}{unit || ''}
       </div>
     </div>
@@ -150,12 +150,12 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: 16 }}>
-      <div style={{ background: '#0f0f23', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '85vh', overflow: 'auto', padding: 20, border: '1px solid #222244', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ background: 'var(--bg-primary)', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '85vh', overflow: 'auto', padding: 20, border: '1px solid var(--border-soft)', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: 18, color: '#e0e0e0' }}>{t('persona.settings.title') || '角色设置'}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: 20, cursor: 'pointer' }}>✕</button>
+          <h3 style={{ margin: 0, fontSize: "var(--text-xl)", color: 'var(--text-primary)' }}>{t('persona.settings.title') || '角色设置'}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--gray-400)', fontSize: "var(--text-2xl)", cursor: 'pointer' }}>✕</button>
         </div>
 
         {/* 系统提示词 */}
@@ -163,7 +163,7 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
           <label style={labelStyle}>📝 {t('persona.settings.systemPrompt') || '系统提示词'}</label>
           <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={5} style={{ ...textStyle, minHeight: 100 }}
             placeholder={t('persona.settings.promptPlaceholder') || '输入角色的系统提示词...'} />
-          <div style={{ textAlign: 'right', fontSize: 12, color: '#666', marginTop: 4 }}>{prompt.length} chars</div>
+          <div style={{ textAlign: 'right', fontSize: "var(--text-sm)", color: 'var(--gray-400)', marginTop: 4 }}>{prompt.length} chars</div>
         </div>
 
         {/* 快捷预设 */}
@@ -205,10 +205,10 @@ export default function PersonaSettingsModal({ visible, persona, onSave, onClose
 
         {/* 按钮 */}
         <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid #333355', background: '#1a1a3a', color: '#8888aa', fontSize: 14, cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: 'var(--gray-300)', fontSize: "var(--text-base)", cursor: 'pointer' }}>
             {t('persona.settings.cancel') || '取消'}
           </button>
-          <button onClick={save} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #e94560, #c73e54)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={save} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))', color: 'var(--text-primary)', fontSize: "var(--text-base)", fontWeight: 600, cursor: 'pointer' }}>
             {t('persona.settings.save') || '保存设置'}
           </button>
         </div>

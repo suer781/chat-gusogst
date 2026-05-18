@@ -3,6 +3,24 @@ import type { UIMessage as Message, Persona, AppSettings } from './types'
 import { setLang, notifyLangChange } from './i18n'
 
 type Lang = 'zh' | 'en'
+// ── Eye Care Color Mapping ──
+export interface EyeCareMapping {
+  id: string
+  sourceColor: string
+  targetColor: string
+  label?: string
+}
+
+let _mappingId = Date.now()
+export const genMappingId = () => `ec_${++_mappingId}`
+
+export const DEFAULT_EYE_CARE_MAPPINGS: EyeCareMapping[] = [
+  { id: genMappingId(), sourceColor: '#0000FF', targetColor: '#FF8C00', label: '纯蓝→暖橙' },
+  { id: genMappingId(), sourceColor: '#000000', targetColor: '#1A1412', label: '纯黑→深棕' },
+  { id: genMappingId(), sourceColor: '#FFFFFF', targetColor: '#F5F0E8', label: '纯白→米黄' },
+  { id: genMappingId(), sourceColor: '#808080', targetColor: '#8B7D6B', label: '中灰→暖灰' },
+]
+
 
 // ── Chat Store ──────────────────────────────────
 interface ChatState {
@@ -78,7 +96,8 @@ interface SettingsState extends AppSettings {
   themeMode: string
   fontSize: number
   eyeCareEnabled: boolean
-  eyeCareColors: Record<string, string>
+  eyeCareColors: EyeCareMapping[]
+  eyeCareIntensity: number  // 0-100, 护眼强度（叠加色温偏移）
   glassEnabled: boolean
 
   // Model setters
@@ -109,7 +128,8 @@ interface SettingsState extends AppSettings {
   setThemeMode: (m: string) => void
   setFontSize: (s: number) => void
   setEyeCareEnabled: (v: boolean) => void
-  setEyeCareColors: (c: Record<string, string>) => void
+  setEyeCareColors: (c: EyeCareMapping[]) => void
+  setEyeCareIntensity: (v: number) => void
   setGlassEnabled: (v: boolean) => void
   setLanguage: (lang: Lang) => void
 
@@ -125,7 +145,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   themeMode: 'dark',
   fontSize: 14,
   eyeCareEnabled: false,
-  eyeCareColors: {},
+  eyeCareColors: DEFAULT_EYE_CARE_MAPPINGS,
+  eyeCareIntensity: 30,
   glassEnabled: true,
 
   // Model
@@ -159,6 +180,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setFontSize: (fontSize) => set({ fontSize }),
   setEyeCareEnabled: (eyeCareEnabled) => set({ eyeCareEnabled }),
   setEyeCareColors: (eyeCareColors) => set({ eyeCareColors }),
+  setEyeCareIntensity: (eyeCareIntensity) => set({ eyeCareIntensity }),
   setGlassEnabled: (glassEnabled) => set({ glassEnabled }),
   setLanguage: (lang) => {
     setLang(lang)

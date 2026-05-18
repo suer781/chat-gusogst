@@ -5,17 +5,17 @@ const BUILD = '2026.05.17'
 
 export function AboutSettings({ onBack }: { onBack: () => void }) {
   return (
-    <div style={{ minHeight: '100%', background: '#0f0f23', padding: '0 0 100px' }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', position: 'sticky', top: 0,
-        background: 'rgba(15,15,35,0.9)', backdropFilter: 'blur(20px)', zIndex: 10,
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
+        borderBottom: '1px solid var(--divider)',
       }}>
         <button onClick={onBack} style={{
-          background: 'none', border: 'none', color: '#e94560', fontSize: 20, cursor: 'pointer', padding: 4,
+          background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>
-        <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>关于</span>
+        <span style={{ fontSize: "var(--text-xl)", fontWeight: 600, color: 'var(--text-primary)' }}>关于</span>
       </div>
 
       {/* Logo & Version */}
@@ -27,51 +27,51 @@ export function AboutSettings({ onBack }: { onBack: () => void }) {
       }}>
         <div style={{
           width: 72, height: 72, borderRadius: 20, margin: '0 auto 16px',
-          background: 'linear-gradient(135deg, #e94560, #6C5CE7)',
+          background: 'linear-gradient(135deg, var(--accent), var(--purple))',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 32, boxShadow: '0 8px 24px rgba(233,69,96,0.2)',
+          fontSize: 32, boxShadow: '0 8px 24px var(--accent-glow)',
         }}>
           💬
         </div>
-        <div style={{ color: '#fff', fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+        <div style={{ color: 'var(--text-primary)', fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
           Chat Gusogst
         </div>
-        <div style={{ color: '#666', fontSize: 13 }}>
+        <div style={{ color: 'var(--gray-400)', fontSize: "var(--text-base)" }}>
           v{VERSION} · {BUILD}
         </div>
-        <div style={{ color: '#555', fontSize: 12, marginTop: 8 }}>
+        <div style={{ color: 'var(--gray-400)', fontSize: "var(--text-sm)", marginTop: 8 }}>
           AI 虚拟恋人 · 融合 Agent 能力
         </div>
       </div>
 
       {/* Links */}
       <div style={{
-        margin: '16px 16px 0', background: 'rgba(255,255,255,0.03)', borderRadius: 16,
+        margin: '16px 16px 0', background: 'rgba(255,255,255,0.03)', borderRadius: "var(--radius-lg)",
         padding: '8px 0', border: '1px solid rgba(255,255,255,0.05)',
       }}>
         <LinkItem icon={<Github size={18} />} label="GitHub 仓库"
-          desc="查看源码、提交 Issue" color="#636E72" />
+          desc="查看源码、提交 Issue" color="var(--gray-400)" />
         <LinkItem icon={<MessageSquare size={18} />} label="反馈与建议"
-          desc="帮助我们做得更好" color="#E17055" />
+          desc="帮助我们做得更好" color="var(--warning)" />
         <LinkItem icon={<Code size={18} />} label="开源许可"
-          desc="MIT License" color="#6C5CE7" />
+          desc="MIT License" color="var(--purple)" />
         <LinkItem icon={<Shield size={18} />} label="隐私政策"
-          desc="我们如何保护你的数据" color="#00B894" />
+          desc="我们如何保护你的数据" color="var(--teal)" />
       </div>
 
       {/* Tech Stack */}
       <div style={{
-        margin: '16px 16px 0', background: 'rgba(255,255,255,0.03)', borderRadius: 16,
+        margin: '16px 16px 0', background: 'rgba(255,255,255,0.03)', borderRadius: "var(--radius-lg)",
         padding: '18px 16px', border: '1px solid rgba(255,255,255,0.05)',
       }}>
-        <div style={{ color: '#fff', fontSize: 14, fontWeight: 600, marginBottom: 12 }}>
+        <div style={{ color: 'var(--text-primary)', fontSize: "var(--text-base)", fontWeight: 600, marginBottom: 12 }}>
           技术栈
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {['React', 'TypeScript', 'Capacitor', 'Python', 'Hermes Agent', 'Zustand'].map((t) => (
             <span key={t} style={{
-              padding: '4px 10px', borderRadius: 6, fontSize: 11,
-              background: 'rgba(255,255,255,0.05)', color: '#888',
+              padding: '4px 10px', borderRadius: 6, fontSize: "var(--text-xs)",
+              background: 'rgba(255,255,255,0.05)', color: 'var(--gray-400)',
             }}>{t}</span>
           ))}
         </div>
@@ -81,8 +81,8 @@ export function AboutSettings({ onBack }: { onBack: () => void }) {
       <div style={{
         margin: '24px 16px 0', padding: '16px', textAlign: 'center',
       }}>
-        <div style={{ color: '#444', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-          Made with <Heart size={12} color="#e94560" fill="#e94560" /> by suer781
+        <div style={{ color: 'var(--gray-500)', fontSize: "var(--text-sm)", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          Made with <Heart size={12} color="var(--accent)" fill="var(--accent)" /> by suer781
         </div>
       </div>
     </div>
@@ -98,15 +98,15 @@ function LinkItem({ icon, label, desc, color }: {
       cursor: 'pointer', transition: 'background 0.15s',
     }}>
       <div style={{
-        width: 36, height: 36, borderRadius: 10,
+        width: 36, height: 36, borderRadius: "var(--radius-md)",
         background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, color: color,
       }}>{icon}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ color: '#eee', fontSize: 14 }}>{label}</div>
-        <div style={{ color: '#666', fontSize: 11, marginTop: 1 }}>{desc}</div>
+        <div style={{ color: 'var(--gray-50)', fontSize: "var(--text-base)" }}>{label}</div>
+        <div style={{ color: 'var(--gray-400)', fontSize: "var(--text-xs)", marginTop: 1 }}>{desc}</div>
       </div>
-      <ExternalLink size={14} color="#444" />
+      <ExternalLink size={14} color="var(--gray-500)" />
     </div>
   )
 }

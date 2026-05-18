@@ -1,25 +1,20 @@
 import { useState } from 'react'
-import { useSettingsStore } from '../stores'
+import { useSettingsStore, DEFAULT_EYE_CARE_MAPPINGS, genMappingId } from '../stores'
+import { EyeCareColorMapper } from './EyeCareColorMapper'
 import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette } from 'lucide-react'
 
 type ThemeMode = 'system' | 'light' | 'dark' | 'pureWhite' | 'pureBlack'
 
 const THEME_OPTIONS: { key: ThemeMode; icon: typeof Sun; label: string }[] = [
-  { key: 'system', icon: Monitor, label: t('theme.system') },
-  { key: 'light', icon: Sun, label: t('theme.light') },
-  { key: 'dark', icon: Moon, label: t('theme.dark') },
-  { key: 'pureWhite', icon: Sun, label: t('theme.pureWhite') },
+  { key: 'system', icon: Monitor, label: '系统' },
+  { key: 'light', icon: Sun, label: '浅色' },
+  { key: 'dark', icon: Moon, label: '深色' },
+  { key: 'pureWhite', icon: Sun, label: '纯白' },
   { key: 'pureBlack', icon: Moon, label: '纯黑' },
 ]
 
 const FONT_SIZES = [12, 13, 14, 15, 16, 17, 18, 20, 22]
 
-const DEFAULT_EYE_CARE = {
-  white: '#F5F0E8',
-  lightGray: '#D4C9B8',
-  darkGray: '#1A1A1A',
-  black: '#000000',
-}
 
 export function BasicSettings({ onBack }: { onBack: () => void }) {
   const themeMode = useSettingsStore((s) => s.themeMode)
@@ -29,14 +24,16 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const eyeCareEnabled = useSettingsStore((s) => s.eyeCareEnabled)
   const setEyeCareEnabled = useSettingsStore((s) => s.setEyeCareEnabled)
   const eyeCareColors = useSettingsStore((s) => s.eyeCareColors)
+  const eyeCareIntensity = useSettingsStore((s) => s.eyeCareIntensity)
   const setEyeCareColors = useSettingsStore((s) => s.setEyeCareColors)
+  const setEyeCareIntensity = useSettingsStore((s) => s.setEyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const setGlassEnabled = useSettingsStore((s) => s.setGlassEnabled)
 
   const [showEyeCareDetail, setShowEyeCareDetail] = useState(false)
 
   return (
-    <div style={{ minHeight: '100%', background: '#0f0f23', padding: '0 0 100px' }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '16px 20px', position: 'sticky', top: 0,
@@ -44,11 +41,11 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
         zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         <button onClick={onBack} style={{
-          background: 'none', border: 'none', color: '#e94560',
+          background: 'none', border: 'none', color: 'var(--accent)',
           fontSize: 20, cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>←</button>
-        <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>基础设置</span>
+        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>基础设置</span>
       </div>
 
       <Section title="主题模式" icon={<Palette size={18} />}>
@@ -59,7 +56,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
               padding: '14px 4px', borderRadius: 14,
               background: themeMode === key ? 'rgba(233,69,96,0.15)' : 'rgba(255,255,255,0.04)',
               border: themeMode === key ? '1.5px solid rgba(233,69,96,0.5)' : '1.5px solid transparent',
-              color: themeMode === key ? '#e94560' : '#999',
+              color: themeMode === key ? 'var(--accent)' : 'var(--gray-300)',
               cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             }}>
               <Icon size={22} />
@@ -71,23 +68,23 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
 
       <Section title="字体大小" icon={<Type size={18} />}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ color: '#666', fontSize: 12, minWidth: 20 }}>A</span>
+          <span style={{ color: 'var(--gray-400)', fontSize: 12, minWidth: 20 }}>A</span>
           <div style={{ flex: 1 }}>
             <input type="range" min={0} max={FONT_SIZES.length - 1}
               value={FONT_SIZES.indexOf(fontSize)}
               onChange={(e) => setFontSize(FONT_SIZES[Number(e.target.value)])}
-              style={{ width: '100%', accentColor: '#e94560', height: 4 }} />
+              style={{ width: '100%', accentColor: 'var(--accent)', height: 4 }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: '0 2px' }}>
               {FONT_SIZES.map((s) => (
                 <div key={s} style={{
                   width: s === fontSize ? 8 : 4, height: s === fontSize ? 8 : 4,
                   borderRadius: '50%', transition: 'all 0.2s',
-                  background: s === fontSize ? '#e94560' : 'rgba(255,255,255,0.15)',
+                  background: s === fontSize ? 'var(--accent)' : 'rgba(255,255,255,0.15)',
                 }} />
               ))}
             </div>
           </div>
-          <span style={{ color: '#999', fontSize: 20, fontWeight: 600, minWidth: 30, textAlign: 'right' }}>{fontSize}</span>
+          <span style={{ color: 'var(--gray-300)', fontSize: 20, fontWeight: 600, minWidth: 30, textAlign: 'right' }}>{fontSize}</span>
         </div>
       </Section>
 
@@ -99,34 +96,19 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
             <button onClick={() => setShowEyeCareDetail(!showEyeCareDetail)} style={{
               width: '100%', padding: '10px 14px',
               background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 10, color: '#ccc', fontSize: 13,
+              borderRadius: 10, color: 'var(--gray-200)', fontSize: 13,
               cursor: 'pointer', textAlign: 'left',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <span>自定义映射色</span>
               <span style={{ transform: showEyeCareDetail ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>›</span>
             </button>
-            {showEyeCareDetail && (
-              <div style={{ marginTop: 8, padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {([
-                  { key: 'white', label: '白色 →', fallback: DEFAULT_EYE_CARE.white },
-                  { key: 'lightGray', label: '浅灰 →', fallback: DEFAULT_EYE_CARE.lightGray },
-                  { key: 'darkGray', label: '深灰 →', fallback: DEFAULT_EYE_CARE.darkGray },
-                  { key: 'black', label: '黑色 →', fallback: DEFAULT_EYE_CARE.black },
-                ] as const).map(({ key, label, fallback }) => (
-                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ color: '#999', fontSize: 13, minWidth: 50 }}>{label}</span>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: eyeCareColors[key] || fallback, border: '2px solid rgba(255,255,255,0.1)', cursor: 'pointer', position: 'relative' }}>
-                      <input type="color" value={eyeCareColors[key] || fallback}
-                        onChange={(e) => setEyeCareColors({ ...eyeCareColors, [key]: e.target.value })}
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
-                    </div>
-                    <span style={{ color: '#666', fontSize: 12, fontFamily: 'monospace' }}>{eyeCareColors[key] || fallback}</span>
-                  </div>
-                ))}
-                <button onClick={() => setEyeCareColors(DEFAULT_EYE_CARE)} style={{ padding: '8px 0', background: 'none', border: 'none', color: '#e94560', fontSize: 12, cursor: 'pointer', textAlign: 'center' }}>恢复默认</button>
-              </div>
-            )}
+          <EyeCareColorMapper
+            mappings={eyeCareColors}
+            intensity={eyeCareIntensity}
+            onMappingsChange={setEyeCareColors}
+            onIntensityChange={setEyeCareIntensity}
+          />
           </div>
         )}
       </Section>
@@ -142,7 +124,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
 function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div style={{ margin: '16px 16px 0', background: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: '18px 16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, color: '#fff', fontSize: 14, fontWeight: 600 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, color: 'var(--text-primary)', fontSize: 14, fontWeight: 600 }}>
         {icon}<span>{title}</span>
       </div>
       {children}
@@ -154,11 +136,11 @@ function ToggleRow({ label, desc, checked, onChange }: { label: string; desc?: s
   return (
     <div onClick={() => onChange(!checked)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', cursor: 'pointer' }}>
       <div style={{ flex: 1 }}>
-        <div style={{ color: '#eee', fontSize: 14 }}>{label}</div>
-        {desc && <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>{desc}</div>}
+        <div style={{ color: 'var(--gray-100)', fontSize: 14 }}>{label}</div>
+        {desc && <div style={{ color: 'var(--gray-400)', fontSize: 12, marginTop: 2 }}>{desc}</div>}
       </div>
-      <div style={{ width: 46, height: 26, borderRadius: 13, background: checked ? '#e94560' : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.25s', flexShrink: 0, marginLeft: 12 }}>
-        <div style={{ width: 22, height: 22, borderRadius: 11, background: '#fff', position: 'absolute', top: 2, left: checked ? 22 : 2, transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+      <div style={{ width: 46, height: 26, borderRadius: 13, background: checked ? 'var(--accent)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.25s', flexShrink: 0, marginLeft: 12 }}>
+        <div style={{ width: 22, height: 22, borderRadius: 11, background: 'var(--text-primary)', position: 'absolute', top: 2, left: checked ? 22 : 2, transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
       </div>
     </div>
   )

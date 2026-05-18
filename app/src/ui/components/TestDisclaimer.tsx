@@ -27,22 +27,22 @@ export default function TestDisclaimer() {
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
     }}>
       <div style={{
-        background: '#1a1a3a', borderRadius: 12, padding: '32px 28px',
+        background: 'var(--bg-tertiary)', borderRadius: 12, padding: '32px 28px',
         maxWidth: 360, width: '85%', textAlign: 'center',
-        border: '1px solid #2a2a4a', boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+        border: '1px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
       }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: '#e94560', marginBottom: 8 }}>测试版声明</div>
-        <div style={{ fontSize: 13, color: '#8888aa', lineHeight: 1.6, marginBottom: 24 }}>
+        <div style={{ fontSize: "var(--text-4xl)", marginBottom: 12 }}>⚠️</div>
+        <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: 'var(--accent)', marginBottom: 8 }}>测试版声明</div>
+        <div style={{ fontSize: "var(--text-base)", color: 'var(--gray-300)', lineHeight: 1.6, marginBottom: 24 }}>
           本应用为非最终发布版本，仅供测试评估使用。功能和内容可能随时变更，不保证稳定性。
         </div>
         <button onClick={handleConfirm} style={{
-          width: '100%', padding: '10px 0', background: '#e94560', color: '#fff',
-          border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer'
+          width: '100%', padding: '10px 0', background: 'var(--accent)', color: 'var(--text-primary)',
+          border: 'none', borderRadius: 8, fontSize: "var(--text-md)", fontWeight: 600, cursor: 'pointer'
         }}>
           确定
         </button>
-        <div style={{ fontSize: 11, color: '#555577', marginTop: 10 }}>
+        <div style={{ fontSize: "var(--text-xs)", color: 'var(--gray-500)', marginTop: 10 }}>
           还需确认 {remaining} 次
         </div>
       </div>

@@ -3,14 +3,14 @@ import type { Persona } from '../types';
 import { t, onLangChange } from '../i18n';
 import PersonaSettingsModal from './PersonaSettingsModal';
 
-interface Props {
+interface PersonaProfileViewProps {
   persona: Persona;
   onBack: () => void;
   onStartChat: () => void;
   onUpdate?: (updated: Persona) => void;
 }
 
-export default function PersonaProfileView({ persona, onBack, onStartChat, onUpdate }: Props) {
+export default function PersonaProfileView({ persona, onBack, onStartChat, onUpdate }: PersonaProfileViewProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [, setTick] = useState(0);
   useEffect(() => { onLangChange(() => setTick(v => v + 1)); }, []);
@@ -30,19 +30,19 @@ export default function PersonaProfileView({ persona, onBack, onStartChat, onUpd
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, #e94560, #c73e54)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, flexShrink: 0 }}>
+          <div style={{ width: 64, height: 64, borderRadius: "var(--radius-lg)", background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: "var(--text-4xl)", flexShrink: 0 }}>
             {persona.emoji || persona.name.charAt(0)}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>{persona.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+            <div style={{ fontSize: "var(--text-2xl)", fontWeight: 700 }}>{persona.name}</div>
+            <div style={{ fontSize: "var(--text-sm)", color: 'var(--text-secondary)', marginTop: 4 }}>
               {persona.personality && Object.entries(persona.personality).map(([k, v]) => `${k} ${Math.round(v * 100)}%`).join(' · ')}
             </div>
           </div>
           {/* ⚙️ Gear Button */}
           <div
             onClick={() => setShowSettings(true)}
-            style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--bg-secondary)', border: '1px solid #333355', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: 18, transition: 'all 0.2s' }}
+            style={{ width: 36, height: 36, borderRadius: "var(--radius-md)", background: 'var(--bg-secondary)', border: '1px solid #333355', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: "var(--text-xl)", transition: 'all 0.2s' }}
             title={t('persona.settings.title')}
           >
             ⚙️
@@ -51,7 +51,7 @@ export default function PersonaProfileView({ persona, onBack, onStartChat, onUpd
 
         {/* Params Badge */}
         {paramsBadge && (
-          <div style={{ fontSize: 12, color: '#e94560', background: 'rgba(233,69,96,0.1)', padding: '6px 10px', borderRadius: 8, textAlign: 'center' }}>
+          <div style={{ fontSize: "var(--text-sm)", color: 'var(--accent)', background: 'rgba(233,69,96,0.1)', padding: '6px 10px', borderRadius: "var(--radius-sm)", textAlign: 'center' }}>
             {paramsBadge}
           </div>
         )}
@@ -59,19 +59,19 @@ export default function PersonaProfileView({ persona, onBack, onStartChat, onUpd
         {/* Tags */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {persona.tags.map(tag => (
-            <span key={tag} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 12, background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>{tag}</span>
+            <span key={tag} style={{ fontSize: "var(--text-sm)", padding: '4px 10px', borderRadius: "var(--radius-md)", background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>{tag}</span>
           ))}
         </div>
 
         {/* System Prompt Preview */}
-        <div style={{ flex: 1, background: 'var(--bg-secondary)', borderRadius: 12, padding: 16, fontSize: 14, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.6, overflow: 'auto', minHeight: 80 }}>
+        <div style={{ flex: 1, background: 'var(--bg-secondary)', borderRadius: "var(--radius-md)", padding: 16, fontSize: "var(--text-base)", color: 'var(--text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.6, overflow: 'auto', minHeight: 80 }}>
           {persona.systemPrompt || 'No system prompt set'}
         </div>
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onBack} style={{ flex: 1, padding: '12px 0', borderRadius: 10, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', fontSize: 14, cursor: 'pointer' }}>{t('btn.back')}</button>
-          <button onClick={onStartChat} style={{ flex: 2, padding: '12px 0', borderRadius: 10, border: 'none', background: '#e94560', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>{t('btn.startChat')}</button>
+          <button onClick={onBack} style={{ flex: 1, padding: '12px 0', borderRadius: "var(--radius-md)", border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', fontSize: "var(--text-base)", cursor: 'pointer' }}>{t('btn.back')}</button>
+          <button onClick={onStartChat} style={{ flex: 2, padding: '12px 0', borderRadius: "var(--radius-md)", border: 'none', background: 'var(--accent)', color: 'var(--text-primary)', fontSize: "var(--text-base)", fontWeight: 700, cursor: 'pointer' }}>{t('btn.startChat')}</button>
         </div>
       </div>
 

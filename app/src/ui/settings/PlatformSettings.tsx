@@ -32,17 +32,17 @@ export function PlatformSettings({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ minHeight: '100%', background: '#0f0f23', padding: '0 0 100px' }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', position: 'sticky', top: 0,
-        background: 'rgba(15,15,35,0.9)', backdropFilter: 'blur(20px)', zIndex: 10,
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
+        borderBottom: '1px solid var(--divider)',
       }}>
         <button onClick={onBack} style={{
-          background: 'none', border: 'none', color: '#e94560', fontSize: 20, cursor: 'pointer', padding: 4,
+          background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>
-        <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>平台连接</span>
+        <span style={{ fontSize: "var(--text-xl)", fontWeight: 600, color: 'var(--text-primary)' }}>平台连接</span>
       </div>
 
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -51,29 +51,29 @@ export function PlatformSettings({ onBack }: { onBack: () => void }) {
           return (
             <div key={p.id} style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
-              background: 'rgba(255,255,255,0.03)', borderRadius: 14,
+              background: 'rgba(255,255,255,0.03)', borderRadius: "var(--radius-md)",
               border: '1px solid rgba(255,255,255,0.05)',
               animation: `fadeInUp 0.3s ${i * 0.03}s both`,
             }}>
               <div style={{
-                width: 40, height: 40, borderRadius: 10,
+                width: 40, height: 40, borderRadius: "var(--radius-md)",
                 background: `${p.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 20, flexShrink: 0,
+                fontSize: "var(--text-2xl)", flexShrink: 0,
               }}>{p.icon}</div>
               <div style={{ flex: 1 }}>
-                <div style={{ color: '#fff', fontSize: 14, fontWeight: 500 }}>{p.name}</div>
+                <div style={{ color: 'var(--text-primary)', fontSize: "var(--text-base)", fontWeight: 500 }}>{p.name}</div>
                 <div style={{
-                  color: status === 'connected' ? '#00B894' : status === 'connecting' ? '#FDCB6E' : '#666',
-                  fontSize: 11, marginTop: 2,
+                  color: status === 'connected' ? '#00B894' : status === 'connecting' ? 'var(--yellow)' : 'var(--gray-400)',
+                  fontSize: "var(--text-xs)", marginTop: 2,
                 }}>
                   {status === 'connected' ? '已连接' : status === 'connecting' ? '连接中...' : '未连接'}
                 </div>
               </div>
               <button onClick={() => handleConnect(p.id)} disabled={status === 'connecting'} style={{
-                padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                background: status === 'connected' ? 'rgba(0,184,148,0.15)' : 'rgba(233,69,96,0.15)',
-                color: status === 'connected' ? '#00B894' : '#e94560',
-                fontSize: 12, fontWeight: 500,
+                padding: '6px 14px', borderRadius: "var(--radius-sm)", border: 'none', cursor: 'pointer',
+                background: status === 'connected' ? 'rgba(0,184,148,0.15)' : 'var(--accent-soft)',
+                color: status === 'connected' ? '#00B894' : 'var(--accent)',
+                fontSize: "var(--text-sm)", fontWeight: 500,
                 display: 'flex', alignItems: 'center', gap: 4,
               }}>
                 {status === 'connecting' && <Loader2 size={12} className="animate-spin" />}

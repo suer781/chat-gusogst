@@ -1,4 +1,5 @@
 import { useSettingsStore } from '../stores'
+import { t } from '../i18n'
 import { Bot, Key, Globe, Thermometer, Hash } from 'lucide-react'
 
 const PROVIDERS = [
@@ -20,7 +21,7 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
   const provider = PROVIDERS.find((p) => p.id === model.provider) || PROVIDERS[3]
 
   return (
-    <div style={{ minHeight: '100%', background: '#0f0f23', padding: '0 0 100px' }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
       <Header title="AI 模型" onBack={onBack} />
 
       {/* Provider */}
@@ -28,11 +29,11 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
           {PROVIDERS.map((p) => (
             <button key={p.id} onClick={() => setModel(p.id, model.model)} style={{
-              padding: '12px 4px', borderRadius: 12, cursor: 'pointer',
-              background: model.provider === p.id ? 'rgba(108,92,231,0.15)' : 'rgba(255,255,255,0.04)',
-              border: model.provider === p.id ? '1.5px solid rgba(108,92,231,0.5)' : '1.5px solid transparent',
-              color: model.provider === p.id ? '#6C5CE7' : '#999',
-              fontSize: 13, fontWeight: model.provider === p.id ? 600 : 400,
+              padding: '12px 4px', borderRadius: "var(--radius-md)", cursor: 'pointer',
+              background: model.provider === p.id ? 'var(--purple-soft)' : 'rgba(255,255,255,0.04)',
+              border: model.provider === p.id ? '1.5px solid rgba(108, 92, 231, 0.5)' : '1.5px solid transparent',
+              color: model.provider === p.id ? 'var(--purple)' : 'var(--gray-300)',
+              fontSize: "var(--text-base)", fontWeight: model.provider === p.id ? 600 : 400,
               transition: 'all 0.2s', textAlign: 'center',
             }}>{p.label}</button>
           ))}
@@ -66,13 +67,13 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
       {/* Temperature */}
       <Section title="创意度" icon={<Thermometer size={18} />}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ color: '#666', fontSize: 12, minWidth: 32 }}>精确</span>
+          <span style={{ color: 'var(--gray-400)', fontSize: "var(--text-sm)", minWidth: 32 }}>精确</span>
           <input type="range" min={0} max={100}
             value={Math.round(model.temperature * 100)}
             onChange={(e) => setTemperature(Number(e.target.value) / 100)}
-            style={{ flex: 1, accentColor: '#6C5CE7', height: 4 }} />
-          <span style={{ color: '#666', fontSize: 12, minWidth: 32, textAlign: 'right' }}>随机</span>
-          <span style={{ color: '#999', fontSize: 14, fontWeight: 600, minWidth: 32, textAlign: 'right' }}>
+            style={{ flex: 1, accentColor: 'var(--purple)', height: 4 }} />
+          <span style={{ color: 'var(--gray-400)', fontSize: "var(--text-sm)", minWidth: 32, textAlign: 'right' }}>随机</span>
+          <span style={{ color: 'var(--gray-300)', fontSize: "var(--text-base)", fontWeight: 600, minWidth: 32, textAlign: 'right' }}>
             {model.temperature.toFixed(2)}
           </span>
         </div>
@@ -83,11 +84,11 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {[1024, 2048, 4096, 8192, 16384].map((t) => (
             <button key={t} onClick={() => setMaxTokens(t)} style={{
-              padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
-              background: model.maxTokens === t ? 'rgba(108,92,231,0.15)' : 'rgba(255,255,255,0.04)',
+              padding: '8px 12px', borderRadius: "var(--radius-md)", cursor: 'pointer',
+              background: model.maxTokens === t ? 'var(--purple-soft)' : 'rgba(255,255,255,0.04)',
               border: model.maxTokens === t ? '1px solid rgba(108,92,231,0.4)' : '1px solid transparent',
-              color: model.maxTokens === t ? '#6C5CE7' : '#888',
-              fontSize: 12, fontWeight: model.maxTokens === t ? 600 : 400,
+              color: model.maxTokens === t ? 'var(--purple)' : 'var(--gray-400)',
+              fontSize: "var(--text-sm)", fontWeight: model.maxTokens === t ? 600 : 400,
               transition: 'all 0.2s',
             }}>{t >= 1024 ? `${t / 1024}K` : t}</button>
           ))}
@@ -102,22 +103,22 @@ function Header({ title, onBack }: { title: string; onBack: () => void }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', position: 'sticky', top: 0,
-      background: 'rgba(15,15,35,0.9)', backdropFilter: 'blur(20px)', zIndex: 10,
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
+      borderBottom: '1px solid var(--divider)',
     }}>
       <button onClick={onBack} style={{
-        background: 'none', border: 'none', color: '#e94560', fontSize: 20, cursor: 'pointer', padding: 4,
+        background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
         display: 'flex', alignItems: 'center',
       }}>{'<-'}</button>
-      <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>{title}</span>
+      <span style={{ fontSize: "var(--text-xl)", fontWeight: 600, color: 'var(--text-primary)' }}>{title}</span>
     </div>
   )
 }
 
 function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div style={{ margin: '16px 16px 0', background: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: '18px 16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, color: '#fff', fontSize: 14, fontWeight: 600 }}>
+    <div style={{ margin: '16px 16px 0', background: 'rgba(255,255,255,0.03)', borderRadius: "var(--radius-lg)", padding: '18px 16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, color: 'var(--text-primary)', fontSize: "var(--text-base)", fontWeight: 600 }}>
         {icon}<span>{title}</span>
       </div>
       {children}
@@ -131,9 +132,9 @@ function InputField({ value, onChange, placeholder, type }: {
   return (
     <input type={type || 'text'} value={value} onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder} style={{
-        width: '100%', padding: '10px 14px', borderRadius: 10,
-        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)',
-        color: '#eee', fontSize: 13, outline: 'none',
+        width: '100%', padding: '10px 14px', borderRadius: "var(--radius-md)",
+        background: 'var(--divider)', border: '1px solid var(--border-color)',
+        color: 'var(--gray-50)', fontSize: "var(--text-base)", outline: 'none',
         boxSizing: 'border-box',
       }} />
   )
