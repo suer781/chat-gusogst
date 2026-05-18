@@ -5,6 +5,7 @@ import type { UIMessage as Message, UIToolCall as ToolCall } from '../types'
 import { Plus, Search, Database, Send, Copy, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronRight, Square, Wrench, CheckCircle2, XCircle } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { t, onLangChange } from '../i18n'
+import { success as hapticSuccess } from '../haptics'
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 
@@ -131,6 +132,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
         }
       }
       if (!accumulated && !toolCalls.length) addMessage({ id: assistantId, role: 'assistant', content: '(无回复)', timestamp: Date.now() })
+      hapticSuccess()
     } catch (err: any) {
       setError(err.message || '发送失败')
     } finally {

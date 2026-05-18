@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { initApp } from './init'
 import { useSettingsStore, type EyeCareMapping } from './stores'
 import { ChatView } from './chat/ChatView'
@@ -9,6 +9,7 @@ import { ProviderSettings } from './providers/ProviderSettings'
 import { ChevronLeft, Settings, MessageSquare, Users, Server } from 'lucide-react'
 import { t, onLangChange } from './i18n'
 import TestDisclaimer from './components/TestDisclaimer'
+import { light as hapticLight, setHapticEnabled } from './haptics'
 
 type View = 'chat' | 'settings' | 'persona' | 'personaProfile' | 'providers'
 
@@ -31,6 +32,7 @@ export default function App() {
   const eyeCareIntensity = useSettingsStore((s) => s.eyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
+  const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
 
   // 导航指示器位置
   const activeIdx = NAV_ITEMS.findIndex((item) =>
@@ -62,11 +64,11 @@ export default function App() {
     }
     root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
     root.style.setProperty('--glass-opacity', String(glassOpacity / 100))
-  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity])
+    setHapticEnabled(hapticEnabled)
+  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled])
 
   useEffect(() => {
-    const unsub = onLangChange(() => forceUpdate((n) => n + 1))
-    if (typeof unsub === 'function') unsub()
+    return onLangChange(() => forceUpdate((n) => n + 1))
   }, [])
 
   const viewTitles: Record<View, string> = {
@@ -84,7 +86,7 @@ export default function App() {
       {/* ── Header ── */}
       <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
         {view === 'personaProfile' ? (
-          <button onClick={() => setView('persona')} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+          <button onClick={() => { hapticLight(); setView('persona') }} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
           </button>
         ) : <div style={{ width: 60 }} />}
@@ -92,7 +94,7 @@ export default function App() {
         <div style={{ width: 60 }} />
       </header>
 
-      {/* ── Content Area ──  修复：允许垂直滚动 */}
+      {/* ── Content Area ── 修复：允许垂直滚动 */}
       <div className="app-content" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {view === 'chat' && <ChatView onNavigate={setView} />}
         {view === 'settings' && <SettingsView onDone={() => setView('chat')} />}
@@ -146,7 +148,7 @@ export default function App() {
           return (
             <button
               key={item.id}
-              onClick={() => setView(item.id)}
+              onClick={() => { hapticLight(); setView(item.id) }}
               className="nav-btn"
               style={{
                 display: 'flex',

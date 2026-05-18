@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useSettingsStore, DEFAULT_EYE_CARE_MAPPINGS, genMappingId } from '../stores'
 import { EyeCareColorMapper } from './EyeCareColorMapper'
-import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette } from 'lucide-react'
+import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette, Smartphone } from 'lucide-react'
 import { t } from '../i18n'
+import { medium as hapticMedium } from '../haptics'
 
 type ThemeMode = 'system' | 'light' | 'dark' | 'pureWhite' | 'pureBlack'
 
@@ -30,6 +31,8 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const setEyeCareIntensity = useSettingsStore((s) => s.setEyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const setGlassEnabled = useSettingsStore((s) => s.setGlassEnabled)
+  const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
+  const setHapticEnabled = useSettingsStore((s) => s.setHapticEnabled)
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
   const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity)
 
@@ -120,6 +123,11 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
         <ToggleRow label={t('settings.basic.glassLabel')} desc={t('settings.basic.glassDesc')}
           checked={glassEnabled} onChange={setGlassEnabled} />
       </Section>
+
+      <Section title="触觉反馈" icon={<Smartphone size={18} />}>
+        <ToggleRow label="震动反馈" desc="按钮点击时的转子马达震动（需设备支持）"
+          checked={hapticEnabled} onChange={setHapticEnabled} />
+      </Section>
     </div>
   )
 }
@@ -137,7 +145,7 @@ function Section({ title, icon, children }: { title: string; icon?: React.ReactN
 
 function ToggleRow({ label, desc, checked, onChange }: { label: string; desc?: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div onClick={() => onChange(!checked)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', cursor: 'pointer' }}>
+    <div onClick={() => { hapticMedium(); onChange(!checked) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', cursor: 'pointer' }}>
       <div style={{ flex: 1 }}>
         <div style={{ color: 'var(--gray-100)', fontSize: 14 }}>{label}</div>
         {desc && <div style={{ color: 'var(--gray-400)', fontSize: 12, marginTop: 2 }}>{desc}</div>}
