@@ -41,10 +41,18 @@ chat-gusogst/
 | `ui/types.ts` | UI 层类型定义 |
 | `ui/i18n.ts` | 中英双语 40+ 条翻译 |
 | `ui/chat/ChatView.tsx` | 消息气泡、Markdown 渲染 |
-| `ui/settings/SettingsView.tsx` | 语言、记忆、温度/Token |
+| `ui/init.ts` | Agent 初始化（config → store 映射） |
+| `ui/settings/SettingsView.tsx` | 设置页主入口（6 卡片导航） |
+| `ui/settings/BasicSettings.tsx` | 基础设置（语言、护眼、主题、毛玻璃、字体） |
+| `ui/settings/ModelSettings.tsx` | 模型参数（温度、Token、Thinking） |
+| `ui/settings/MemorySettings.tsx` | 记忆开关配置 |
+| `ui/settings/SearchSettings.tsx` | 搜索设置 |
+| `ui/settings/PlatformSettings.tsx` | 平台设置 |
+| `ui/settings/AboutSettings.tsx` | 关于页面 |
 | `ui/persona/PersonaView.tsx` | 6 个预设角色 + 搜索 |
 | `ui/persona/PersonaProfileView.tsx` | 角色详情页 |
 | `ui/persona/PersonaSettingsModal.tsx` | 角色编辑弹窗 |
+| `ui/components/TestDisclaimer.tsx` | 测试免责声明组件 |
 | `ui/providers/ProviderSettings.tsx` | 129 供应商 + 4774 模型选择 |
 
 ### Provider 注册表 (`providers/`) ← 新架构，从根目录 src/ 搬入

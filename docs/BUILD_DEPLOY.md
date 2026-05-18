@@ -58,17 +58,17 @@ bash ~/mcp/do_push.sh
 
 | 触发 | 条件 |
 |------|------|
-| Push | 推到 `main`，且 capacitor-app/ 或 app/src/ 有变更 |
+| Push | 推到 `main`，且 app/ 有变更 |
 | 手动 | workflow_dispatch（GitHub 页面触发） |
 
 ### 构建步骤
 
 ```
 1. Checkout 代码
-2. Setup Node.js 20 + Java 17 (Temurin)
-3. cd capacitor-app && npm install
+2. Setup Node.js 20 + Java 21 (Temurin)
+3. cd app && npm install
 4. npm run build
-5. npx cap add android
+5. if [ ! -d android ]; then npx cap add android; fi
 6. npx cap sync android
 7. ./gradlew assembleDebug
 8. Upload artifact → chat-gusogst-debug

@@ -55,7 +55,13 @@ hermes-backend/              # Python Agent 后端（1,635 文件）
 | `types.ts` | Message / Persona / AgentConfig | ✅ |
 | `i18n.ts` | 中英双语，40+ 条翻译 | ✅ |
 | `chat/ChatView.tsx` | 聊天核心：消息气泡、Markdown、流式状态 | ✅ |
-| `settings/SettingsView.tsx` | 语言切换、记忆/搜索开关、温度/Token 滑块 | ✅ |
+| `settings/SettingsView.tsx` | 设置页主入口（6 卡片导航） | ✅ |
+| `settings/BasicSettings.tsx` | 语言切换、护眼模式、主题、毛玻璃、字体 | ✅ |
+| `settings/ModelSettings.tsx` | 温度/Token 滑块、Thinking 开关 | ✅ |
+| `settings/MemorySettings.tsx` | 记忆开关配置 | ✅ |
+| `settings/SearchSettings.tsx` | 搜索设置 | ✅ |
+| `settings/PlatformSettings.tsx` | 平台设置 | ✅ |
+| `settings/AboutSettings.tsx` | 关于页面 | ✅ |
 | `persona/PersonaView.tsx` | 6 个预设角色 + 搜索 | ✅ |
 | `providers/ProviderSettings.tsx` | 129 供应商 + 4774 模型 + 实时拉取 | ✅ |
 
@@ -344,7 +350,7 @@ C_i ← max(C_i × D/(f_i + D) + P_fail, C_min)
 - [x] 129 供应商 + 4774 模型配置页
 - [x] 聊天界面（气泡、Markdown、流式状态）
 - [x] 角色选择页（6 预设 + 搜索）
-- [x] 设置页（语言/记忆/搜索/高级参数）
+- [x] 设置页（6 子页面：基础/模型/记忆/搜索/平台/关于）
 - [x] 后端 Agent 全栈（1,635 文件，70+ 工具）
 - [x] 前后端差距审计 & 开发路线图
 

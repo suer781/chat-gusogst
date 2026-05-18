@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'capacitor-app/**'
+      - 'app/**' 
       - 'app/src/**'
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
@@ -67,5 +67,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chat-gusogst-debug
-          path: capacitor-app/android/app/build/outputs/apk/debug/*.apk
+          path: app/android/app/build/outputs/apk/debug/*.apk
           retention-days: 30
