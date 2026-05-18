@@ -151,6 +151,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   eyeCareColors: DEFAULT_EYE_CARE_MAPPINGS,
   eyeCareIntensity: 30,
   glassEnabled: true,
+  glassOpacity: 80,
 
   // Model
   setModel: (provider, model, apiKey, baseUrl) => set((s) => ({

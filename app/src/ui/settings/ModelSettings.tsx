@@ -22,9 +22,9 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
   const setPersona = useSettingsStore((s) => s.setPersona)
   const maxRounds = useSettingsStore((s) => s.maxRounds)
   const setMaxRounds = useSettingsStore((s) => s.setMaxRounds)
-  const apiKey = useSettingsStore((s) => s.apiKey)
-  const baseUrl = useSettingsStore((s) => s.baseUrl)
-  const apiHost = useSettingsStore((s) => s.apiHost)
+  const apiKey = useSettingsStore((s) => s.model.apiKey)
+  const baseUrl = useSettingsStore((s) => s.model.baseUrl)
+  const apiHost = useSettingsStore((s) => s.model.apiHost)
 
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzeResult, setAnalyzeResult] = useState('')
