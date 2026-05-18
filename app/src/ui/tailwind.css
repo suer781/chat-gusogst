@@ -446,3 +446,131 @@ input:focus, textarea:focus {
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
   pointer-events: none;
 }
+
+/* ═══════════════════════════════════════════════════
+   HDR 高动态渲染 — 玻璃质感核心
+   用超白亮度模拟真实玻璃的透光反光
+   @media (dynamic-range: high) 设备自动启用
+   不支持的设备走 SDR fallback，零影响
+   ═══════════════════════════════════════════════════ */
+
+/* --- 基础检测 --- */
+@supports (color: color(display-p3 1 1 1)) {
+  :root {
+    --hdr-available: 1;
+  }
+}
+
+@media (dynamic-range: high) {
+
+  /* 1. 毛玻璃边缘高光 — 模拟真实玻璃的折射亮边 */
+  [data-glass="on"] .app-header {
+    border-bottom: 1px solid color(display-p3 1 1 1 / 0.25);
+    box-shadow:
+      inset 0 1px 0 color(display-p3 1.15 1.15 1.2 / 0.2),
+      0 1px 8px color(display-p3 0 0 0 / 0.3);
+  }
+  [data-glass="on"] .app-nav {
+    border-top: 1px solid color(display-p3 1 1 1 / 0.2);
+    box-shadow:
+      inset 0 -1px 0 color(display-p3 1.1 1.1 1.15 / 0.15);
+  }
+
+  /* 2. 毛玻璃卡片 — 顶部 HDR 光泽线 */
+  [data-glass="on"] .glass-card {
+    border-top: 1px solid color(display-p3 1.2 1.2 1.25 / 0.12);
+    box-shadow:
+      inset 0 1px 0 color(display-p3 1.15 1.15 1.2 / 0.08),
+      0 4px 16px color(display-p3 0 0 0 / 0.25),
+      0 0 0 1px color(display-p3 1 1 1 / 0.05);
+  }
+
+  /* 3. 导航指示器 — HDR 超白光晕 */
+  .nav-indicator > div {
+    background: color(display-p3 1.3 0.45 0.55 / 0.15) !important;
+    box-shadow:
+      0 0 16px color(display-p3 1.2 0.4 0.5 / 0.2),
+      0 0 32px color(display-p3 1.1 0.35 0.45 / 0.08),
+      inset 0 0 8px color(display-p3 1.3 0.5 0.6 / 0.1);
+    filter: blur(0.3px);
+  }
+
+  /* 4. 消息气泡 — HDR 玻璃光泽 */
+  [data-glass="on"] .msg-bubble {
+    border-top: 1px solid color(display-p3 1.1 1.1 1.15 / 0.1);
+    box-shadow:
+      inset 0 1px 0 color(display-p3 1.05 1.05 1.1 / 0.06),
+      0 2px 8px color(display-p3 0 0 0 / 0.2);
+  }
+
+  /* 5. 按钮激活 — HDR 亮度脉冲 */
+  button:active {
+    box-shadow:
+      inset 0 0 12px color(display-p3 1.2 1.2 1.25 / 0.15),
+      0 0 8px color(display-p3 1.1 1.1 1.15 / 0.1);
+  }
+
+  /* 6. Accent 色按钮 — 超白高光 */
+  .btn-accent, button[style*="var(--accent)"] {
+    box-shadow:
+      0 0 12px color(display-p3 1.2 0.4 0.5 / 0.25),
+      inset 0 1px 0 color(display-p3 1.3 0.6 0.7 / 0.2);
+  }
+  .btn-accent:active, button[style*="var(--accent)"]:active {
+    box-shadow:
+      0 0 20px color(display-p3 1.4 0.5 0.6 / 0.35),
+      inset 0 1px 0 color(display-p3 1.4 0.7 0.8 / 0.25);
+  }
+
+  /* 7. 输入框 focus — HDR 发光 */
+  input:focus, textarea:focus {
+    border-color: color(display-p3 1.2 0.5 0.6 / 0.6) !important;
+    box-shadow:
+      0 0 0 2px color(display-p3 1.1 0.4 0.5 / 0.15),
+      0 0 12px color(display-p3 1.1 0.4 0.5 / 0.08);
+  }
+
+  /* 8. Toggle 开关 — HDR 激活态 */
+  .toggle-active {
+    background: color(display-p3 1.1 0.45 0.55) !important;
+    box-shadow: 0 0 8px color(display-p3 1.2 0.5 0.6 / 0.3);
+  }
+
+  /* 9. 页面级光泽 — 模拟从窗户射入的强光 */
+  [data-glass="on"] .app-content::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -20%;
+    width: 140%;
+    height: 60%;
+    background: radial-gradient(
+      ellipse at 50% 100%,
+      color(display-p3 1.2 1.2 1.25 / 0.04) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 10. 导航按钮激活 — HDR 高亮图标 */
+  .nav-btn[style*="var(--accent)"] svg,
+  .nav-btn[style*="var(--accent)"] path {
+    filter: drop-shadow(0 0 4px color(display-p3 1.2 0.4 0.5 / 0.4));
+  }
+
+  /* 11. 滚动条 — HDR 微光 */
+  .app-content::-webkit-scrollbar-thumb {
+    background: color(display-p3 1 1 1 / 0.18);
+    box-shadow: 0 0 4px color(display-p3 1 1 1 / 0.08);
+  }
+
+  /* 12. 卡片悬浮 — HDR 外发光（为未来 hover 准备） */
+  .glass-card:hover {
+    box-shadow:
+      inset 0 1px 0 color(display-p3 1.2 1.2 1.25 / 0.12),
+      0 6px 24px color(display-p3 0 0 0 / 0.3),
+      0 0 0 1px color(display-p3 1 1 1 / 0.08);
+  }
+
+} /* end @media (dynamic-range: high) */

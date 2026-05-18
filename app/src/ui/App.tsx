@@ -68,7 +68,8 @@ export default function App() {
   }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled])
 
   useEffect(() => {
-    return onLangChange(() => forceUpdate((n) => n + 1))
+    const unsub = onLangChange(() => forceUpdate((n) => n + 1))
+    return () => { if (typeof unsub === 'function') unsub() }
   }, [])
 
   const viewTitles: Record<View, string> = {
