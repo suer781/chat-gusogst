@@ -99,7 +99,6 @@ const translations: Record<string, Record<Lang, string>> = {
   'persona.settings.maxTokens': { zh: 'Max Tokens（回复长度）', en: 'Max Tokens (Response Length)' },
   'persona.settings.cancel': { zh: '取消', en: 'Cancel' },
   'persona.settings.save': { zh: '保存设置', en: 'Save Settings' },
-}
   'settings.basic.label': { zh: '基础设置', en: 'Basic' },
   'settings.basic.desc': { zh: '主题、字体、护眼、毛玻璃', en: 'Theme, font, eye care, glass' },
   'settings.basic.pageTitle': { zh: '基础设置', en: 'Basic Settings' },
@@ -131,6 +130,7 @@ const translations: Record<string, Record<Lang, string>> = {
   'search.serpapi.desc': { zh: 'Google 搜索结果 API', en: 'Google search results API' },
   'search.tavily.desc': { zh: 'AI 优化的搜索 API', en: 'AI-optimized search API' },
   'provider.custom': { zh: '自定义', en: 'Custom' },
+}
 
 let currentLang: Lang = 'zh'
 

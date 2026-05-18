@@ -6,7 +6,7 @@ import type { AppSettings } from './ui/types'
 export type StreamEvent =
   | { type: 'text_delta'; data: string }
   | { type: 'thinking'; data: string }
-  | { type: 'tool_use'; data: { tool: string; input: any } }
+  | { type: 'tool_use'; data: { tool: string; input: any; id?: string } }
   | { type: 'tool_result'; data: { tool: string; output: string; id?: string; isError?: boolean } }
   | { type: 'error'; data: string }
   | { type: 'done'; message?: any }
@@ -102,6 +102,7 @@ class Bridge {
             yield {
               type: 'tool_use',
               data: {
+                id: event.id,
                 tool: event.name,
                 input: typeof event.arguments === 'string'
                   ? JSON.parse(event.arguments || '{}')
@@ -119,7 +120,7 @@ class Bridge {
             yield { type: 'error', data: event.error }
             break
           case 'done':
-            yield { type: 'done', message }
+            yield { type: 'done' }
             break
         }
       }
