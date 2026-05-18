@@ -23,6 +23,7 @@ export default function App() {
   const eyeCareColors = useSettingsStore((s) => s.eyeCareColors)
   const eyeCareIntensity = useSettingsStore((s) => s.eyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
+  const glassOpacity = useSettingsStore((s) => s.glassOpacity)
 
   useEffect(() => {
     const root = document.documentElement
@@ -52,7 +53,8 @@ export default function App() {
       root.removeAttribute('data-eyecare')
     }
     root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
-  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled])
+    root.style.setProperty('--glass-opacity', String(glassOpacity / 100))
+  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity])
 
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)); }, [])
 

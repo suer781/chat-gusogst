@@ -30,6 +30,8 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const setEyeCareIntensity = useSettingsStore((s) => s.setEyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const setGlassEnabled = useSettingsStore((s) => s.setGlassEnabled)
+  const glassOpacity = useSettingsStore((s) => s.glassOpacity)
+  const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity)
 
   const [showEyeCareDetail, setShowEyeCareDetail] = useState(false)
 
@@ -74,7 +76,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
             <input type="range" min={0} max={FONT_SIZES.length - 1}
               value={FONT_SIZES.indexOf(fontSize)}
               onChange={(e) => setFontSize(FONT_SIZES[Number(e.target.value)])}
-              style={{ width: '100%', accentColor: 'var(--accent)', height: 4 }} />
+              style={{ width: '100%', accentColor: 'var(--accent)', height: 4, touchAction: 'pan-y' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: '0 2px' }}>
               {FONT_SIZES.map((s) => (
                 <div key={s} style={{
@@ -138,6 +140,15 @@ function ToggleRow({ label, desc, checked, onChange }: { label: string; desc?: s
     <div onClick={() => onChange(!checked)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', cursor: 'pointer' }}>
       <div style={{ flex: 1 }}>
         <div style={{ color: 'var(--gray-100)', fontSize: 14 }}>{label}</div>
+        {desc && <div style={{ color: 'var(--gray-400)', fontSize: 12, marginTop: 2 }}>{desc}</div>}
+      </div>
+      <div style={{ width: 46, height: 26, borderRadius: 13, background: checked ? 'var(--accent)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.25s', flexShrink: 0, marginLeft: 12 }}>
+        <div style={{ width: 22, height: 22, borderRadius: 11, background: 'var(--text-primary)', position: 'absolute', top: 2, left: checked ? 22 : 2, transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+      </div>
+    </div>
+  )
+}
+/div>
         {desc && <div style={{ color: 'var(--gray-400)', fontSize: 12, marginTop: 2 }}>{desc}</div>}
       </div>
       <div style={{ width: 46, height: 26, borderRadius: 13, background: checked ? 'var(--accent)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.25s', flexShrink: 0, marginLeft: 12 }}>

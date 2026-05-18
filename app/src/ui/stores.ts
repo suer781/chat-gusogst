@@ -100,6 +100,7 @@ interface SettingsState extends AppSettings {
   eyeCareColors: EyeCareMapping[]
   eyeCareIntensity: number  // 0-100, 护眼强度（叠加色温偏移）
   glassEnabled: boolean
+  glassOpacity: number  // 0-100, 毛玻璃透明度
 
   // Model setters
   setModel: (provider: string, model: string, apiKey?: string, baseUrl?: string) => void
@@ -132,6 +133,7 @@ interface SettingsState extends AppSettings {
   setEyeCareColors: (c: EyeCareMapping[]) => void
   setEyeCareIntensity: (v: number) => void
   setGlassEnabled: (v: boolean) => void
+  setGlassOpacity: (v: number) => void
   setLanguage: (lang: Lang) => void
 
   // Bulk update
@@ -183,6 +185,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setEyeCareColors: (eyeCareColors) => set({ eyeCareColors }),
   setEyeCareIntensity: (eyeCareIntensity) => set({ eyeCareIntensity }),
   setGlassEnabled: (glassEnabled) => set({ glassEnabled }),
+  setGlassOpacity: (glassOpacity) => set({ glassOpacity }),
   setLanguage: (lang) => {
     setLang(lang)
     notifyLangChange()

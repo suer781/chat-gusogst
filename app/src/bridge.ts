@@ -13,6 +13,14 @@ export type StreamEvent =
 
 // Convert AppSettings to AgentConfig for the Agent
 function settingsToAgentConfig(s: AppSettings): AgentConfig {
+  // 全局参数 → 角色参数覆盖（角色优先）
+  const globalParams = {
+    temperature: s.model.temperature,
+    maxTokens: s.model.maxTokens,
+  }
+  const personaOverrides = s.persona?.modelParamsConfig?.overrideGlobal ? s.persona.modelParamsConfig : {}
+  const effective = { ...globalParams, ...personaOverrides }
+
   return {
     model: {
       provider: s.model.provider,
@@ -20,8 +28,9 @@ function settingsToAgentConfig(s: AppSettings): AgentConfig {
       apiKey: s.model.apiKey,
       baseUrl: s.model.baseUrl || undefined,
       apiHost: s.model.apiHost || undefined,
-      temperature: s.model.temperature,
-      maxTokens: s.model.maxTokens,
+      temperature: effective.temperature,
+      maxTokens: effective.maxTokens,
+      topP: personaOverrides.topP,  // topP 仅角色可设
     },
     persona: s.persona,
     memory: { enabled: s.memoryEnabled },

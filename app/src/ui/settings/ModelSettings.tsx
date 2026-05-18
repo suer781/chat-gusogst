@@ -1,6 +1,7 @@
+import { useState, useCallback } from 'react'
 import { useSettingsStore } from '../stores'
 import { t } from '../i18n'
-import { Bot, Key, Globe, Thermometer, Hash } from 'lucide-react'
+import { Bot, Key, Globe, Thermometer, Hash, Sparkles, Loader2 } from 'lucide-react'
 
 const PROVIDERS = [
   { id: 'openai',    label: 'OpenAI',       placeholder: 'sk-...' },
@@ -17,6 +18,73 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
   const setApiHost = useSettingsStore((s) => s.setApiHost)
   const setTemperature = useSettingsStore((s) => s.setTemperature)
   const setMaxTokens = useSettingsStore((s) => s.setMaxTokens)
+  const persona = useSettingsStore((s) => s.persona)
+  const setPersona = useSettingsStore((s) => s.setPersona)
+  const maxRounds = useSettingsStore((s) => s.maxRounds)
+  const setMaxRounds = useSettingsStore((s) => s.setMaxRounds)
+  const apiKey = useSettingsStore((s) => s.apiKey)
+  const baseUrl = useSettingsStore((s) => s.baseUrl)
+  const apiHost = useSettingsStore((s) => s.apiHost)
+
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeResult, setAnalyzeResult] = useState('')
+
+  /** 自主理解：调模型分析系统提示词，自动推荐参数 */
+  const autoUnderstand = useCallback(async () => {
+    if (!apiKey) { setAnalyzeResult('请先填写 API Key'); return }
+    setAnalyzing(true)
+    setAnalyzeResult('')
+    try {
+      const host = (apiHost || baseUrl || 'https://api.openai.com').replace(/\/$/, '')
+      const endpoint = host + '/v1/chat/completions'
+      const systemPrompt = persona?.systemPrompt || ''
+
+      const metaPrompt = `你是一个 AI 参数调优专家。根据以下系统提示词描述的角色性格和情绪特征，推荐最合适的模型参数。
+
+系统提示词：
+${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'}
+
+请分析这个角色的性格特征（如温柔、活泼、严谨、幽默等），然后推荐以下三个参数，并返回严格 JSON 格式：
+{
+  "temperature": 0.0-2.0 之间的浮点数（活泼/创意角色偏高，严谨/专业角色偏低）,
+  "maxTokens": 256-16384 之间的整数（话痨角色偏大，简洁角色偏小）,
+  "maxRounds": 3-50 之间的整数（需要深度对话的角色偏大，简单角色偏小）
+}
+
+只返回 JSON，不要任何其他文字。`
+
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+        body: JSON.stringify({ model: model.model, messages: [{ role: 'user', content: metaPrompt }], temperature: 0.3, max_tokens: 256 }),
+      })
+      if (!resp.ok) throw new Error('API 请求失败: ' + resp.status)
+      const data = await resp.json()
+      const content = data.choices?.[0]?.message?.content || ''
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) throw new Error('模型返回格式异常')
+
+      const params = JSON.parse(jsonMatch[0])
+      const newTemp = Math.max(0, Math.min(2, Number(params.temperature) || 0.7))
+      const newTokens = Math.max(256, Math.min(16384, Math.round(Number(params.maxTokens) || 4096)))
+      const newRounds = Math.max(3, Math.min(50, Math.round(Number(params.maxRounds) || 10)))
+
+      setTemperature(newTemp)
+      setMaxTokens(newTokens)
+      setMaxRounds(newRounds)
+
+      // 将推荐结果写入 persona.modelParamsConfig
+      if (persona) {
+        setPersona({ ...persona, modelParamsConfig: { temperature: newTemp, maxTokens: newTokens, maxRounds: newRounds, analyzedAt: new Date().toISOString() } })
+      }
+
+      setAnalyzeResult(`✅ 已调整: temperature=${newTemp}, maxTokens=${newTokens}, maxRounds=${newRounds}`)
+    } catch (e: any) {
+      setAnalyzeResult('❌ ' + (e.message || '分析失败'))
+    } finally {
+      setAnalyzing(false)
+    }
+  }, [apiKey, baseUrl, apiHost, model.model, persona, setTemperature, setMaxTokens, setMaxRounds, setPersona])
 
   const provider = PROVIDERS.find((p) => p.id === model.provider) || PROVIDERS[3]
 
@@ -71,7 +139,7 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
           <input type="range" min={0} max={100}
             value={Math.round(model.temperature * 100)}
             onChange={(e) => setTemperature(Number(e.target.value) / 100)}
-            style={{ flex: 1, accentColor: 'var(--purple)', height: 4 }} />
+            style={{ flex: 1, accentColor: 'var(--purple)', height: 4, touchAction: 'pan-y' }} />
           <span style={{ color: 'var(--gray-400)', fontSize: "var(--text-sm)", minWidth: 32, textAlign: 'right' }}>随机</span>
           <span style={{ color: 'var(--gray-300)', fontSize: "var(--text-base)", fontWeight: 600, minWidth: 32, textAlign: 'right' }}>
             {model.temperature.toFixed(2)}
@@ -93,6 +161,28 @@ export function ModelSettings({ onBack }: { onBack: () => void }) {
             }}>{t >= 1024 ? `${t / 1024}K` : t}</button>
           ))}
         </div>
+      </Section>
+
+      {/* 自主理解 */}
+      <Section title={t('settings.model.autoUnderstand') || '自主理解'} icon={<Sparkles size={18} />}>
+        <p style={{ color: 'var(--gray-400)', fontSize: 'var(--text-sm)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          {t('settings.model.autoUnderstandDesc') || '根据当前系统提示词描述的性格情绪，调用模型自动推荐最佳参数'}
+        </p>
+        <button onClick={autoUnderstand} disabled={analyzing} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          width: '100%', padding: '12px', borderRadius: 'var(--radius-md)', cursor: analyzing ? 'wait' : 'pointer',
+          background: analyzing ? 'var(--purple-soft)' : 'linear-gradient(135deg, var(--purple), #6c5ce7)',
+          border: 'none', color: '#fff', fontSize: 'var(--text-base)', fontWeight: 600,
+          opacity: analyzing ? 0.7 : 1, transition: 'all 0.2s',
+        }}>
+          {analyzing ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={16} />}
+          {analyzing ? '分析中...' : '开始分析'}
+        </button>
+        {analyzeResult && (
+          <p style={{ color: analyzeResult.startsWith('✅') ? '#00b894' : '#ff6b6b', fontSize: 'var(--text-sm)', margin: '10px 0 0', lineHeight: 1.5 }}>
+            {analyzeResult}
+          </p>
+        )}
       </Section>
     </div>
   )
