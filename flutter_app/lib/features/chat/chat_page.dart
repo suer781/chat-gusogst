@@ -1,29 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import '../../agent/chat_service.dart';
+import '../../agent/models.dart';
 import '../../shared/widgets/glass_card.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/chat_input.dart';
 import 'widgets/typing_indicator.dart';
-
-/// Chat messages state
-final chatMessagesProvider = StateProvider<List<ChatMessage>>((ref) => []);
-
-/// Is AI typing
-final isTypingProvider = StateProvider<bool>((ref) => false);
-
-class ChatMessage {
-  final String id;
-  final String role; // 'user' or 'assistant'
-  final String content;
-  final DateTime timestamp;
-
-  ChatMessage({
-    required this.id,
-    required this.role,
-    required this.content,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
-}
 
 class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({super.key});
@@ -34,6 +18,8 @@ class ChatPage extends ConsumerStatefulWidget {
 
 class _ChatPageState extends ConsumerState<ChatPage> {
   final _scrollController = ScrollController();
+  final List<String> _streamingBuffer = [];
+  bool _isStreaming = false;
 
   @override
   void dispose() {
@@ -43,10 +29,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
-      Future.delayed(const Duration(milliseconds: 100), () {
+      Future.delayed(const Duration(milliseconds: 50), () {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
         );
       });
@@ -56,76 +42,116 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   void _sendMessage(String text) {
     if (text.trim().isEmpty) return;
 
-    final messages = ref.read(chatMessagesProvider.notifier);
+    HapticFeedback.lightImpact();
+    final service = ref.read(chatServiceProvider.notifier);
 
-    // Add user message
-    messages.update((list) => [...list, ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      role: 'user',
-      content: text.trim(),
-    )]);
+    setState(() => _isStreaming = true);
+    _streamingBuffer.clear();
 
-    _scrollToBottom();
-
-    // TODO: Send to AI provider (Phase 2.3)
-    ref.read(isTypingProvider.notifier).state = true;
-    Future.delayed(const Duration(seconds: 1), () {
-      messages.update((list) => [...list, ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        role: 'assistant',
-        content: 'Hello! I\'m your AI partner. (Flutter edition coming soon!)',
-      )]);
-      ref.read(isTypingProvider.notifier).state = false;
+    // Listen to text stream
+    final sub = service.textStream.listen((chunk) {
+      setState(() {
+        _streamingBuffer.add(chunk);
+      });
       _scrollToBottom();
+    }, onDone: () {
+      setState(() => _isStreaming = false);
+      _scrollToBottom();
+    }, onError: (_) {
+      setState(() => _isStreaming = false);
     });
+
+    // Send message (async)
+    service.sendMessage(text);
+    _scrollToBottom();
   }
 
   @override
   Widget build(BuildContext context) {
-    final messages = ref.watch(chatMessagesProvider);
-    final isTyping = ref.watch(isTypingProvider);
+    final messages = ref.watch(messagesProvider);
+    final persona = ref.watch(activePersonaProvider);
+    final chatState = ref.watch(chatServiceProvider);
     final colorScheme = Theme.of(context).colorScheme;
+    final hasError = chatState == ChatState.error;
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: colorScheme.primaryContainer,
-              child: Icon(
-                Icons.favorite,
-                size: 18,
-                color: colorScheme.primary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Text('Partner'),
+            Text(persona.avatarEmoji ?? '💕', style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Text(persona.name),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {
-              // TODO: New conversation
+            onPressed: () async {
+              final service = ref.read(chatServiceProvider.notifier);
+              await service.newConversation();
+              setState(() {});
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: () => context.go('/settings'),
           ),
         ],
       ),
       body: Column(
         children: [
+          // Error banner
+          if (hasError)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: colorScheme.errorContainer,
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, size: 18, color: colorScheme.error),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'AI response failed. Tap retry or send again.',
+                      style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => ref.read(chatServiceProvider.notifier).clearError(),
+                    child: const Text('Dismiss'),
+                  ),
+                ],
+              ),
+            ),
           // Messages list
           Expanded(
-            child: messages.isEmpty
-                ? _buildEmptyState(colorScheme)
+            child: messages.isEmpty && !_isStreaming
+                ? _buildEmptyState(colorScheme, persona)
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    itemCount: messages.length + (isTyping ? 1 : 0),
+                    itemCount: messages.length + (_isStreaming ? 1 : 0),
                     itemBuilder: (context, index) {
-                      if (index == messages.length && isTyping) {
-                        return const TypingIndicator();
+                      if (index == messages.length && _isStreaming) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const TypingIndicator(),
+                            if (_streamingBuffer.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 4, top: 4),
+                                child: Text(
+                                  _streamingBuffer.join(),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    height: 1.4,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
                       }
                       return MessageBubble(message: messages[index]);
                     },
@@ -138,37 +164,39 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     );
   }
 
-  Widget _buildEmptyState(ColorScheme colorScheme) {
+  Widget _buildEmptyState(ColorScheme colorScheme, Persona persona) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GlassCard(
-            showShine: true,
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.chat_bubble_outline,
-                  size: 48,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Start a conversation',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Say hello to your AI partner',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GlassCard(
+              showShine: true,
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                children: [
+                  Text(
+                    persona.avatarEmoji ?? '💕',
+                    style: const TextStyle(fontSize: 48),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Text(
+                    'Hi! I\'m \${persona.name}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Say something to start chatting',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

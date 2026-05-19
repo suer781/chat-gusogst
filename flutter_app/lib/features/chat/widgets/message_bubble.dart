@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../chat_page.dart';
+import '../../../agent/models.dart';
 
 class MessageBubble extends StatelessWidget {
-  final ChatMessage message;
+  final Message message;
 
   const MessageBubble({super.key, required this.message});
 
@@ -50,7 +50,6 @@ class MessageBubble extends StatelessWidget {
                 bottomLeft: Radius.circular(isUser ? 18 : 4),
                 bottomRight: Radius.circular(isUser ? 4 : 18),
               ),
-              // Subtle shadow for depth
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.05),
@@ -62,9 +61,7 @@ class MessageBubble extends StatelessWidget {
             child: SelectableText(
               message.content,
               style: TextStyle(
-                color: isUser
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurface,
+                color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                 fontSize: 15,
                 height: 1.4,
               ),
