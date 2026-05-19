@@ -1,26 +1,22 @@
 #!/bin/bash
 cd ~/project/github.com/chat-gusogst
+export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false;
 
-# 读 token
-GIT_TOKEN=$(cat ~/mcp/mcpkeys/git_token.env 2>/dev/null | grep -oP '(?<=GIT_TOKEN=).*' | tr -d '"\n')
-if [ -z "$GIT_TOKEN" ]; then
-  echo 'NO_TOKEN' > push_result.txt
+# Read token from .env file
+if [ -f ~/mcp/mcpkeys/git_token.env ]; then
+  source ~/mcp/mcpkeys/git_token.env
+  TOKEN=${GIT_TOKEN:-$GITHUB_TOKEN}
+fi
+
+if [ -z "$TOKEN" ]; then
+  echo 'ERROR: No GitHub token found'
   exit 1
 fi
 
-# 试多个镜像
-for mirror in \
-  "https://ghfast.top/https://github.com/suer781/chat-gusogst.git" \
-  "https://ghproxy.net/https://github.com/suer781/chat-gusogst.git" \
-  "https://gh-proxy.com/https://github.com/suer781/chat-gusogst.git" \
-  "https://github.com/suer781/chat-gusogst.git"; do
-  echo "Trying: $mirror" >> push_result.txt
-  URL=$(echo "$mirror" | sed "s|https://|https://suer781:${GIT_TOKEN}@|1")
-  git remote set-url origin "$URL"
-  timeout 60 git push origin main >> push_result.txt 2>&1
-  if [ $? -eq 0 ]; then
-    echo "SUCCESS: $mirror" >> push_result.txt
-    break
-  fi
-done
-echo 'DONE' >> push_result.txt
+# Push with token via ghfast mirror
+AUTH_URL="https://suer781:${TOKEN}@ghfast.top/https://github.com/suer781/chat-gusogst.git"
+if timeout 40 git push "$AUTH_URL" main 2>&1; then
+  echo 'SUCCESS'
+else
+  echo 'FAILED'
+fi
