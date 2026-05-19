@@ -23,8 +23,8 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   font-size: var(--app-font-size-px, 14px);
   line-height: 1.5;
-  color: #e0e0e0;
-  background: #0f0f23;
+  color: var(--text-primary, #e0e0e0);
+  background: var(--bg-primary, #0f0f23);
 }
 
 * {
@@ -65,12 +65,12 @@ nav, button, [role="button"] {
 /* === Scrollbar === */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--bg-elevated, #2a2a4a); border-radius: 2px; }
 
 /* === Placeholder color for input === */
 input::placeholder, textarea::placeholder {
-  color: #555577;
-  -webkit-text-fill-color: #555577;
+  color: var(--text-tertiary, #555577);
+  -webkit-text-fill-color: var(--text-tertiary, #555577);
 }
 
 /* === Focus style for inputs === */
@@ -227,18 +227,54 @@ textarea {
 [data-theme="light"] {
   --bg-primary: #f5f5f5;
   --bg-secondary: #e8e8e8;
+  --bg-tertiary: #dddddd;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.85);
   --bg-card: #ffffff;
-  --text-primary: #222;
-  --text-secondary: #555;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --text-tertiary: #888888;
+  --text-disabled: #bbbbbb;
+  --text-inverse: #ffffff;
   --border-color: rgba(0,0,0,0.1);
+  --accent: #e94560;
+  --accent-hover: #c73e54;
+  --accent-soft: rgba(233, 69, 96, 0.1);
+  --accent-glow: rgba(233, 69, 96, 0.15);
+  --gray-100: #f0f0f0;
+  --gray-200: #e0e0e0;
+  --gray-300: #666666;
+  --gray-400: #888888;
+  --gray-500: #aaaaaa;
+  --gray-700: #333333;
+  --gray-800: #222222;
+  --gray-900: #111111;
 }
 [data-theme="pureWhite"] {
   --bg-primary: #ffffff;
-  --bg-secondary: #f0f0f0;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #eeeeee;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.9);
   --bg-card: #ffffff;
-  --text-primary: #222;
-  --text-secondary: #555;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-tertiary: #999999;
+  --text-disabled: #cccccc;
+  --text-inverse: #ffffff;
   --border-color: rgba(0,0,0,0.08);
+  --accent: #e94560;
+  --accent-hover: #c73e54;
+  --accent-soft: rgba(233, 69, 96, 0.08);
+  --accent-glow: rgba(233, 69, 96, 0.12);
+  --gray-100: #f8f8f8;
+  --gray-200: #e8e8e8;
+  --gray-300: #888888;
+  --gray-400: #aaaaaa;
+  --gray-500: #bbbbbb;
+  --gray-700: #444444;
+  --gray-800: #333333;
+  --gray-900: #1a1a1a;
 }
 [data-theme="pureBlack"] {
   --bg-primary: #000000;
@@ -331,6 +367,40 @@ body {
 
 /* ─── 微动画 & 质感提升 ─── */
 
+
+/* Light theme glass overrides */
+[data-theme="light"][data-glass="on"] header,
+[data-theme="light"][data-glass="on"] nav {
+  background: linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(245,245,245,0.85) 100%) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"][data-glass="on"] .glass-panel {
+  background: linear-gradient(165deg, rgba(255,255,255,0.80) 0%, rgba(240,240,240,0.90) 100%) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+[data-theme="light"][data-glass="on"] button,
+[data-theme="light"][data-glass="on"] [style*="background"] {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"][data-glass="on"] input,
+[data-theme="light"][data-glass="on"] textarea {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+[data-theme="light"][data-glass="on"] label,
+[data-theme="light"][data-glass="on"] span,
+[data-theme="light"][data-glass="on"] p,
+[data-theme="light"][data-glass="on"] div {
+  text-shadow: none;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #c0c0c0; }
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #999999;
+  -webkit-text-fill-color: #999999;
+}
 /* 按钮按压态 */
 button:active {
   transform: scale(0.96);
@@ -430,9 +500,9 @@ input:focus, textarea:focus {
   opacity: 1;
 }
 
-/* 导航指示器光晕 */
+/* 导航指示器 — 毛玻璃+立体感由 inline style 处理 */
 .nav-indicator > div {
-  filter: blur(0.5px);
+  transform: translateZ(0);
 }
 
 /* 暗色模式下卡片微光泽 */
@@ -522,20 +592,28 @@ input:focus, textarea:focus {
       0 0 0 1px color(display-p3 1 1 1 / 0.05);
   }
 
-  /* 3. 导航指示器 — 玻璃散射 + HDR 光晕 */
+  /* 3. 导航指示器 — 毛玻璃 + 立体透镜 + HDR 光晕 */
   .nav-indicator > div {
-    background: rgba(255,100,120,0.12);
-    background: color(display-p3 1.3 0.45 0.55 / 0.15);
-    backdrop-filter: blur(12px) saturate(1.4);
-    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    background: rgba(255,100,120,0.22);
+    background: color(display-p3 1.3 0.45 0.55 / 0.22);
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
     box-shadow:
-      0 0 20px rgba(255,90,110,0.18),
+      0 1px 2px rgba(0,0,0,0.1),
+      0 4px 14px rgba(0,0,0,0.08),
+      0 0 20px rgba(255,90,110,0.2),
       0 0 40px rgba(255,80,100,0.06),
-      inset 0 0 10px rgba(255,120,140,0.08);
+      inset 0 1px 0 rgba(255,255,255,0.3),
+      inset 0 -1px 0 rgba(0,0,0,0.08),
+      inset 0 0 10px rgba(255,120,140,0.1);
     box-shadow:
-      0 0 20px color(display-p3 1.2 0.4 0.5 / 0.2),
+      0 1px 2px color(display-p3 0 0 0 / 0.1),
+      0 4px 14px color(display-p3 0 0 0 / 0.08),
+      0 0 20px color(display-p3 1.2 0.4 0.5 / 0.22),
       0 0 40px color(display-p3 1.1 0.35 0.45 / 0.08),
-      inset 0 0 10px color(display-p3 1.3 0.5 0.6 / 0.1);
+      inset 0 1px 0 color(display-p3 1.1 1.1 1.15 / 0.3),
+      inset 0 -1px 0 color(display-p3 0 0 0 / 0.08),
+      inset 0 0 10px color(display-p3 1.3 0.5 0.6 / 0.12);
     filter: none;
   }
 
@@ -704,14 +782,24 @@ input:focus, textarea:focus {
     0 4px 16px color(display-p3 0 0 0 / 0.3);
 }
 [data-hdr="on"][data-theme="dark"] .nav-indicator > div {
-  background: rgba(255,90,105,0.12) !important;
-  background: color(display-p3 1.08 0.38 0.46 / 0.12) !important;
+  background: rgba(255,90,105,0.2) !important;
+  background: color(display-p3 1.08 0.38 0.46 / 0.2) !important;
+  backdrop-filter: blur(14px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.5) !important;
   box-shadow:
-    0 0 12px rgba(255,85,100,0.12),
-    0 0 24px rgba(255,80,95,0.04);
+    0 1px 2px rgba(0,0,0,0.15),
+    0 4px 12px rgba(0,0,0,0.1),
+    0 0 16px rgba(255,85,100,0.15),
+    0 0 30px rgba(255,80,95,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.1);
   box-shadow:
-    0 0 12px color(display-p3 1.06 0.36 0.44 / 0.12),
-    0 0 24px color(display-p3 1.04 0.34 0.42 / 0.04);
+    0 1px 2px color(display-p3 0 0 0 / 0.15),
+    0 4px 12px color(display-p3 0 0 0 / 0.1),
+    0 0 16px color(display-p3 1.06 0.36 0.44 / 0.18),
+    0 0 30px color(display-p3 1.04 0.34 0.42 / 0.06),
+    inset 0 1px 0 color(display-p3 1.05 1.05 1.08 / 0.15),
+    inset 0 -1px 0 color(display-p3 0 0 0 / 0.1);
 }
 [data-hdr="on"][data-theme="dark"] button:active {
   box-shadow:

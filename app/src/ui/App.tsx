@@ -40,10 +40,19 @@ export default function App() {
     view === item.id || (view === 'personaProfile' && item.id === 'persona')
   )
 
+  // Resolve 'system' theme to actual light/dark
+  const resolveTheme = (mode: string) => {
+    if (mode === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+    return mode
+  }
+
   useEffect(() => {
     const root = document.documentElement
     const body = document.body
-    root.setAttribute('data-theme', themeMode)
+    const applied = resolveTheme(themeMode)
+    root.setAttribute('data-theme', applied)
     root.style.setProperty('--app-font-size', String(fontSize))
     root.style.setProperty('--app-font-size-px', fontSize + 'px')
     body.style.fontSize = fontSize + 'px'
@@ -69,6 +78,15 @@ export default function App() {
     root.setAttribute('data-hdr', hdrEnabled ? 'on' : 'off')
   }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled, hdrEnabled])
 
+
+  // Sync system theme changes
+  useEffect(() => {
+    if (themeMode !== 'system') return
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const apply = () => document.documentElement.setAttribute('data-theme', mq.matches ? 'dark' : 'light')
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [themeMode])
   useEffect(() => {
     const unsub = onLangChange(() => forceUpdate((n) => n + 1))
     return () => { if (typeof unsub === 'function') unsub() }
@@ -140,8 +158,16 @@ export default function App() {
             width: 48,
             height: 36,
             borderRadius: 18,
-            background: 'var(--accent-soft, rgba(233, 69, 96, 0.12))',
-            boxShadow: '0 0 12px var(--accent-glow, rgba(233, 69, 96, 0.15))',
+            background: 'rgba(233, 69, 96, 0.2)',
+            backdropFilter: 'blur(14px) saturate(1.6)',
+            WebkitBackdropFilter: 'blur(14px) saturate(1.6)',
+            boxShadow: [
+              '0 1px 2px rgba(0,0,0,0.08)',
+              '0 4px 12px rgba(0,0,0,0.06)',
+              'inset 0 1px 0 rgba(255,255,255,0.25)',
+              'inset 0 -1px 0 rgba(0,0,0,0.06)',
+              '0 0 16px var(--accent-glow, rgba(233, 69, 96, 0.15))',
+            ].join(', '),
             transition: 'all 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
           }} />
         </div>
