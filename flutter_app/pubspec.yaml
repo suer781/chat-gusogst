@@ -40,9 +40,6 @@ dependencies:
   # Router
   go_router: ^14.2.0
 
-  # Haptics
-  flutter/services.dart
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
