@@ -30,7 +30,8 @@ jobs:
         run: flutter doctor -v
 
       - name: Create local.properties
-        run: echo "sdk.dir=$ANDROID_HOME" > flutter_app/android/local.properties
+        working-directory: flutter_app/android
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       - name: Get dependencies
         working-directory: flutter_app
@@ -43,5 +44,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: flutter-chat-gusogst-debug
+          name: flutter-chat-gusogst
           path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
