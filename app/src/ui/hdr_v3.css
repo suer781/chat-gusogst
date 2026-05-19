@@ -1,24 +1,26 @@
 /* ═══════════════════════════════════════════════════
-   HDR v3 — 真实 HDR 检测 + oklch 感知均匀颜色
+   HDR v3.1 — 兼容 Android WebView
    
-   检测链：
-   1. @media (dynamic-range: high) → 真 HDR 屏幕自动启用
-   2. @media (color-gamut: p3) → P3 广色域支持
-   3. [data-hdr="on"] → 手动开关 override
-   
-   颜色：oklch(L C H) — 感知均匀，不偏色
-   - L=亮度 0-100%（sRGB），>100% 为 HDR 超白
-   - C=色度（饱和度）
-   - H=色相角（0红 60黄 120绿 180青 240蓝 300紫）
-   
-   兼容标准：HDR10 / HDR10+ / HLG / Dolby Vision / HDR Vivid
-   CSS @media 无需管具体标准，只要屏幕支持就自动启用
+   策略：
+   1. [data-hdr="on"] — 纯 sRGB 颜色，零依赖，100% 生效
+   2. @supports oklch — 有就用更好看的 oklch
+   3. @media color-gamut:p3 — 自动检测 P3 广色域
+   4. 不依赖 @media dynamic-range:high（Android WebView 不支持）
    ═══════════════════════════════════════════════════ */
 
-/* ── 真 HDR 自动检测 ── */
-@media (dynamic-range: high) {
-  :root {
-    --hdr-available: 1;
+/* ── 1. 手动开关 — 纯 sRGB，零依赖 ── */
+[data-hdr="on"] {
+  --hdr-available: 1;
+  --hdr-glow-base: rgba(220, 225, 245, 0.9);
+  --hdr-glow-accent: rgba(200, 120, 140, 0.8);
+  --hdr-glow-white: rgba(248, 248, 255, 0.95);
+  --hdr-border-highlight: rgba(200, 210, 240, 0.25);
+  --hdr-shadow-glow: rgba(200, 120, 140, 0.15);
+}
+
+/* ── 2. oklch 增强（渐进增强） ── */
+@supports (color: oklch(0 0 0)) {
+  [data-hdr="on"] {
     --hdr-glow-base: oklch(95% 0.02 240);
     --hdr-glow-accent: oklch(70% 0.15 20);
     --hdr-glow-white: oklch(98% 0.01 240);
@@ -27,61 +29,43 @@
   }
 }
 
-/* ── P3 广色域增强 ── */
-@media (color-gamut: p3) and (dynamic-range: high) {
+/* ── 3. P3 广色域自动检测 ── */
+@media (color-gamut: p3) {
   :root {
-    --hdr-glow-base: oklch(96% 0.03 240);
-    --hdr-glow-accent: oklch(72% 0.2 20);
-    --hdr-glow-white: oklch(99% 0.015 240);
-    --hdr-border-highlight: oklch(96% 0.02 240 / 0.3);
-    --hdr-shadow-glow: oklch(72% 0.2 20 / 0.2);
+    --hdr-available: 1;
+  }
+  @supports (color: oklch(0 0 0)) {
+    :root {
+      --hdr-glow-base: oklch(96% 0.03 240);
+      --hdr-glow-accent: oklch(72% 0.2 20);
+      --hdr-glow-white: oklch(99% 0.015 240);
+      --hdr-border-highlight: oklch(96% 0.02 240 / 0.3);
+      --hdr-shadow-glow: oklch(72% 0.2 20 / 0.2);
+    }
   }
 }
 
-/* ── 手动 override ── */
-[data-hdr="on"] {
-  --hdr-available: 1;
-  --hdr-glow-base: oklch(95% 0.02 240);
-  --hdr-glow-accent: oklch(70% 0.15 20);
-  --hdr-glow-white: oklch(98% 0.01 240);
-  --hdr-border-highlight: oklch(95% 0.015 240 / 0.25);
-  --hdr-shadow-glow: oklch(70% 0.15 20 / 0.15);
+/* ── 4. dynamic-range 检测（桌面端加分） ── */
+@media (dynamic-range: high) {
+  :root {
+    --hdr-available: 1;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
    HDR 玻璃质感 — 全局过渡
    ═══════════════════════════════════════════════════ */
 
-/* --- HDR 开启时的组件 --- */
-@media (dynamic-range: high) {
-  .app-header,
-  .app-nav,
-  .glass-card,
-  .msg-bubble,
-  .nav-indicator > div,
-  .btn-accent,
-  button,
-  input,
-  textarea,
-  .toggle-active {
-    transition:
-      box-shadow 0.4s cubic-bezier(0.2, 0, 0, 1),
-      border-color 0.4s cubic-bezier(0.2, 0, 0, 1),
-      background 0.4s cubic-bezier(0.2, 0, 0, 1),
-      filter 0.4s cubic-bezier(0.2, 0, 0, 1);
-  }
-}
-
-[data-hdr="on"] .app-header,
-[data-hdr="on"] .app-nav,
-[data-hdr="on"] .glass-card,
-[data-hdr="on"] .msg-bubble,
-[data-hdr="on"] .nav-indicator > div,
-[data-hdr="on"] .btn-accent,
-[data-hdr="on"] button,
-[data-hdr="on"] input,
-[data-hdr="on"] textarea,
-[data-hdr="on"] .toggle-active {
+.app-header,
+.app-nav,
+.glass-card,
+.msg-bubble,
+.nav-indicator > div,
+.btn-accent,
+button,
+input,
+textarea,
+.toggle-active {
   transition:
     box-shadow 0.4s cubic-bezier(0.2, 0, 0, 1),
     border-color 0.4s cubic-bezier(0.2, 0, 0, 1),
@@ -93,8 +77,49 @@
    HDR 暗色主题 — 玻璃高光
    ═══════════════════════════════════════════════════ */
 
-/* --- 自动检测 --- */
-@media (dynamic-range: high) and (prefers-color-scheme: dark) {
+/* --- 手动开关 --- */
+[data-hdr="on"][data-theme="dark"][data-glass="on"] .app-header {
+  border-bottom: 1px solid var(--hdr-border-highlight);
+  box-shadow:
+    inset 0 1px 0 var(--hdr-glow-white),
+    0 1px 3px rgba(0,0,0,0.3);
+}
+
+[data-hdr="on"][data-theme="dark"][data-glass="on"] .app-nav {
+  box-shadow: inset 0 -1px 0 var(--hdr-border-highlight);
+}
+
+[data-hdr="on"][data-theme="dark"][data-glass="on"] .glass-card {
+  border-top: 1px solid var(--hdr-border-highlight);
+  box-shadow:
+    inset 0 1px 0 var(--hdr-glow-white),
+    0 2px 8px rgba(0,0,0,0.2);
+}
+
+[data-hdr="on"][data-theme="dark"] .nav-indicator > div {
+  background: var(--hdr-glow-accent) !important;
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 var(--hdr-glow-white),
+    0 2px 8px var(--hdr-shadow-glow),
+    0 0 16px var(--hdr-shadow-glow);
+}
+
+[data-hdr="on"][data-theme="dark"] button:active {
+  box-shadow:
+    inset 0 1px 2px var(--hdr-glow-white),
+    0 0 12px var(--hdr-shadow-glow);
+}
+
+[data-hdr="on"][data-theme="dark"] input:focus,
+[data-hdr="on"][data-theme="dark"] textarea:focus {
+  border-color: var(--hdr-glow-accent);
+  box-shadow: 0 0 0 2px var(--hdr-shadow-glow);
+}
+
+/* --- P3 自动检测暗色 --- */
+@media (color-gamut: p3) and (prefers-color-scheme: dark) {
   [data-glass="on"] .app-header {
     border-bottom: 1px solid var(--hdr-border-highlight);
     box-shadow:
@@ -136,82 +161,17 @@
   }
 }
 
-/* --- 手动 override --- */
-[data-hdr="on"][data-theme="dark"][data-glass="on"] .app-header {
-  border-bottom: 1px solid var(--hdr-border-highlight);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 1px 3px rgba(0,0,0,0.3);
-}
-
-[data-hdr="on"][data-theme="dark"][data-glass="on"] .app-nav {
-  box-shadow: inset 0 -1px 0 var(--hdr-border-highlight);
-}
-
-[data-hdr="on"][data-theme="dark"][data-glass="on"] .glass-card {
-  border-top: 1px solid var(--hdr-border-highlight);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 2px 8px rgba(0,0,0,0.2);
-}
-
-[data-hdr="on"][data-theme="dark"] .nav-indicator > div {
-  background: var(--hdr-glow-accent) !important;
-  backdrop-filter: blur(16px) saturate(1.5);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 2px 8px var(--hdr-shadow-glow),
-    0 0 16px var(--hdr-shadow-glow);
-}
-
-[data-hdr="on"][data-theme="dark"] button:active {
-  box-shadow:
-    inset 0 1px 2px var(--hdr-glow-white),
-    0 0 12px var(--hdr-shadow-glow);
-}
-
-[data-hdr="on"][data-theme="dark"] input:focus,
-[data-hdr="on"][data-theme="dark"] textarea:focus {
-  border-color: var(--hdr-glow-accent);
-  box-shadow: 0 0 0 2px var(--hdr-shadow-glow);
-}
-
 /* ═══════════════════════════════════════════════════
    HDR 亮色主题
    ═══════════════════════════════════════════════════ */
 
-@media (dynamic-range: high) and (prefers-color-scheme: light) {
-  :root {
-    --hdr-glow-base: oklch(70% 0.02 240);
-    --hdr-glow-accent: oklch(55% 0.15 20);
-    --hdr-glow-white: oklch(100% 0.01 240);
-    --hdr-border-highlight: oklch(70% 0.015 240 / 0.2);
-    --hdr-shadow-glow: oklch(55% 0.15 20 / 0.1);
-  }
-
-  [data-glass="on"] .app-header {
-    border-bottom: 1px solid var(--hdr-border-highlight);
-    box-shadow:
-      inset 0 1px 0 var(--hdr-glow-white),
-      0 1px 3px rgba(0,0,0,0.06);
-  }
-
-  [data-glass="on"] .glass-card {
-    border-top: 1px solid var(--hdr-border-highlight);
-    box-shadow:
-      inset 0 1px 0 var(--hdr-glow-white),
-      0 2px 8px rgba(0,0,0,0.06);
-  }
-}
-
-/* --- 手动 override 亮色 --- */
+/* --- 手动开关亮色 --- */
 [data-hdr="on"][data-theme="light"] {
-  --hdr-glow-base: oklch(70% 0.02 240);
-  --hdr-glow-accent: oklch(55% 0.15 20);
-  --hdr-glow-white: oklch(100% 0.01 240);
-  --hdr-border-highlight: oklch(70% 0.015 240 / 0.2);
-  --hdr-shadow-glow: oklch(55% 0.15 20 / 0.1);
+  --hdr-glow-base: rgba(160, 165, 190, 0.7);
+  --hdr-glow-accent: rgba(140, 90, 110, 0.55);
+  --hdr-glow-white: rgba(255, 255, 255, 0.95);
+  --hdr-border-highlight: rgba(160, 165, 190, 0.2);
+  --hdr-shadow-glow: rgba(140, 90, 110, 0.1);
 }
 
 [data-hdr="on"][data-theme="light"][data-glass="on"] .app-header {
@@ -226,6 +186,17 @@
   box-shadow:
     inset 0 1px 0 var(--hdr-glow-white),
     0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* oklch 亮色增强 */
+@supports (color: oklch(0 0 0)) {
+  [data-hdr="on"][data-theme="light"] {
+    --hdr-glow-base: oklch(70% 0.02 240);
+    --hdr-glow-accent: oklch(55% 0.15 20);
+    --hdr-glow-white: oklch(100% 0.01 240);
+    --hdr-border-highlight: oklch(70% 0.015 240 / 0.2);
+    --hdr-shadow-glow: oklch(55% 0.15 20 / 0.1);
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -253,111 +224,42 @@
    HDR 动态光效 — 灵动生命感
    ═══════════════════════════════════════════════════ */
 
-/* ── 棱镜折射光 ── */
 @keyframes prismaticShift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* ── 极光呼吸 ── */
 @keyframes auroraBreath {
-  0%   { background-position: 0% 50%; opacity: var(--aurora-min, 0.4); }
+  0%   { background-position: 0% 50%; opacity: 0.4; }
   50%  { background-position: 100% 50%; opacity: 1; }
-  100% { background-position: 0% 50%; opacity: var(--aurora-min, 0.4); }
+  100% { background-position: 0% 50%; opacity: 0.4; }
 }
 
-/* ── 深度呼吸 ── */
 @keyframes depthBreath {
   0%   { box-shadow: var(--depth-min); }
   50%  { box-shadow: var(--depth-max); }
   100% { box-shadow: var(--depth-min); }
 }
 
-/* ── 光谱漂移 ── */
-@keyframes spectrumDrift {
-  0%   { filter: hue-rotate(0deg) brightness(1); }
-  33%  { filter: hue-rotate(15deg) brightness(1.05); }
-  66%  { filter: hue-rotate(-10deg) brightness(0.98); }
-  100% { filter: hue-rotate(0deg) brightness(1); }
-}
-
-/* ── 光泽流动 ── */
 @keyframes glossFlow {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
 
-/* ── HDR 动态光效样式 ── */
-@media (dynamic-range: high) {
-  /* 棱镜折射 — 光线穿过玻璃时的彩虹散射 */
-  [data-glass="on"] .glass-card::after,
-  [data-glass="on"] .glass-panel::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-      135deg,
-      oklch(80% 0.15 30 / 0.06) 0%,
-      oklch(80% 0.15 180 / 0.04) 25%,
-      oklch(80% 0.15 120 / 0.05) 50%,
-      oklch(80% 0.15 60 / 0.04) 75%,
-      oklch(80% 0.15 270 / 0.06) 100%
-    );
-    background-size: 300% 300%;
-    animation: prismaticShift 8s ease-in-out infinite;
-    mix-blend-mode: screen;
-    opacity: 0.8;
-    z-index: 1;
-  }
-
-  /* 极光辉光 */
-  .glass-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-      45deg,
-      oklch(75% 0.12 200 / 0.05) 0%,
-      oklch(75% 0.12 280 / 0.03) 50%,
-      oklch(75% 0.12 160 / 0.05) 100%
-    );
-    background-size: 200% 200%;
-    animation: auroraBreath 6s ease-in-out infinite;
-    z-index: 0;
-  }
-
-  /* 深度呼吸 — 阴影脉动 */
-  .glass-card {
-    --depth-min:
-      0 4px 16px oklch(50% 0.05 240 / 0.15),
-      0 0 1px oklch(50% 0.05 240 / 0.1);
-    --depth-max:
-      0 8px 32px oklch(50% 0.05 240 / 0.25),
-      0 0 2px oklch(50% 0.05 240 / 0.15);
-    animation: depthBreath 4s ease-in-out infinite;
-  }
-
-  /* 光泽流动 — 卡片表面的光线扫过 */
-  .glass-card .glass-shine {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      oklch(100% 0 0 / 0.08) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: glossFlow 3s ease-in-out infinite;
-  }
+/* ── 手动开关 — sRGB 动态光效 ── */
+[data-hdr="on"][data-glass="on"] .glass-card {
+  position: relative;
+  --depth-min:
+    0 4px 16px rgba(100, 100, 140, 0.15),
+    0 0 1px rgba(100, 100, 140, 0.1);
+  --depth-max:
+    0 8px 32px rgba(100, 100, 140, 0.25),
+    0 0 2px rgba(100, 100, 140, 0.15);
+  animation: depthBreath 4s ease-in-out infinite;
 }
 
-/* ── 手动 override 的动态光效 ── */
-[data-hdr="on"][data-glass="on"] .glass-card::after,
-[data-hdr="on"][data-glass="on"] .glass-panel::after {
+[data-hdr="on"][data-glass="on"] .glass-card::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -365,21 +267,17 @@
   pointer-events: none;
   background: linear-gradient(
     135deg,
-    oklch(80% 0.15 30 / 0.06) 0%,
-    oklch(80% 0.15 180 / 0.04) 25%,
-    oklch(80% 0.15 120 / 0.05) 50%,
-    oklch(80% 0.15 60 / 0.04) 75%,
-    oklch(80% 0.15 270 / 0.06) 100%
+    rgba(220, 180, 160, 0.06) 0%,
+    rgba(160, 180, 220, 0.04) 25%,
+    rgba(160, 220, 180, 0.05) 50%,
+    rgba(220, 220, 160, 0.04) 75%,
+    rgba(180, 160, 220, 0.06) 100%
   );
   background-size: 300% 300%;
   animation: prismaticShift 8s ease-in-out infinite;
   mix-blend-mode: screen;
   opacity: 0.8;
   z-index: 1;
-}
-
-[data-hdr="on"][data-glass="on"] .glass-card {
-  position: relative;
 }
 
 [data-hdr="on"][data-glass="on"] .glass-card::before {
@@ -390,52 +288,144 @@
   pointer-events: none;
   background: linear-gradient(
     45deg,
-    oklch(75% 0.12 200 / 0.05) 0%,
-    oklch(75% 0.12 280 / 0.03) 50%,
-    oklch(75% 0.12 160 / 0.05) 100%
+    rgba(150, 180, 220, 0.05) 0%,
+    rgba(180, 150, 200, 0.03) 50%,
+    rgba(150, 220, 180, 0.05) 100%
   );
   background-size: 200% 200%;
   animation: auroraBreath 6s ease-in-out infinite;
   z-index: 0;
 }
 
-[data-hdr="on"][data-glass="on"] .glass-card {
-  --depth-min:
-    0 4px 16px oklch(50% 0.05 240 / 0.15),
-    0 0 1px oklch(50% 0.05 240 / 0.1);
-  --depth-max:
-    0 8px 32px oklch(50% 0.05 240 / 0.25),
-    0 0 2px oklch(50% 0.05 240 / 0.15);
-  animation: depthBreath 4s ease-in-out infinite;
-}
-
 [data-hdr="on"][data-glass="on"] .glass-card .glass-shine {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    oklch(100% 0 0 / 0.08) 50%,
+    rgba(255, 255, 255, 0.08) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
   animation: glossFlow 3s ease-in-out infinite;
 }
 
+/* ── oklch 增强动态光效 ── */
+@supports (color: oklch(0 0 0)) {
+  [data-hdr="on"][data-glass="on"] .glass-card {
+    --depth-min:
+      0 4px 16px oklch(50% 0.05 240 / 0.15),
+      0 0 1px oklch(50% 0.05 240 / 0.1);
+    --depth-max:
+      0 8px 32px oklch(50% 0.05 240 / 0.25),
+      0 0 2px oklch(50% 0.05 240 / 0.15);
+  }
+
+  [data-hdr="on"][data-glass="on"] .glass-card::after {
+    background: linear-gradient(
+      135deg,
+      oklch(80% 0.15 30 / 0.06) 0%,
+      oklch(80% 0.15 180 / 0.04) 25%,
+      oklch(80% 0.15 120 / 0.05) 50%,
+      oklch(80% 0.15 60 / 0.04) 75%,
+      oklch(80% 0.15 270 / 0.06) 100%
+    );
+  }
+
+  [data-hdr="on"][data-glass="on"] .glass-card::before {
+    background: linear-gradient(
+      45deg,
+      oklch(75% 0.12 200 / 0.05) 0%,
+      oklch(75% 0.12 280 / 0.03) 50%,
+      oklch(75% 0.12 160 / 0.05) 100%
+    );
+  }
+}
+
+/* ── P3 自动检测动态光效 ── */
+@media (color-gamut: p3) {
+  [data-glass="on"] .glass-card {
+    position: relative;
+    --depth-min:
+      0 4px 16px rgba(100, 100, 140, 0.15),
+      0 0 1px rgba(100, 100, 140, 0.1);
+    --depth-max:
+      0 8px 32px rgba(100, 100, 140, 0.25),
+      0 0 2px rgba(100, 100, 140, 0.15);
+    animation: depthBreath 4s ease-in-out infinite;
+  }
+
+  [data-glass="on"] .glass-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      135deg,
+      rgba(220, 180, 160, 0.06) 0%,
+      rgba(160, 180, 220, 0.04) 25%,
+      rgba(160, 220, 180, 0.05) 50%,
+      rgba(220, 220, 160, 0.04) 75%,
+      rgba(180, 160, 220, 0.06) 100%
+    );
+    background-size: 300% 300%;
+    animation: prismaticShift 8s ease-in-out infinite;
+    mix-blend-mode: screen;
+    opacity: 0.8;
+    z-index: 1;
+  }
+
+  [data-glass="on"] .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      45deg,
+      rgba(150, 180, 220, 0.05) 0%,
+      rgba(180, 150, 200, 0.03) 50%,
+      rgba(150, 220, 180, 0.05) 100%
+    );
+    background-size: 200% 200%;
+    animation: auroraBreath 6s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  @supports (color: oklch(0 0 0)) {
+    [data-glass="on"] .glass-card::after {
+      background: linear-gradient(
+        135deg,
+        oklch(80% 0.15 30 / 0.06) 0%,
+        oklch(80% 0.15 180 / 0.04) 25%,
+        oklch(80% 0.15 120 / 0.05) 50%,
+        oklch(80% 0.15 60 / 0.04) 75%,
+        oklch(80% 0.15 270 / 0.06) 100%
+      );
+    }
+
+    [data-glass="on"] .glass-card::before {
+      background: linear-gradient(
+        45deg,
+        oklch(75% 0.12 200 / 0.05) 0%,
+        oklch(75% 0.12 280 / 0.03) 50%,
+        oklch(75% 0.12 160 / 0.05) 100%
+      );
+    }
+  }
+}
+
 /* ═══════════════════════════════════════════════════
    减弱动画
    ═══════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-  @media (dynamic-range: high) {
-    [data-glass="on"] .glass-card::after,
-    [data-glass="on"] .glass-panel::after,
-    [data-glass="on"] .glass-card::before,
-    [data-glass="on"] .glass-card {
-      animation: none !important;
-    }
-  }
   [data-hdr="on"] .glass-card::after,
-  [data-hdr="on"] .glass-panel::after,
   [data-hdr="on"] .glass-card::before,
   [data-hdr="on"] .glass-card {
+    animation: none !important;
+  }
+  [data-glass="on"] .glass-card::after,
+  [data-glass="on"] .glass-card::before,
+  [data-glass="on"] .glass-card {
     animation: none !important;
   }
 }
