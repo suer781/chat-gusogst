@@ -1,0 +1,56 @@
+name: chat_gusogst
+description: AI Virtual Partner - Flutter Edition
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Design
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+
+  # Network
+  dio: ^5.4.0
+
+  # State Management
+  flutter_riverpod: ^2.5.0
+  riverpod_annotation: ^2.3.0
+
+  # Storage
+  shared_preferences: ^2.2.0
+  sqflite: ^2.3.0
+  path_provider: ^2.1.0
+
+  # Content
+  flutter_markdown: ^0.7.0
+  markdown: ^7.2.0
+
+  # Utils
+  uuid: ^4.2.0
+  intl: ^0.19.0
+  collection: ^1.18.0
+  json_annotation: ^4.8.0
+
+  # Router
+  go_router: ^14.2.0
+
+  # Haptics
+  flutter/services.dart
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.0
+  json_serializable: ^6.7.0
+  riverpod_generator: ^2.4.0
+
+flutter:
+  uses-material-design: true
+  generate: true
