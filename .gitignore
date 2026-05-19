@@ -31,6 +31,10 @@ download_apk.sh
 download_result.txt
 push_fix.sh
 push_result.txt
+push_payload.json
+do_push.sh
+*.bak
+*.zip
 __pycache__/
 
 # Build artifacts
@@ -44,4 +48,8 @@ download_apk.sh
 download_result.txt
 push_fix.sh
 push_result.txt
+push_payload.json
+do_push.sh
+*.bak
+*.zip
 __pycache__/
