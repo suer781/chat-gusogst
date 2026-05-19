@@ -6,8 +6,11 @@ import '../../agent/chat_service.dart';
 import '../../agent/models.dart';
 import '../../shared/widgets/glass_card.dart';
 import 'widgets/message_bubble.dart';
+import 'widgets/markdown_bubble.dart';
 import 'widgets/chat_input.dart';
 import 'widgets/typing_indicator.dart';
+import 'search_page.dart';
+import '../persona/persona_editor.dart';
 
 class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({super.key});
@@ -48,20 +51,18 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     setState(() => _isStreaming = true);
     _streamingBuffer.clear();
 
-    // Listen to text stream
     final sub = service.textStream.listen((chunk) {
-      setState(() {
-        _streamingBuffer.add(chunk);
-      });
+      setState(() => _streamingBuffer.add(chunk));
       _scrollToBottom();
     }, onDone: () {
       setState(() => _isStreaming = false);
+      sub.cancel();
       _scrollToBottom();
     }, onError: (_) {
       setState(() => _isStreaming = false);
+      sub.cancel();
     });
 
-    // Send message (async)
     service.sendMessage(text);
     _scrollToBottom();
   }
@@ -76,15 +77,38 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(persona.avatarEmoji ?? '💕', style: const TextStyle(fontSize: 20)),
-            const SizedBox(width: 8),
-            Text(persona.name),
-          ],
+        title: GestureDetector(
+          onTap: () async {
+            // Navigate to persona editor
+            final result = await Navigator.push<Persona>(
+              context,
+              MaterialPageRoute(builder: (_) => const PersonaEditorPage()),
+            );
+            if (result != null) {
+              ref.read(chatServiceProvider.notifier).setPersona(result);
+            }
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(persona.avatarEmoji ?? '💕', style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              Text(persona.name),
+              const SizedBox(width: 4),
+              Icon(Icons.edit_outlined, size: 16, color: colorScheme.onSurfaceVariant),
+            ],
+          ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MessageSearchPage()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             onPressed: () async {
@@ -113,7 +137,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'AI response failed. Tap retry or send again.',
+                      'Response failed. Send again.',
                       style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
                     ),
                   ),
@@ -143,21 +167,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                                 padding: const EdgeInsets.only(left: 4, top: 4),
                                 child: Text(
                                   _streamingBuffer.join(),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    height: 1.4,
-                                    color: colorScheme.onSurface,
-                                  ),
+                                  style: TextStyle(fontSize: 15, height: 1.4, color: colorScheme.onSurface),
                                 ),
                               ),
                           ],
                         );
                       }
-                      return MessageBubble(message: messages[index]);
+                      final msg = messages[index];
+                      // Use MarkdownBubble for AI messages, plain for user
+                      return msg.role == 'assistant'
+                          ? MarkdownBubble(message: msg)
+                          : MessageBubble(message: msg);
                     },
                   ),
           ),
-          // Input
           ChatInput(onSend: _sendMessage),
         ],
       ),
@@ -176,10 +199,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               padding: const EdgeInsets.all(28),
               child: Column(
                 children: [
-                  Text(
-                    persona.avatarEmoji ?? '💕',
-                    style: const TextStyle(fontSize: 48),
-                  ),
+                  Text(persona.avatarEmoji ?? '💕', style: const TextStyle(fontSize: 48)),
                   const SizedBox(height: 16),
                   Text(
                     'Hi! I\'m \${persona.name}',
