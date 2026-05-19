@@ -1008,6 +1008,9 @@ body {
   animation: glassOff 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+/* ── Material You 生命力 ── */
+@import url('./material_you.css');
+
 /* ══════════════════════════════════════
    HDR 动态光效 — 灵动生命感
    ══════════════════════════════════════ */
