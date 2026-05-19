@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { saveSnapshot, loadSnapshot, clearSnapshot, EditSnapshot } from './snapshotStorage';
 import type { Persona } from '../types';
 import { t, onLangChange } from '../i18n';
-import { light as hapticLight, medium as hapticMedium, success as hapticSuccess, selectionStart, selectionChangedThrottled, selectionEnd } from '../haptics';
+import { light as hapticLight, medium as hapticMedium, success as hapticSuccess, selectionStart, selectionChangedThrottled, selectionEnd, glassTap } from '../haptics';
 import { useSettingsStore } from '../stores';
 
 interface PersonaSettingsModalProps {
@@ -249,7 +249,7 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: "var(--text-xl)", color: 'var(--text-primary)' }}>{t('persona.settings.title') || '角色设置'}</h3>
-          <button onClick={() => { hapticLight(); handleClose() }} style={{ background: 'none', border: 'none', color: 'var(--gray-400)', fontSize: "var(--text-2xl)", cursor: 'pointer' }}>✕</button>
+          <button onClick={() => { glassTap(); handleClose() }} style={{ background: 'none', border: 'none', color: 'var(--gray-400)', fontSize: "var(--text-2xl)", cursor: 'pointer' }}>✕</button>
         </div>
 
         {/* 系统提示词 */}

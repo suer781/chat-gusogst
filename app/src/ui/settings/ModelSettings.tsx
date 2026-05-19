@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { useSettingsStore } from '../stores'
 import { t } from '../i18n'
 import { Bot, Key, Globe, Thermometer, Hash, Sparkles, Loader2 } from 'lucide-react'
-import { light as hapticLight, medium as hapticMedium, success as hapticSuccess, error as hapticError, selectionStart, selectionChangedThrottled, selectionEnd } from '../haptics'
+import { light as hapticLight, medium as hapticMedium, success as hapticSuccess, error as hapticError, selectionStart, selectionChangedThrottled, selectionEnd, glassTap } from '../haptics'
 
 const PROVIDERS = [
   { id: 'openai',    label: 'OpenAI',       placeholder: 'sk-...' },
@@ -99,7 +99,7 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
       <Section title="模型提供商" icon={<Bot size={18} />}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
           {PROVIDERS.map((p) => (
-            <button key={p.id} onClick={() => { hapticLight(); setModel(p.id, model.model) }} style={{
+            <button key={p.id} onClick={() => { glassTap(); setModel(p.id, model.model) }} style={{
               padding: '12px 4px', borderRadius: "var(--radius-md)", cursor: 'pointer',
               background: model.provider === p.id ? 'var(--purple-soft)' : 'rgba(255,255,255,0.04)',
               border: model.provider === p.id ? '1.5px solid rgba(108, 92, 231, 0.5)' : '1.5px solid transparent',
@@ -156,7 +156,7 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
       <Section title="最大 Token" icon={<Hash size={18} />}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {[1024, 2048, 4096, 8192, 16384].map((t) => (
-            <button key={t} onClick={() => { hapticLight(); setMaxTokens(t) }} style={{
+            <button key={t} onClick={() => { glassTap(); setMaxTokens(t) }} style={{
               padding: '8px 12px', borderRadius: "var(--radius-md)", cursor: 'pointer',
               background: model.maxTokens === t ? 'var(--purple-soft)' : 'rgba(255,255,255,0.04)',
               border: model.maxTokens === t ? '1px solid rgba(108,92,231,0.4)' : '1px solid transparent',
@@ -201,7 +201,7 @@ function Header({ title, onBack }: { title: string; onBack: () => void }) {
       background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
       borderBottom: '1px solid var(--divider)',
     }}>
-      <button onClick={() => { hapticLight(); onBack() }} style={{
+      <button onClick={() => { glassTap(); onBack() }} style={{
         background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
         display: 'flex', alignItems: 'center',
       }}>{'<-'}</button>

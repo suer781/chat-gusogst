@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Palette, Bot, Link2, Brain, Search, Info } from 'lucide-react'
 import { t } from '../i18n'
-import { light as hapticLight } from '../haptics'
+import { light as hapticLight, glassTap } from '../haptics'
 import { BasicSettings } from './BasicSettings'
 import { ModelSettings } from './ModelSettings'
 import { PlatformSettings } from './PlatformSettings'
@@ -38,7 +38,7 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)',
         zIndex: 10, borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={() => { hapticLight(); onDone() }} style={{
+        <button onClick={() => { glassTap(); onDone() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)',
           fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',

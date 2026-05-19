@@ -1,6 +1,6 @@
 import { useSettingsStore } from '../stores'
 import { Brain, Trash2, HardDrive } from 'lucide-react'
-import { light as hapticLight, medium as hapticMedium } from '../haptics'
+import { light as hapticLight, medium as hapticMedium, glassTap } from '../haptics'
 
 export function MemorySettings({ onBack }: { onBack: () => void }) {
   const memoryEnabled = useSettingsStore((s) => s.memoryEnabled)
@@ -13,7 +13,7 @@ export function MemorySettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
         borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={() => { hapticLight(); onBack() }} style={{
+        <button onClick={() => { glassTap(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>

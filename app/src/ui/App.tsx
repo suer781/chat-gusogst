@@ -9,7 +9,7 @@ import { ProviderSettings } from './providers/ProviderSettings'
 import { ChevronLeft, Settings, MessageSquare, Users, Server } from 'lucide-react'
 import { t, onLangChange } from './i18n'
 import TestDisclaimer from './components/TestDisclaimer'
-import { light as hapticLight, setHapticEnabled } from './haptics'
+import { light as hapticLight, glassTap, glassPress, setHapticEnabled } from './haptics'
 
 type View = 'chat' | 'settings' | 'persona' | 'personaProfile' | 'providers'
 
@@ -107,7 +107,7 @@ export default function App() {
       {/* ── Header ── */}
       <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
         {view === 'personaProfile' ? (
-          <button onClick={() => { hapticLight(); setView('persona') }} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+          <button onClick={() => { glassTap(); setView('persona') }} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
           </button>
         ) : <div style={{ width: 60 }} />}
@@ -177,7 +177,7 @@ export default function App() {
           return (
             <button
               key={item.id}
-              onClick={() => { hapticLight(); setView(item.id) }}
+              onClick={() => { glassTap(); setView(item.id) }}
               className="nav-btn"
               style={{
                 display: 'flex',

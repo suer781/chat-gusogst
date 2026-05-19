@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link2, Wifi, WifiOff, Loader2 } from 'lucide-react'
-import { light as hapticLight, medium as hapticMedium } from '../haptics'
+import { light as hapticLight, medium as hapticMedium, glassTap } from '../haptics'
 
 type PlatformStatus = 'disconnected' | 'connecting' | 'connected'
 
@@ -39,7 +39,7 @@ export function PlatformSettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
         borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={() => { hapticLight(); onBack() }} style={{
+        <button onClick={() => { glassTap(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>

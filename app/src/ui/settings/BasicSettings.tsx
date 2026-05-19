@@ -3,7 +3,7 @@ import { useSettingsStore, DEFAULT_EYE_CARE_MAPPINGS, genMappingId } from '../st
 import { EyeCareColorMapper } from './EyeCareColorMapper'
 import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette, Smartphone } from 'lucide-react'
 import { t } from '../i18n'
-import { medium as hapticMedium, light as hapticLight, selectionStart, selectionChangedThrottled, selectionEnd } from '../haptics'
+import { medium as hapticMedium, light as hapticLight, glassTap, glassPress, selectionStart, selectionChangedThrottled, selectionEnd } from '../haptics'
 
 type ThemeMode = 'system' | 'light' | 'dark' | 'pureWhite' | 'pureBlack'
 
@@ -48,7 +48,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)',
         zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
-        <button onClick={() => { hapticLight(); onBack() }} style={{
+        <button onClick={() => { glassTap(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)',
           fontSize: 20, cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
@@ -59,7 +59,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <Section title="主题模式" icon={<Palette size={18} />}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
           {THEME_OPTIONS.map(({ key, icon: Icon, labelKey }) => (
-            <button key={key} onClick={() => { hapticLight(); setThemeMode(key) }} style={{
+            <button key={key} onClick={() => { glassPress(); setThemeMode(key) }} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
               padding: '14px 4px', borderRadius: 14,
               background: themeMode === key ? 'rgba(233,69,96,0.15)' : 'rgba(255,255,255,0.04)',
@@ -103,7 +103,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
           checked={eyeCareEnabled} onChange={setEyeCareEnabled} />
         {eyeCareEnabled && (
           <div style={{ marginTop: 12 }}>
-            <button onClick={() => { hapticLight(); setShowEyeCareDetail(!showEyeCareDetail) }} style={{
+            <button onClick={() => { glassTap(); setShowEyeCareDetail(!showEyeCareDetail) }} style={{
               width: '100%', padding: '10px 14px',
               background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 10, color: 'var(--gray-200)', fontSize: 13,

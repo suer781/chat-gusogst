@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSettingsStore } from '../stores'
 import type { Persona } from '../types'
 import { Plus, Search, ChevronRight } from 'lucide-react'
-import { light as hapticLight, medium as hapticMedium } from '../haptics'
+import { light as hapticLight, medium as hapticMedium, glassTap } from '../haptics'
 import { t, onLangChange } from '../i18n'
 
 export function PersonaView({ onDone, onProfile }: { onDone: () => void; onProfile?: (p: Persona) => void }) {
@@ -38,7 +38,7 @@ export function PersonaView({ onDone, onProfile }: { onDone: () => void; onProfi
       </div>
       <div className="flex-1 overflow-y-auto" style={{ padding: "12px 16px", overscrollBehavior: "contain" }}>
         {filtered.map((p) => (
-          <button key={p.id} onClick={() => { hapticLight(); select(p) }} className="w-full flex items-center gap-3" style={{ background: current.id === p.id ? 'var(--accent-soft)' : 'var(--bg-tertiary)', border: '1px solid ' + (current.id === p.id ? 'var(--accent-glow)' : 'var(--border)'), borderRadius: "var(--radius-md)", padding: '12px 16px', marginBottom: 8, cursor: 'pointer', color: 'var(--text-primary)', textAlign: 'left' }}>
+          <button key={p.id} onClick={() => { glassTap(); select(p) }} className="w-full flex items-center gap-3" style={{ background: current.id === p.id ? 'var(--accent-soft)' : 'var(--bg-tertiary)', border: '1px solid ' + (current.id === p.id ? 'var(--accent-glow)' : 'var(--border)'), borderRadius: "var(--radius-md)", padding: '12px 16px', marginBottom: 8, cursor: 'pointer', color: 'var(--text-primary)', textAlign: 'left' }}>
             <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 40, height: 40, background: current.id === p.id ? 'var(--accent-soft)' : 'var(--border)', color: current.id === p.id ? 'var(--accent)' : 'var(--gray-300)', fontSize: "var(--text-lg)", fontWeight: 600 }}>{p.name[0]}</div>
             <div className="flex-1 min-w-0">
               <div style={{ fontSize: "var(--text-base)", fontWeight: 500 }}>{p.name}</div>

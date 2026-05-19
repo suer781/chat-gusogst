@@ -5,7 +5,7 @@ import type { UIMessage as Message, UIToolCall as ToolCall } from '../types'
 import { Plus, Search, Database, Send, Copy, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronRight, Square, Wrench, CheckCircle2, XCircle } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { t, onLangChange } from '../i18n'
-import { success as hapticSuccess, light as hapticLight, medium as hapticMedium, heavy as hapticHeavy, sendPulse, unfold as hapticUnfold, error as hapticError } from '../haptics'
+import { success as hapticSuccess, light as hapticLight, medium as hapticMedium, heavy as hapticHeavy, sendPulse, unfold as hapticUnfold, error as hapticError, glassTap, glassPress } from '../haptics'
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 
@@ -64,7 +64,7 @@ function MessageActions({ msg, onCopy, onRetry }: { msg: Message; onCopy: () => 
   return (
     <div className="flex items-center gap-1 mt-1" style={{ opacity: show ? 1 : 0, transition: 'opacity 0.15s' }}
       onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      <button onClick={() => { hapticLight(); onCopy() }} className="p-1 rounded hover:bg-white/5" title="复制">
+      <button onClick={() => { glassTap(); onCopy() }} className="p-1 rounded hover:bg-white/5" title="复制">
         <Copy size={12} style={{ color: 'var(--text-secondary)' }} />
       </button>
       {onRetry && msg.role === 'assistant' && (
@@ -141,7 +141,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   }, [input, streaming, addMessage, updateMessage, setStreaming, setError])
 
   const handleCopy = (content: string) => {
-    hapticLight()
+    glassTap()
     navigator.clipboard?.writeText(content).catch(() => {})
   }
 
@@ -171,7 +171,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={() => { hapticLight(); clearMessages() }}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
+          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={() => { glassTap(); clearMessages() }}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </div>
 

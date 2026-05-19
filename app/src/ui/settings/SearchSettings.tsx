@@ -1,7 +1,7 @@
 import { useSettingsStore } from '../stores'
 import { t } from '../i18n'
 import { Search, Key, Globe } from 'lucide-react'
-import { light as hapticLight, medium as hapticMedium } from '../haptics'
+import { light as hapticLight, medium as hapticMedium, glassTap } from '../haptics'
 
 const ENGINES = [
   { id: 'duckduckgo', label: 'DuckDuckGo', desc: t('search.duckduckgo.desc'), free: true },
@@ -21,7 +21,7 @@ export function SearchSettings({ onBack }: { onBack: () => void }) {
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
         borderBottom: '1px solid var(--divider)',
       }}>
-        <button onClick={() => { hapticLight(); onBack() }} style={{
+        <button onClick={() => { glassTap(); onBack() }} style={{
           background: 'none', border: 'none', color: 'var(--accent)', fontSize: "var(--text-2xl)", cursor: 'pointer', padding: 4,
           display: 'flex', alignItems: 'center',
         }}>{'<-'}</button>

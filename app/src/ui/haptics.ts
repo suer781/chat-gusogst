@@ -91,11 +91,68 @@ export function selectionEnd() { impact(ImpactStyle.Light) }
 export const selectionChangedThrottled = selectionChanged
 
 // ── 语义复合 ──
-/** 玻璃轻敲 — 玻璃卡片点击 */
-export function glassTap() { impact(ImpactStyle.Light) }
+
+/** 玻璃轻敲 — 清脆双击，模拟"叮"的感觉 */
+export function glassTap() {
+  if (!_enabled) return
+  if (_capacitorAvailable) {
+    Haptics.impact({ style: ImpactStyle.Light }).then(() => {
+      setTimeout(() => Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}), 30)
+    }).catch(() => webVibrate([5, 30, 5]))
+  } else {
+    webVibrate([5, 30, 5])
+  }
+}
+
+/** 玻璃按压 — 按下时的清脆确认感 */
+export function glassPress() {
+  if (!_enabled) return
+  if (_capacitorAvailable) {
+    Haptics.impact({ style: ImpactStyle.Light }).then(() => {
+      setTimeout(() => Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}), 45)
+    }).catch(() => webVibrate([5, 45, 10]))
+  } else {
+    webVibrate([5, 45, 10])
+  }
+}
+
+/** 玻璃滑动 — 滑过玻璃表面的颗粒感 */
+let _lastGlassSlide = 0
+export function glassSlide() {
+  if (!_enabled) return
+  const now = Date.now()
+  if (now - _lastGlassSlide < 60) return
+  _lastGlassSlide = now
+  if (_capacitorAvailable) {
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => webVibrate(3))
+  } else {
+    webVibrate(3)
+  }
+}
+
 /** 发送脉冲 — 消息发送按钮 */
-export function sendPulse() { impact(ImpactStyle.Medium) }
+export function sendPulse() {
+  if (!_enabled) return
+  if (_capacitorAvailable) {
+    Haptics.impact({ style: ImpactStyle.Medium }).then(() => {
+      setTimeout(() => Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}), 60)
+    }).catch(() => webVibrate([15, 60, 8]))
+  } else {
+    webVibrate([15, 60, 8])
+  }
+}
+
 /** 展开折纸 — 折叠面板展开/收起 */
-export function unfold() { impact(ImpactStyle.Light) }
+export function unfold() {
+  if (!_enabled) return
+  if (_capacitorAvailable) {
+    Haptics.impact({ style: ImpactStyle.Light }).then(() => {
+      setTimeout(() => Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}), 50)
+    }).catch(() => webVibrate([5, 50, 5]))
+  } else {
+    webVibrate([5, 50, 5])
+  }
+}
+
 /** 滑块刻度 — 兼容旧 API，等同 selectionChanged */
 export function sliderTick() { selectionChanged() }
