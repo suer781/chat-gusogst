@@ -17,9 +17,7 @@ public class MainActivity extends BridgeActivity {
 
         // Enable HDR wide color gamut
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            getWindow().setColorMode(ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT);
             getWindow().setFormat(PixelFormat.RGBA_F16);
         }
     }
