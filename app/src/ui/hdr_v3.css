@@ -1,431 +1,163 @@
-/* ═══════════════════════════════════════════════════
-   HDR v3.1 — 兼容 Android WebView
-   
-   策略：
-   1. [data-hdr="on"] — 纯 sRGB 颜色，零依赖，100% 生效
-   2. @supports oklch — 有就用更好看的 oklch
-   3. @media color-gamut:p3 — 自动检测 P3 广色域
-   4. 不依赖 @media dynamic-range:high（Android WebView 不支持）
-   ═══════════════════════════════════════════════════ */
-
-/* ── 1. 手动开关 — 纯 sRGB，零依赖 ── */
-[data-hdr="on"] {
-  --hdr-available: 1;
-  --hdr-glow-base: rgba(220, 225, 245, 0.9);
-  --hdr-glow-accent: rgba(200, 120, 140, 0.8);
-  --hdr-glow-white: rgba(248, 248, 255, 0.95);
-  --hdr-border-highlight: rgba(200, 210, 240, 0.25);
-  --hdr-shadow-glow: rgba(200, 120, 140, 0.15);
+/* HDR v4.0 */
+:root {
+  --hdr-enabled: 0;
+  --hdr-glow-base: rgba(200, 210, 230, 0.0);
+  --hdr-glow-accent: rgba(180, 100, 130, 0.0);
+  --hdr-glow-white: rgba(255, 255, 255, 0.0);
+  --hdr-border-highlight: rgba(200, 210, 240, 0.0);
+  --hdr-shadow-glow: rgba(180, 100, 130, 0.0);
+  --hdr-bg-tint: transparent;
+  --hdr-card-border: transparent;
+  --hdr-header-bg: transparent;
+  --hdr-nav-bg: transparent;
+  --hdr-bubble-tint: transparent;
 }
 
-/* ── 2. oklch 增强（渐进增强） ── */
+[data-hdr="on"] {
+  --hdr-enabled: 1;
+  --hdr-glow-base: rgba(220, 225, 245, 0.9);
+  --hdr-glow-accent: rgba(220, 100, 140, 0.9);
+  --hdr-glow-white: rgba(255, 255, 255, 0.95);
+  --hdr-border-highlight: rgba(180, 160, 220, 0.4);
+  --hdr-shadow-glow: rgba(200, 100, 150, 0.25);
+  --hdr-bg-tint: rgba(180, 120, 200, 0.06);
+  --hdr-card-border: rgba(180, 160, 220, 0.3);
+  --hdr-header-bg: rgba(180, 120, 200, 0.08);
+  --hdr-nav-bg: rgba(180, 120, 200, 0.05);
+  --hdr-bubble-tint: rgba(180, 140, 220, 0.08);
+}
+
 @supports (color: oklch(0 0 0)) {
   [data-hdr="on"] {
     --hdr-glow-base: oklch(95% 0.02 240);
-    --hdr-glow-accent: oklch(70% 0.15 20);
+    --hdr-glow-accent: oklch(65% 0.2 20);
     --hdr-glow-white: oklch(98% 0.01 240);
-    --hdr-border-highlight: oklch(95% 0.015 240 / 0.25);
-    --hdr-shadow-glow: oklch(70% 0.15 20 / 0.15);
+    --hdr-border-highlight: oklch(80% 0.08 280 / 0.4);
+    --hdr-shadow-glow: oklch(65% 0.2 20 / 0.25);
+    --hdr-bg-tint: oklch(60% 0.1 280 / 0.06);
+    --hdr-card-border: oklch(80% 0.08 280 / 0.3);
+    --hdr-header-bg: oklch(60% 0.1 280 / 0.08);
+    --hdr-nav-bg: oklch(60% 0.08 280 / 0.05);
+    --hdr-bubble-tint: oklch(70% 0.1 280 / 0.08);
   }
 }
 
-/* ── 3. P3 广色域自动检测 ── */
 @media (color-gamut: p3) {
-  :root {
-    --hdr-available: 1;
-  }
   @supports (color: oklch(0 0 0)) {
-    :root {
-      --hdr-glow-base: oklch(96% 0.03 240);
-      --hdr-glow-accent: oklch(72% 0.2 20);
-      --hdr-glow-white: oklch(99% 0.015 240);
-      --hdr-border-highlight: oklch(96% 0.02 240 / 0.3);
-      --hdr-shadow-glow: oklch(72% 0.2 20 / 0.2);
+    [data-hdr="on"] {
+      --hdr-glow-accent: oklch(68% 0.25 20);
+      --hdr-border-highlight: oklch(82% 0.12 280 / 0.45);
+      --hdr-shadow-glow: oklch(68% 0.25 20 / 0.3);
+      --hdr-bg-tint: oklch(62% 0.14 280 / 0.08);
+      --hdr-card-border: oklch(82% 0.12 280 / 0.35);
     }
   }
 }
 
-/* ── 4. dynamic-range 检测（桌面端加分） ── */
-@media (dynamic-range: high) {
-  :root {
-    --hdr-available: 1;
-  }
+.app-header,.app-nav,.glass-card,.msg-bubble,.nav-indicator>div,.btn-accent,button,input,textarea,.toggle-active {
+  transition: box-shadow 0.4s cubic-bezier(0.2,0,0,1), border-color 0.4s cubic-bezier(0.2,0,0,1), background 0.4s cubic-bezier(0.2,0,0,1), background-color 0.4s cubic-bezier(0.2,0,0,1), filter 0.4s cubic-bezier(0.2,0,0,1);
 }
 
-/* ═══════════════════════════════════════════════════
-   HDR 玻璃质感 — 全局过渡
-   ═══════════════════════════════════════════════════ */
-
-.app-header,
-.app-nav,
-.glass-card,
-.msg-bubble,
-.nav-indicator > div,
-.btn-accent,
-button,
-input,
-textarea,
-.toggle-active {
-  transition:
-    box-shadow 0.4s cubic-bezier(0.2, 0, 0, 1),
-    border-color 0.4s cubic-bezier(0.2, 0, 0, 1),
-    background 0.4s cubic-bezier(0.2, 0, 0, 1),
-    filter 0.4s cubic-bezier(0.2, 0, 0, 1);
+[data-hdr="on"][data-theme="dark"] .app-header {
+  background-color: var(--hdr-header-bg) !important;
+  border-bottom: 1px solid var(--hdr-border-highlight) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 1px 3px rgba(0,0,0,0.3), 0 0 20px var(--hdr-shadow-glow) !important;
 }
-
-/* ═══════════════════════════════════════════════════
-   HDR 暗色主题 — 玻璃高光
-   ═══════════════════════════════════════════════════ */
-
-/* --- 手动开关 --- */
-[data-hdr="on"][data-theme="dark"][data-glass="on"] .app-header {
-  border-bottom: 1px solid var(--hdr-border-highlight);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 1px 3px rgba(0,0,0,0.3);
+[data-hdr="on"][data-theme="dark"] .app-nav {
+  background-color: var(--hdr-nav-bg) !important;
+  box-shadow: inset 0 -1px 0 var(--hdr-border-highlight), 0 -2px 12px var(--hdr-shadow-glow) !important;
 }
-
-[data-hdr="on"][data-theme="dark"][data-glass="on"] .app-nav {
-  box-shadow: inset 0 -1px 0 var(--hdr-border-highlight);
+[data-hdr="on"][data-theme="dark"] .glass-card {
+  border-top: 1px solid var(--hdr-card-border) !important;
+  border-left: 1px solid rgba(255,255,255,0.06) !important;
+  background-color: var(--hdr-bg-tint) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 8px rgba(0,0,0,0.2), 0 0 24px var(--hdr-shadow-glow) !important;
 }
-
-[data-hdr="on"][data-theme="dark"][data-glass="on"] .glass-card {
-  border-top: 1px solid var(--hdr-border-highlight);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 2px 8px rgba(0,0,0,0.2);
-}
-
-[data-hdr="on"][data-theme="dark"] .nav-indicator > div {
+[data-hdr="on"][data-theme="dark"] .nav-indicator>div {
   background: var(--hdr-glow-accent) !important;
-  backdrop-filter: blur(16px) saturate(1.5);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 2px 8px var(--hdr-shadow-glow),
-    0 0 16px var(--hdr-shadow-glow);
+  backdrop-filter: blur(16px) saturate(1.8) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.8) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 8px var(--hdr-shadow-glow), 0 0 20px var(--hdr-shadow-glow) !important;
 }
-
+[data-hdr="on"][data-theme="dark"] .msg-bubble {
+  border-color: var(--hdr-card-border) !important;
+  box-shadow: 0 0 8px var(--hdr-shadow-glow) !important;
+}
+[data-hdr="on"][data-theme="dark"] .msg-bubble.user {
+  background-color: var(--hdr-bubble-tint) !important;
+}
+[data-hdr="on"][data-theme="dark"] .btn-accent,
 [data-hdr="on"][data-theme="dark"] button:active {
-  box-shadow:
-    inset 0 1px 2px var(--hdr-glow-white),
-    0 0 12px var(--hdr-shadow-glow);
+  box-shadow: inset 0 1px 2px var(--hdr-glow-white), 0 0 16px var(--hdr-shadow-glow) !important;
 }
-
 [data-hdr="on"][data-theme="dark"] input:focus,
 [data-hdr="on"][data-theme="dark"] textarea:focus {
-  border-color: var(--hdr-glow-accent);
-  box-shadow: 0 0 0 2px var(--hdr-shadow-glow);
+  border-color: var(--hdr-glow-accent) !important;
+  box-shadow: 0 0 0 3px var(--hdr-shadow-glow), 0 0 16px var(--hdr-shadow-glow) !important;
+}
+[data-hdr="on"][data-theme="dark"] .toggle-active {
+  box-shadow: 0 0 12px var(--hdr-shadow-glow) !important;
 }
 
-/* --- P3 自动检测暗色 --- */
-@media (color-gamut: p3) and (prefers-color-scheme: dark) {
-  [data-glass="on"] .app-header {
-    border-bottom: 1px solid var(--hdr-border-highlight);
-    box-shadow:
-      inset 0 1px 0 var(--hdr-glow-white),
-      0 1px 3px rgba(0,0,0,0.3);
-  }
-
-  [data-glass="on"] .app-nav {
-    box-shadow: inset 0 -1px 0 var(--hdr-border-highlight);
-  }
-
-  [data-glass="on"] .glass-card {
-    border-top: 1px solid var(--hdr-border-highlight);
-    box-shadow:
-      inset 0 1px 0 var(--hdr-glow-white),
-      0 2px 8px rgba(0,0,0,0.2);
-  }
-
-  .nav-indicator > div {
-    background: var(--hdr-glow-accent) !important;
-    backdrop-filter: blur(16px) saturate(1.5);
-    -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    box-shadow:
-      inset 0 1px 0 var(--hdr-glow-white),
-      0 2px 8px var(--hdr-shadow-glow),
-      0 0 16px var(--hdr-shadow-glow);
-  }
-
-  button:active {
-    box-shadow:
-      inset 0 1px 2px var(--hdr-glow-white),
-      0 0 12px var(--hdr-shadow-glow);
-  }
-
-  input:focus,
-  textarea:focus {
-    border-color: var(--hdr-glow-accent);
-    box-shadow: 0 0 0 2px var(--hdr-shadow-glow);
-  }
-}
-
-/* ═══════════════════════════════════════════════════
-   HDR 亮色主题
-   ═══════════════════════════════════════════════════ */
-
-/* --- 手动开关亮色 --- */
 [data-hdr="on"][data-theme="light"] {
-  --hdr-glow-base: rgba(160, 165, 190, 0.7);
-  --hdr-glow-accent: rgba(140, 90, 110, 0.55);
-  --hdr-glow-white: rgba(255, 255, 255, 0.95);
-  --hdr-border-highlight: rgba(160, 165, 190, 0.2);
-  --hdr-shadow-glow: rgba(140, 90, 110, 0.1);
+  --hdr-glow-accent: rgba(180, 60, 100, 0.85);
+  --hdr-border-highlight: rgba(160, 100, 200, 0.3);
+  --hdr-shadow-glow: rgba(180, 80, 140, 0.15);
+  --hdr-bg-tint: rgba(180, 100, 200, 0.04);
+  --hdr-card-border: rgba(160, 100, 200, 0.25);
+  --hdr-header-bg: rgba(180, 100, 200, 0.06);
+  --hdr-nav-bg: rgba(180, 100, 200, 0.04);
+  --hdr-bubble-tint: rgba(180, 100, 200, 0.06);
 }
-
-[data-hdr="on"][data-theme="light"][data-glass="on"] .app-header {
-  border-bottom: 1px solid var(--hdr-border-highlight);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 1px 3px rgba(0,0,0,0.06);
-}
-
-[data-hdr="on"][data-theme="light"][data-glass="on"] .glass-card {
-  border-top: 1px solid var(--hdr-border-highlight);
-  box-shadow:
-    inset 0 1px 0 var(--hdr-glow-white),
-    0 2px 8px rgba(0,0,0,0.06);
-}
-
-/* oklch 亮色增强 */
 @supports (color: oklch(0 0 0)) {
   [data-hdr="on"][data-theme="light"] {
-    --hdr-glow-base: oklch(70% 0.02 240);
-    --hdr-glow-accent: oklch(55% 0.15 20);
-    --hdr-glow-white: oklch(100% 0.01 240);
-    --hdr-border-highlight: oklch(70% 0.015 240 / 0.2);
-    --hdr-shadow-glow: oklch(55% 0.15 20 / 0.1);
+    --hdr-glow-accent: oklch(55% 0.2 20);
+    --hdr-border-highlight: oklch(75% 0.08 280 / 0.3);
+    --hdr-shadow-glow: oklch(55% 0.2 20 / 0.15);
+    --hdr-bg-tint: oklch(55% 0.08 280 / 0.04);
+    --hdr-card-border: oklch(75% 0.08 280 / 0.25);
+    --hdr-header-bg: oklch(55% 0.08 280 / 0.06);
+    --hdr-nav-bg: oklch(55% 0.06 280 / 0.04);
+    --hdr-bubble-tint: oklch(55% 0.08 280 / 0.06);
   }
 }
-
-/* ═══════════════════════════════════════════════════
-   HDR 关闭过渡
-   ═══════════════════════════════════════════════════ */
-
-[data-hdr="off"] .app-header,
-[data-hdr="off"] .app-nav,
-[data-hdr="off"] .glass-card,
-[data-hdr="off"] .msg-bubble,
-[data-hdr="off"] .nav-indicator > div,
-[data-hdr="off"] .btn-accent,
-[data-hdr="off"] button,
-[data-hdr="off"] input,
-[data-hdr="off"] textarea,
-[data-hdr="off"] .toggle-active {
-  transition:
-    box-shadow 0.4s cubic-bezier(0.2, 0, 0, 1),
-    border-color 0.4s cubic-bezier(0.2, 0, 0, 1),
-    background 0.4s cubic-bezier(0.2, 0, 0, 1),
-    filter 0.4s cubic-bezier(0.2, 0, 0, 1);
+[data-hdr="on"][data-theme="light"] .app-header {
+  background-color: var(--hdr-header-bg) !important;
+  border-bottom: 1px solid var(--hdr-border-highlight) !important;
+  box-shadow: inset 0 -1px 0 var(--hdr-glow-white), 0 1px 3px rgba(0,0,0,0.08), 0 0 16px var(--hdr-shadow-glow) !important;
+}
+[data-hdr="on"][data-theme="light"] .app-nav {
+  background-color: var(--hdr-nav-bg) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-border-highlight), 0 2px 12px var(--hdr-shadow-glow) !important;
+}
+[data-hdr="on"][data-theme="light"] .glass-card {
+  border-top: 1px solid var(--hdr-card-border) !important;
+  background-color: var(--hdr-bg-tint) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 6px rgba(0,0,0,0.06), 0 0 16px var(--hdr-shadow-glow) !important;
+}
+[data-hdr="on"][data-theme="light"] .nav-indicator>div {
+  background: var(--hdr-glow-accent) !important;
+  box-shadow: 0 2px 8px var(--hdr-shadow-glow), 0 0 16px var(--hdr-shadow-glow) !important;
+}
+[data-hdr="on"][data-theme="light"] .msg-bubble { border-color: var(--hdr-card-border) !important; }
+[data-hdr="on"][data-theme="light"] .msg-bubble.user { background-color: var(--hdr-bubble-tint) !important; }
+[data-hdr="on"][data-theme="light"] input:focus,
+[data-hdr="on"][data-theme="light"] textarea:focus {
+  border-color: var(--hdr-glow-accent) !important;
+  box-shadow: 0 0 0 3px var(--hdr-shadow-glow) !important;
 }
 
-/* ═══════════════════════════════════════════════════
-   HDR 动态光效 — 灵动生命感
-   ═══════════════════════════════════════════════════ */
-
-@keyframes prismaticShift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+[data-hdr="off"] .app-header, [data-hdr="off"] .app-nav, [data-hdr="off"] .glass-card,
+[data-hdr="off"] .msg-bubble, [data-hdr="off"] .nav-indicator>div,
+[data-hdr="off"] input:focus, [data-hdr="off"] textarea:focus {
+  box-shadow: none !important;
+  border-color: inherit !important;
+  background-color: transparent !important;
 }
 
-@keyframes auroraBreath {
-  0%   { background-position: 0% 50%; opacity: 0.4; }
-  50%  { background-position: 100% 50%; opacity: 1; }
-  100% { background-position: 0% 50%; opacity: 0.4; }
+[data-hdr="on"][data-glass="on"][data-theme="dark"] .glass-card {
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 0 30px var(--hdr-shadow-glow), 0 2px 8px rgba(0,0,0,0.2), 0 0 30px var(--hdr-shadow-glow) !important;
 }
-
-@keyframes depthBreath {
-  0%   { box-shadow: var(--depth-min); }
-  50%  { box-shadow: var(--depth-max); }
-  100% { box-shadow: var(--depth-min); }
-}
-
-@keyframes glossFlow {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-/* ── 手动开关 — sRGB 动态光效 ── */
-[data-hdr="on"][data-glass="on"] .glass-card {
-  position: relative;
-  --depth-min:
-    0 4px 16px rgba(100, 100, 140, 0.15),
-    0 0 1px rgba(100, 100, 140, 0.1);
-  --depth-max:
-    0 8px 32px rgba(100, 100, 140, 0.25),
-    0 0 2px rgba(100, 100, 140, 0.15);
-  animation: depthBreath 4s ease-in-out infinite;
-}
-
-[data-hdr="on"][data-glass="on"] .glass-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    rgba(220, 180, 160, 0.06) 0%,
-    rgba(160, 180, 220, 0.04) 25%,
-    rgba(160, 220, 180, 0.05) 50%,
-    rgba(220, 220, 160, 0.04) 75%,
-    rgba(180, 160, 220, 0.06) 100%
-  );
-  background-size: 300% 300%;
-  animation: prismaticShift 8s ease-in-out infinite;
-  mix-blend-mode: screen;
-  opacity: 0.8;
-  z-index: 1;
-}
-
-[data-hdr="on"][data-glass="on"] .glass-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    45deg,
-    rgba(150, 180, 220, 0.05) 0%,
-    rgba(180, 150, 200, 0.03) 50%,
-    rgba(150, 220, 180, 0.05) 100%
-  );
-  background-size: 200% 200%;
-  animation: auroraBreath 6s ease-in-out infinite;
-  z-index: 0;
-}
-
-[data-hdr="on"][data-glass="on"] .glass-card .glass-shine {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: glossFlow 3s ease-in-out infinite;
-}
-
-/* ── oklch 增强动态光效 ── */
-@supports (color: oklch(0 0 0)) {
-  [data-hdr="on"][data-glass="on"] .glass-card {
-    --depth-min:
-      0 4px 16px oklch(50% 0.05 240 / 0.15),
-      0 0 1px oklch(50% 0.05 240 / 0.1);
-    --depth-max:
-      0 8px 32px oklch(50% 0.05 240 / 0.25),
-      0 0 2px oklch(50% 0.05 240 / 0.15);
-  }
-
-  [data-hdr="on"][data-glass="on"] .glass-card::after {
-    background: linear-gradient(
-      135deg,
-      oklch(80% 0.15 30 / 0.06) 0%,
-      oklch(80% 0.15 180 / 0.04) 25%,
-      oklch(80% 0.15 120 / 0.05) 50%,
-      oklch(80% 0.15 60 / 0.04) 75%,
-      oklch(80% 0.15 270 / 0.06) 100%
-    );
-  }
-
-  [data-hdr="on"][data-glass="on"] .glass-card::before {
-    background: linear-gradient(
-      45deg,
-      oklch(75% 0.12 200 / 0.05) 0%,
-      oklch(75% 0.12 280 / 0.03) 50%,
-      oklch(75% 0.12 160 / 0.05) 100%
-    );
-  }
-}
-
-/* ── P3 自动检测动态光效 ── */
-@media (color-gamut: p3) {
-  [data-glass="on"] .glass-card {
-    position: relative;
-    --depth-min:
-      0 4px 16px rgba(100, 100, 140, 0.15),
-      0 0 1px rgba(100, 100, 140, 0.1);
-    --depth-max:
-      0 8px 32px rgba(100, 100, 140, 0.25),
-      0 0 2px rgba(100, 100, 140, 0.15);
-    animation: depthBreath 4s ease-in-out infinite;
-  }
-
-  [data-glass="on"] .glass-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-      135deg,
-      rgba(220, 180, 160, 0.06) 0%,
-      rgba(160, 180, 220, 0.04) 25%,
-      rgba(160, 220, 180, 0.05) 50%,
-      rgba(220, 220, 160, 0.04) 75%,
-      rgba(180, 160, 220, 0.06) 100%
-    );
-    background-size: 300% 300%;
-    animation: prismaticShift 8s ease-in-out infinite;
-    mix-blend-mode: screen;
-    opacity: 0.8;
-    z-index: 1;
-  }
-
-  [data-glass="on"] .glass-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-      45deg,
-      rgba(150, 180, 220, 0.05) 0%,
-      rgba(180, 150, 200, 0.03) 50%,
-      rgba(150, 220, 180, 0.05) 100%
-    );
-    background-size: 200% 200%;
-    animation: auroraBreath 6s ease-in-out infinite;
-    z-index: 0;
-  }
-
-  @supports (color: oklch(0 0 0)) {
-    [data-glass="on"] .glass-card::after {
-      background: linear-gradient(
-        135deg,
-        oklch(80% 0.15 30 / 0.06) 0%,
-        oklch(80% 0.15 180 / 0.04) 25%,
-        oklch(80% 0.15 120 / 0.05) 50%,
-        oklch(80% 0.15 60 / 0.04) 75%,
-        oklch(80% 0.15 270 / 0.06) 100%
-      );
-    }
-
-    [data-glass="on"] .glass-card::before {
-      background: linear-gradient(
-        45deg,
-        oklch(75% 0.12 200 / 0.05) 0%,
-        oklch(75% 0.12 280 / 0.03) 50%,
-        oklch(75% 0.12 160 / 0.05) 100%
-      );
-    }
-  }
-}
-
-/* ═══════════════════════════════════════════════════
-   减弱动画
-   ═══════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  [data-hdr="on"] .glass-card::after,
-  [data-hdr="on"] .glass-card::before,
-  [data-hdr="on"] .glass-card {
-    animation: none !important;
-  }
-  [data-glass="on"] .glass-card::after,
-  [data-glass="on"] .glass-card::before,
-  [data-glass="on"] .glass-card {
-    animation: none !important;
-  }
+[data-hdr="on"][data-glass="on"][data-theme="dark"] .app-header {
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 -1px 20px var(--hdr-shadow-glow), 0 1px 3px rgba(0,0,0,0.3), 0 0 24px var(--hdr-shadow-glow) !important;
 }
