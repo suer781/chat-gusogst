@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { initApp } from './init'
 import { useSettingsStore, type EyeCareMapping } from './stores'
 import { ChatView } from './chat/ChatView'
@@ -54,7 +54,10 @@ export default function App() {
     const root = document.documentElement
     const body = document.body
     const applied = resolveTheme(themeMode)
+    // GPU-smooth theme switch: only body::after transitions, children snap
+    body.classList.add('theme-transitioning')
     root.setAttribute('data-theme', applied)
+    setTimeout(() => body.classList.remove('theme-transitioning'), 450)
     root.style.setProperty('--app-font-size', String(fontSize))
     root.style.setProperty('--app-font-size-px', fontSize + 'px')
     body.style.fontSize = fontSize + 'px'
@@ -94,6 +97,20 @@ export default function App() {
     return () => { if (typeof unsub === 'function') unsub() }
   }, [])
 
+  // Handle app resume from background — force reflow to prevent stutter
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === 'visible') {
+        // Force compositor layer refresh
+        document.body.style.opacity = '0.999'
+        requestAnimationFrame(() => { document.body.style.opacity = '' })
+      }
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [])
+
+
   // Page transition animation
   useEffect(() => {
     if (view === displayedView) return
@@ -120,6 +137,8 @@ export default function App() {
 
   return (
     <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e0e0e0)', overflow: 'hidden', transition: 'background-color 0.4s ease, color 0.4s ease' }}>
+      {/* ── Page transition wrapper (header + content) ── */}
+      <div className={pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {/* ── Header ── */}
       <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
         {view === 'personaProfile' ? (
@@ -132,13 +151,15 @@ export default function App() {
       </header>
 
       {/* ── Content Area ── with page transitions */}
-      <div className={`app-content ${pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {displayedView === 'chat' && <ChatView onNavigate={setView} />}
         {displayedView === 'settings' && <SettingsView onDone={() => setView('chat')} />}
         {displayedView === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}
         {displayedView === 'personaProfile' && selectedPersona && <PersonaProfileView persona={selectedPersona} onBack={() => setView('persona')} onStartChat={() => { useSettingsStore.getState().setPersona(selectedPersona); setView('chat') }} />}
         {displayedView === 'providers' && <ProviderSettings onDone={() => setView('settings')} />}
       </div>
+
+      </div> {/* end page transition wrapper */}
 
       {/* ── Bottom Nav ──  重做：渐变底 + 透镜指示器 + 毛玻璃一体 */}
       <nav className="app-nav" style={{

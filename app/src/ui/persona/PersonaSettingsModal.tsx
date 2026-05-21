@@ -236,7 +236,7 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
           style={{ flex: 1, accentColor: 'var(--accent)', touchAction: 'pan-y' }} />
         <span style={{ fontSize: "var(--text-sm)", color: 'var(--gray-400)', minWidth: 30, textAlign: 'right' }}>{max}{unit}</span>
       </div>
-      <div style={{ textAlign: 'center', fontSize: "var(--text-base)", color: 'var(--accent)', marginTop: 4 }}>
+      <div style={{ textAlign: 'center', fontSize: "var(--text-base)", color: 'var(--accent)', marginTop: 4, transition: 'all 0.3s ease' }}>
         {value}{unit || ''}
       </div>
     </div>
@@ -337,8 +337,8 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
           </button>
         </div>
       {showRecovery && snapshotData && (
-        <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}} onClick={() => {}}>
-          <div style={{background:'var(--bg-secondary,#1e1e2e)',borderRadius:16,padding:24,width:'85%',maxWidth:360,boxShadow:'0 8px 32px rgba(0,0,0,0.5)'}} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+        <div className="dialog-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}} onClick={() => {}}>
+          <div style={{background:'var(--bg-secondary,#1e1e2e)',borderRadius:16,padding:24,width:'85%',maxWidth:360,boxShadow:'0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <div style={{fontSize:20,fontWeight:700,color:'var(--gray-100)',marginBottom:8}}>{'⚠️ 检测到未保存的修改'}</div>
             <div style={{fontSize:14,color:'var(--gray-400)',marginBottom:6,lineHeight:1.5}}>{'上次编辑未正常关闭，您有修改尚未保存。'}</div>
             <div style={{display:'flex',gap:8}}>
@@ -351,8 +351,8 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
       )}
 
       {showDiscardConfirm && (
-        <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}} onClick={() => setShowDiscardConfirm(false)}>
-          <div style={{background:'var(--bg-secondary,#1e1e2e)',borderRadius:16,padding:24,width:'85%',maxWidth:360,boxShadow:'0 8px 32px rgba(0,0,0,0.5)'}} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+        <div className="dialog-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}} onClick={() => setShowDiscardConfirm(false)}>
+          <div style={{background:'var(--bg-secondary,#1e1e2e)',borderRadius:16,padding:24,width:'85%',maxWidth:360,boxShadow:'0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <div style={{fontSize:20,fontWeight:700,color:'var(--gray-100)',marginBottom:8}}>{'⚠️ 确认丢弃？'}</div>
             <div style={{fontSize:14,color:'var(--gray-400)',marginBottom:20,lineHeight:1.5}}>{'取消并丢弃会丢失上一次做出的修改，此操作不可恢复。'}</div>
             <div style={{display:'flex',gap:10}}>
@@ -364,8 +364,8 @@ ${prompt || '（未设置自定义提示词，使用默认助手角色）'}
       )}
 
       {showConfirmClose && (
-        <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}} onClick={() => setShowConfirmClose(false)}>
-          <div style={{background:'var(--bg-secondary,#1e1e2e)',borderRadius:16,padding:24,width:'85%',maxWidth:360,boxShadow:'0 8px 32px rgba(0,0,0,0.5)'}} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+        <div className="dialog-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}} onClick={() => setShowConfirmClose(false)}>
+          <div style={{background:'var(--bg-secondary,#1e1e2e)',borderRadius:16,padding:24,width:'85%',maxWidth:360,boxShadow:'0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <div style={{fontSize:20,fontWeight:700,color:'var(--gray-100)',marginBottom:8}}>{'⚠️ 退出编辑？'}</div>
             <div style={{fontSize:14,color:'var(--gray-400)',marginBottom:20,lineHeight:1.5}}>{'已自动保存，确定要退出吗？'}</div>
             <div style={{display:'flex',gap:10}}>

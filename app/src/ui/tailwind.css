@@ -58,6 +58,16 @@ body::after {
               var(--bg-primary, #0f0f23);
   transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
+/* === App initial fade-in === */
+@keyframes appFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+#root {
+  animation: appFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation-delay: 0.1s; /* let splash start fading first */
+}
+
 
 /* === Only allow vertical scrolling inside designated containers === */
 .overflow-y-auto {
@@ -275,6 +285,10 @@ textarea {
 }
 [data-theme="pureWhite"] {
   --bg-primary: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.02);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.02);
+  --border-color: rgba(0,0,0,0.06);
   --bg-ambient-top: rgba(250, 248, 255, 0.4);
   --bg-ambient-left: rgba(255, 245, 248, 0.2);
   --bg-ambient-right: rgba(245, 250, 255, 0.2);
@@ -305,6 +319,10 @@ textarea {
 [data-theme="pureBlack"] {
   --bg-primary: #000000;
   --text-primary: #e0e0e0;
+  --shadow-sm: 0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-md: 0 0 0 1px rgba(255,255,255,0.08), 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.5);
+  --border-color: rgba(255,255,255,0.08);
   --bg-ambient-top: transparent;
   --bg-ambient-left: transparent;
   --bg-ambient-right: transparent;
@@ -315,26 +333,19 @@ body {
   background: transparent !important;
   color: var(--text-primary) !important;
   font-size: var(--app-font-size, 14px) !important;
-  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Force theme on all containers — background handled by #root::before */
+/* Force theme on all containers — background handled by body::after */
 #root,
 #root > div,
 #root > div > div {
   background: transparent !important;
   color: var(--text-primary) !important;
-  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Theme transition for all elements */
-#root *,
-#root *::before,
-#root *::after {
-  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+/* Theme transition — single layer cross-fade, no per-element repaint */
+#root {
+  transition: opacity 0.3s ease;
 }
 
 /* Font size inheritance */
@@ -678,38 +689,82 @@ input:focus, textarea:focus {
 }
 
 
-/* ── Page Transitions ── */
-.page-enter {
-  opacity: 0;
-  transform: translateY(12px);
+/* ── Page Transitions (keyframe-based, no initial-state flash) ── */
+@keyframes pageSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes pageSlideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+.page-enter,
 .page-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: pageSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
-.page-exit {
-  opacity: 1;
-  transform: translateY(0);
-}
+.page-exit,
 .page-exit-active {
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: pageSlideOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* ── Nav Indicator: normal mode = simple dot ── */
-.nav-indicator .nav-dot {
-  width: 6px;
-  height: 6px;
+
+/* ── Slider smooth transitions ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-tertiary, #2a2a3e);
+  transition: background 0.3s ease;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 6px var(--accent-glow, rgba(233,69,96,0.3));
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+/* ── Nav Indicator: normal mode = accent underline pill ── */
+.nav-indicator .nav-dot {
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow, rgba(233,69,96,0.3));
   transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  bottom: 4px;
 }
 
+
+/* ── Slider smooth transitions ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-tertiary, #2a2a3e);
+  transition: background 0.3s ease;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
 /* ── Nav Indicator: glass mode = lens pill ── */
 [data-glass="on"] .nav-indicator .nav-dot {
   width: 48px;
@@ -743,3 +798,43 @@ input:focus, textarea:focus {
 
 @import url('./material_you.css');
 
+
+/* ── Dialog backdrop blur ── */
+.dialog-overlay {
+  backdrop-filter: blur(20px) saturate(1.5) brightness(0.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.8);
+  background: rgba(0,0,0,0.55) !important;
+  animation: dialogFadeIn 0.2s ease both;
+}
+/* Fallback: if backdrop-filter not supported, darken more */
+@supports not (backdrop-filter: blur(1px)) {
+  .dialog-overlay {
+    background: rgba(0,0,0,0.75) !important;
+  }
+}
+@keyframes dialogFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.dialog-overlay > div {
+  animation: dialogSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes dialogSlideIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── GPU isolation: contain repaints to their containers ── */
+.app-root { contain: layout style; }
+.app-content { contain: layout style; overflow-y: auto; overflow-x: hidden; }
+.app-nav { contain: layout style; }
+
+/* ── Theme cross-fade: only the background layer transitions ── */
+body.theme-transitioning::after {
+  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+/* During theme switch, suppress ALL child repaints */
+body.theme-transitioning #root * {
+  transition: none !important;
+  animation: none !important;
+}
