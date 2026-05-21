@@ -45,7 +45,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '16px 20px', position: 'sticky', top: 0,
-        background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)',
+        background: 'var(--bg-overlay)', backdropFilter: glassEnabled ? 'blur(20px)' : 'none',
         zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         <button onClick={() => { glassTap(); onBack() }} style={{

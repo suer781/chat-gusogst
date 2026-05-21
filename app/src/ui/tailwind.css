@@ -119,6 +119,7 @@ textarea {
 /* ===== Design Tokens ===== */
 :root {
   transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--bg-primary);
   /* ── 背景层级 ── */
   --bg-primary:     #0d0d2b;
   --bg-secondary:   #151538;
@@ -417,6 +418,18 @@ body {
 }
 
 /* glass-panel — liquid glass core */
+/* glass-card blur */
+[data-glass="on"] .glass-card {
+  backdrop-filter: blur(20px) saturate(1.8) brightness(1.1) contrast(1.02) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) brightness(1.1) contrast(1.02) !important;
+  background-color: rgba(30, 30, 60, 0.6) !important;
+}
+[data-theme="light"][data-glass="on"] .glass-card {
+  backdrop-filter: blur(20px) saturate(1.8) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) brightness(1.05) !important;
+  background-color: rgba(255, 255, 255, 0.5) !important;
+}
+
 [data-glass="on"] .glass-panel {
   backdrop-filter: blur(20px) saturate(1.8) brightness(1.1) contrast(1.02) !important;
   -webkit-backdrop-filter: blur(20px) saturate(1.8) brightness(1.1) contrast(1.02) !important;
@@ -516,7 +529,19 @@ body {
   background-size: 128px 128px;
   opacity: 0.4;
 }
-[data-theme="light"][data-glass="on"] .glass-panel {
+[data-theme="light"]/* glass-card blur */
+[data-glass="on"] .glass-card {
+  backdrop-filter: blur(20px) saturate(1.8) brightness(1.1) contrast(1.02) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) brightness(1.1) contrast(1.02) !important;
+  background-color: rgba(30, 30, 60, 0.6) !important;
+}
+[data-theme="light"][data-glass="on"] .glass-card {
+  backdrop-filter: blur(20px) saturate(1.8) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) brightness(1.05) !important;
+  background-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-glass="on"] .glass-panel {
   backdrop-filter: blur(20px) saturate(1.5) brightness(1.08) !important;
   -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(1.08) !important;
   background: linear-gradient(168deg,
