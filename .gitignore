@@ -53,3 +53,7 @@ do_push.sh
 *.bak
 *.zip
 __pycache__/
+
+# 临时脚本和签名文件
+*.sh
+*.keystore
