@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSettingsStore } from "../stores"
 import { Palette, Bot, Link2, Brain, Search, Info } from 'lucide-react'
 import { t } from '../i18n'
 import { light as hapticLight, glassTap } from '../haptics'
