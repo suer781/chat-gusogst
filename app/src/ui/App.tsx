@@ -66,7 +66,7 @@ export default function App() {
     // GPU-smooth theme switch: only body::after transitions, children snap
     body.classList.add('theme-transitioning')
     root.setAttribute('data-theme', applied)
-    setTimeout(() => body.classList.remove('theme-transitioning'), 450)
+    setTimeout(() => body.classList.remove("theme-transitioning"), 650)
     root.style.setProperty('--app-font-size', String(fontSize))
     root.style.setProperty('--app-font-size-px', fontSize + 'px')
     body.style.fontSize = fontSize + 'px'

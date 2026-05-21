@@ -57,7 +57,7 @@ body::after {
               radial-gradient(ellipse 50% 35% at 80% 90%, var(--bg-ambient-right, transparent) 0%, transparent 50%),
               var(--bg-primary, #0f0f23);
   opacity: 0.6;
-  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
 }
 /* === App initial fade-in === */
 /* App fade-in controlled by React (appReady state) — no CSS animation needed */
@@ -342,7 +342,7 @@ body {
 
 /* Theme transition — single layer cross-fade, no per-element repaint */
 #root {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.6s ease;
 }
 
 /* Font size inheritance */
@@ -856,7 +856,7 @@ input[type="range"]::-webkit-slider-thumb:active {
 
 /* ── Theme cross-fade: only the background layer transitions ── */
 body.theme-transitioning::after {
-  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 /* During theme switch, suppress ALL child repaints */
 body.theme-transitioning #root * {
