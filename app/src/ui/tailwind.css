@@ -56,16 +56,13 @@ body::after {
               radial-gradient(ellipse 60% 40% at 20% 100%, var(--bg-ambient-left, transparent) 0%, transparent 50%),
               radial-gradient(ellipse 50% 35% at 80% 90%, var(--bg-ambient-right, transparent) 0%, transparent 50%),
               var(--bg-primary, #0f0f23);
-  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.6;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
 }
 /* === App initial fade-in === */
-@keyframes appFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* App fade-in controlled by React (appReady state) — no CSS animation needed */
 #root {
-  animation: appFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
-  animation-delay: 0.1s; /* let splash start fading first */
+  background: var(--bg-primary, #0f0f23);
 }
 
 
@@ -335,11 +332,10 @@ body {
   font-size: var(--app-font-size, 14px) !important;
 }
 
-/* Force theme on all containers — background handled by body::after */
+/* Force theme on all containers — solid bg blocks gradient bleed */
 #root,
-#root > div,
-#root > div > div {
-  background: transparent !important;
+#root > div {
+  background: var(--bg-primary, #0f0f23) !important;
   color: var(--text-primary) !important;
 }
 
@@ -824,10 +820,11 @@ input[type="range"]::-webkit-slider-thumb:active {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* ── GPU isolation: contain repaints to their containers ── */
-.app-root { contain: layout style; }
-.app-content { contain: layout style; overflow-y: auto; overflow-x: hidden; }
+/* ── GPU isolation + solid layering ── */
+.app-root { contain: layout style; background: var(--bg-primary, #0f0f23); }
+.app-content { contain: layout style; overflow-y: auto; overflow-x: hidden; background: var(--bg-primary, #0f0f23); }
 .app-nav { contain: layout style; }
+.app-header { background: var(--bg-primary, #0f0f23); }
 
 /* ── Theme cross-fade: only the background layer transitions ── */
 body.theme-transitioning::after {

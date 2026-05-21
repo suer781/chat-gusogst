@@ -36,6 +36,15 @@ export default function App() {
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
   const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
   const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
+  const [appReady, setAppReady] = useState(false)
+
+  // Init: StatusBar + SafeArea + hide splash → then show app
+  useEffect(() => {
+    initApp().then(() => {
+      // Small delay to ensure first paint is complete
+      requestAnimationFrame(() => setAppReady(true))
+    })
+  }, [])
 
   // 导航指示器位置
   const activeIdx = NAV_ITEMS.findIndex((item) =>
@@ -133,10 +142,8 @@ export default function App() {
     personaProfile: t('nav.persona'),
   }
 
-  initApp()
-
   return (
-    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e0e0e0)', overflow: 'hidden', transition: 'background-color 0.4s ease, color 0.4s ease' }}>
+    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e0e0e0)', overflow: 'hidden', opacity: appReady ? 1 : 0, transition: 'opacity 0.4s ease, background-color 0.4s ease, color 0.4s ease' }}>
       {/* ── Page transition wrapper (header + content) ── */}
       <div className={pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {/* ── Header ── */}

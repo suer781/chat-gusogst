@@ -15,9 +15,11 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 
-        // Force hardware acceleration for backdrop-filter / HDR
+        // Kill white flash: set WebView bg to match app theme BEFORE content loads
         try {
-            getBridge().getWebView().setLayerType(WebView.LAYER_TYPE_HARDWARE, null);
+            WebView webView = getBridge().getWebView();
+            webView.setBackgroundColor(0xFF0f0f23); // match dark theme
+            webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null);
         } catch (Exception ignored) {}
 
         // Enable HDR wide color gamut
