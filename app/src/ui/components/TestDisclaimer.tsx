@@ -23,13 +23,12 @@ export default function TestDisclaimer() {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
     }}>
       <div style={{
-        background: 'var(--bg-tertiary)', borderRadius: 12, padding: '32px 28px',
-        maxWidth: 360, width: '85%', textAlign: 'center',
-        border: '1px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+        background: 'linear-gradient(165deg, rgba(255,255,255,0.1) 0%, rgba(20,20,40,0.65) 100%)', borderRadius: 16, padding: '32px 28px', maxWidth: 360, width: '85%', textAlign: 'center',
+        border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
       }}>
         <div style={{ fontSize: "var(--text-4xl)", marginBottom: 12 }}>⚠️</div>
         <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: 'var(--accent)', marginBottom: 8 }}>测试版声明</div>
