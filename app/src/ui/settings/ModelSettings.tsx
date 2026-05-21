@@ -181,7 +181,7 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
           opacity: analyzing ? 0.7 : 1, transition: 'all 0.2s',
         }}>
           {analyzing ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={16} />}
-          {analyzing ? '分析中...' : '开始分析'}
+          {analyzing ? t('settings.model.analyzing') : t('settings.model.startAnalyze')}
         </button>
         {analyzeResult && (
           <p style={{ color: analyzeResult.startsWith('✅') ? '#00b894' : '#ff6b6b', fontSize: 'var(--text-sm)', margin: '10px 0 0', lineHeight: 1.5 }}>
