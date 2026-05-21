@@ -23,6 +23,8 @@ const NAV_ITEMS = [
 export default function App() {
   const [view, setView] = useState<View>('chat')
   const [selectedPersona, setSelectedPersona] = useState<any>(null)
+  const [displayedView, setDisplayedView] = useState<View>('chat')
+  const [pagePhase, setPagePhase] = useState<'idle' | 'exit' | 'enter'>('idle')
   const [, forceUpdate] = useState(0)
   const persona = useSettingsStore((s) => s.persona)
   const themeMode = useSettingsStore((s) => s.themeMode)
@@ -92,6 +94,20 @@ export default function App() {
     return () => { if (typeof unsub === 'function') unsub() }
   }, [])
 
+  // Page transition animation
+  useEffect(() => {
+    if (view === displayedView) return
+    // Start exit animation
+    setPagePhase('exit')
+    const exitTimer = setTimeout(() => {
+      setDisplayedView(view)
+      setPagePhase('enter')
+      const enterTimer = setTimeout(() => setPagePhase('idle'), 350)
+      return () => clearTimeout(enterTimer)
+    }, 250)
+    return () => clearTimeout(exitTimer)
+  }, [view])
+
   const viewTitles: Record<View, string> = {
     chat: t('nav.chat'),
     settings: t('nav.settings'),
@@ -115,13 +131,13 @@ export default function App() {
         <div style={{ width: 60 }} />
       </header>
 
-      {/* ── Content Area ── 修复：允许垂直滚动 */}
-      <div className="app-content" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
-        {view === 'chat' && <ChatView onNavigate={setView} />}
-        {view === 'settings' && <SettingsView onDone={() => setView('chat')} />}
-        {view === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}
-        {view === 'personaProfile' && selectedPersona && <PersonaProfileView persona={selectedPersona} onBack={() => setView('persona')} onStartChat={() => { useSettingsStore.getState().setPersona(selectedPersona); setView('chat') }} />}
-        {view === 'providers' && <ProviderSettings onDone={() => setView('settings')} />}
+      {/* ── Content Area ── with page transitions */}
+      <div className={`app-content ${pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+        {displayedView === 'chat' && <ChatView onNavigate={setView} />}
+        {displayedView === 'settings' && <SettingsView onDone={() => setView('chat')} />}
+        {displayedView === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}
+        {displayedView === 'personaProfile' && selectedPersona && <PersonaProfileView persona={selectedPersona} onBack={() => setView('persona')} onStartChat={() => { useSettingsStore.getState().setPersona(selectedPersona); setView('chat') }} />}
+        {displayedView === 'providers' && <ProviderSettings onDone={() => setView('settings')} />}
       </div>
 
       {/* ── Bottom Nav ──  重做：渐变底 + 透镜指示器 + 毛玻璃一体 */}
@@ -133,19 +149,19 @@ export default function App() {
         position: 'relative',
         height: 56,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        background: 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
+        background: 'transparent',
         borderTop: '1px solid var(--border-color)',
         transition: 'background 0.4s ease',
       }}>
-        {/* 透镜指示器 */}
+        {/* 指示器：普通=小圆点，毛玻璃=透镜胶囊 */}
         <div
           className="nav-indicator"
           style={{
             position: 'absolute',
-            top: 4,
+            top: 0,
             left: `${activeIdx * 25}%`,
             width: '25%',
-            height: 'calc(100% - 8px)',
+            height: '100%',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -154,22 +170,7 @@ export default function App() {
             zIndex: 0,
           }}
         >
-          <div style={{
-            width: 48,
-            height: 36,
-            borderRadius: 18,
-            background: 'rgba(233, 69, 96, 0.2)',
-            backdropFilter: 'blur(14px) saturate(1.6)',
-            WebkitBackdropFilter: 'blur(14px) saturate(1.6)',
-            boxShadow: [
-              '0 1px 2px rgba(0,0,0,0.08)',
-              '0 4px 12px rgba(0,0,0,0.06)',
-              'inset 0 1px 0 rgba(255,255,255,0.25)',
-              'inset 0 -1px 0 rgba(0,0,0,0.06)',
-              '0 0 16px var(--accent-glow, rgba(233, 69, 96, 0.15))',
-            ].join(', '),
-            transition: 'all 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
-          }} />
+          <div className="nav-dot" />
         </div>
 
         {NAV_ITEMS.map((item) => {
