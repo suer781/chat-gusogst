@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -18,7 +19,7 @@ class ChatFragment : Fragment() {
 
     private val viewModel: ChatViewModel by activityViewModels()
     private lateinit var rvMessages: RecyclerView
-    private lateinit var tvEmpty: TextView
+    private lateinit var tvEmpty: LinearLayout
     private lateinit var etInput: EditText
     private lateinit var btnSend: ImageButton
     private lateinit var adapter: MessageAdapter
