@@ -87,7 +87,7 @@ export default function App() {
       root.removeAttribute('data-eyecare')
     }
     root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
-    root.style.setProperty('--glass-opacity', String(glassOpacity / 100))
+    root.style.setProperty('--glass-opacity', String(0.2 + (glassOpacity / 100) * 0.8))
     setHapticEnabled(hapticEnabled)
     root.setAttribute('data-hdr', hdrEnabled ? 'on' : 'off')
   }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled, hdrEnabled])

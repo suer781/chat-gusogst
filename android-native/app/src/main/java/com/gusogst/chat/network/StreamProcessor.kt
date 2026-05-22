@@ -33,7 +33,10 @@ class StreamProcessor {
                         delta.reasoning_content?.let { if (it.isNotEmpty()) onThinking(it) }
                         // 正文内容
                         delta.content?.let { if (it.isNotEmpty()) onContent(it) }
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        // [Fix-7] 打印SSE解析错误日志，方便排查模型返回格式不兼容等问题
+                        android.util.Log.w("StreamProcessor", "Failed to parse SSE chunk: $data", e)
+                    }
                 }
             }
             onComplete()

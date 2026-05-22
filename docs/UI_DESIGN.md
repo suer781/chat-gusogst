@@ -104,3 +104,35 @@
 - [ ] `grep -rn 'className=' app/src/ui/providers/` — ProviderSettings 无混用
 - [ ] 所有页面在深色主题下视觉一致
 - [ ] 各组件通过 UI_COMPONENTS.md 中的 Props 定义可单独复用
+
+
+---
+
+## 2026-05-22: Native 颜色同步
+
+### 问题
+Web CSS 在 commit `bb9863c` 中做了深色主题大改（deeper blacks, softer ambient light），但 Android 原生侧的 `colors.xml` 没有同步更新，导致 Native 和 Web 视觉不一致。
+
+### 变更
+
+**`android-native/app/src/main/res/values/colors.xml`**（全部对齐 Web CSS dark theme）：
+
+| 变量 | 旧值 | 新值 | 说明 |
+|------|------|------|------|
+| bg_primary | `#0D0D2B` | `#08080F` | 主背景，更深 |
+| bg_secondary | `#1A1A3A` | `#0E0E1A` | 次级背景 |
+| bg_tertiary | `#2A2A4A` | `#141428` | 三级背景 |
+| bg_elevated | `#3D3D5C` | `#1C1C30` | 悬浮卡片 |
+| text_primary | `#FFFFFF` | `#E8E8EE` | 主文字，更柔和 |
+| text_secondary | `#B0B0CC` | `#9090A8` | 次级文字 |
+| accent_glow | `#40E94560` | `#30E94560` | 主题红光晕，更柔和 |
+| gray_50~900 | 旧色阶 | 新色阶 | 全部同步 |
+
+### 同步规则
+- Web CSS (`tailwind.css`) 是颜色的 **source of truth**
+- Native `colors.xml` 必须与 Web CSS 保持一致
+- 未来改主题色时，两个文件都要改
+
+### 注意
+- `values-night/colors.xml` 目前只覆盖 3 个颜色，和默认值几乎一样，夜间模式无实际意义
+- 如果未来要支持 light theme 切换，需要重新规划 `values/` vs `values-night/` 的结构

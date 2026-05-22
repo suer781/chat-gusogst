@@ -147,3 +147,23 @@ agent/providers/index.ts
 | `app/src/agent/providers/` (24 行) | 2 个**运行时适配器**（OpenAI、Anthropic） | Agent 实际调用 LLM API |
 
 两套不冲突：`providers/` 是数据，`agent/providers/` 是执行逻辑。
+
+
+---
+
+## 2026-05-22: CSS 变量设计决策
+
+### --glass-opacity 工作机制
+
+滑块 (0~100) -> JS: 0.2 + (v/100) * 0.8 -> CSS: --glass-opacity (0.2~1.0) -> opacity
+
+- `:root` 默认值：`--glass-opacity: 1`
+- JS 映射范围：0.2~1.0（不会完全透明）
+- CSS 引用方式：`opacity: var(--glass-opacity)`
+- 为什么用 opacity 而非 rgba alpha：背景色是多层 gradient，无法简单替换 alpha
+
+### Web 与 Native 颜色同步
+
+- **Source of truth**：`app/src/ui/tailwind.css` 的 `[data-theme="dark"]` 变量
+- **镜像**：`android-native/app/src/main/res/values/colors.xml`
+- 改主题色时两个文件都要改

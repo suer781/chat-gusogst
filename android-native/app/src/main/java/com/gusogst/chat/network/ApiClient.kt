@@ -8,7 +8,8 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        // [Fix-6a] 改为HEADERS级别，避免BODY级别将Authorization/API Key明文泄露到logcat
+        level = HttpLoggingInterceptor.Level.HEADERS
     }
 
     private val client = OkHttpClient.Builder()
@@ -21,6 +22,7 @@ object ApiClient {
     private var currentBaseUrl: String = ""
     private var currentRetrofit: Retrofit? = null
 
+    @Synchronized
     fun getService(baseUrl: String): ApiService {
         val normalized = baseUrl.trimEnd('/') + "/"
         if (normalized != currentBaseUrl) {

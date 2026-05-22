@@ -67,9 +67,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun selectConversation(id: String) {
+        // [Fix-2] 使用toList()创建快照副本，确保后续消息修改能触发LiveData通知
         val conv = _conversations.value?.find { it.id == id } ?: return
         _activeConversation.value = conv
-        _messages.value = conv.messages
+        _messages.value = conv.messages.toList()
         store.saveActiveConversationId(id)
     }
 
@@ -80,6 +81,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         if (_activeConversation.value?.id == id) {
             _activeConversation.value = null
             _messages.value = emptyList()
+            // [Fix-3] 同时清除存储的activeId，防止下次加载指向已删除的对话
+            store.saveActiveConversationId("")
         }
         store.saveConversations(list)
     }
@@ -120,6 +123,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             _conversations.value = _conversations.value
         }
         callAiApi(conv)
+        // [Fix-1] sendMessage后立即持久化，防止进程被杀导致对话丢失
+        // 之前saveConversations已经在末尾，但callAiApi是异步的，
+        // 这里需要在发起请求前就保存用户消息
         store.saveConversations(_conversations.value.orEmpty())
     }
 
@@ -184,6 +190,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                                 aiMsg.content = "Error: $err"
                                 _messages.postValue(conv.messages.toList())
                                 _isStreaming.postValue(false)
+                                // [Fix-5] 错误状态也需要持久化，否则重启后错误消息显示为streaming
+                                store.saveConversations(_conversations.value.orEmpty())
                             }
                         )
                     }
@@ -220,7 +228,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun setActivePersona(id: String?) {
+        // [Fix-4] 触发LiveData通知UI刷新 + 持久化对话列表
+        // 之前只存了activePersonaId，没存conversation.personaId
         _activeConversation.value?.personaId = id
+        _activeConversation.value = _activeConversation.value
         store.saveActivePersonaId(id ?: "")
+        store.saveConversations(_conversations.value.orEmpty())
     }
 }
