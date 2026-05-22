@@ -10,8 +10,7 @@ object MarkdownRenderer {
 
     fun render(text: String, tv: TextView) {
         val ssb = SpannableStringBuilder()
-        val lines = text.split("
-")
+        val lines = text.split("\n")
 
         for ((i, line) in lines.withIndex()) {
             val start = ssb.length
@@ -66,8 +65,7 @@ object MarkdownRenderer {
                 }
             }
 
-            if (i < lines.size - 1) ssb.append("
-")
+            if (i < lines.size - 1) ssb.append("\n")
         }
 
         // 行内代码
