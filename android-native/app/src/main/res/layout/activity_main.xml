@@ -64,7 +64,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:background="?attr/selectableItemBackground">
+            android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navChatIcon"
                 android:layout_width="24dp"
@@ -88,7 +88,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:background="?attr/selectableItemBackground">
+            android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navPersonaIcon"
                 android:layout_width="24dp"
@@ -112,7 +112,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:background="?attr/selectableItemBackground">
+            android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navProvidersIcon"
                 android:layout_width="24dp"
@@ -136,7 +136,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:background="?attr/selectableItemBackground">
+            android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navSettingsIcon"
                 android:layout_width="24dp"
