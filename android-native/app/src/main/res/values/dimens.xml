@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 字号 - 对齐 Web --text-* 变量 -->
+    <!-- 字号 - 对齐 Web *text-* 变量 -->
     <dimen name="text_2xs">9sp</dimen>
     <dimen name="text_xs">10sp</dimen>
     <dimen name="text_sm">12sp</dimen>
@@ -12,7 +12,7 @@
     <dimen name="text_3xl">24sp</dimen>
     <dimen name="text_4xl">32sp</dimen>
 
-    <!-- 间距 - 对齐 Web --space-* 4px阶梯 -->
+    <!-- 间距 - 对齐 Web space 4px阶梯 -->
     <dimen name="space_0">0dp</dimen>
     <dimen name="space_1">4dp</dimen>
     <dimen name="space_2">8dp</dimen>
@@ -24,7 +24,7 @@
     <dimen name="space_10">40dp</dimen>
     <dimen name="space_12">48dp</dimen>
 
-    <!-- 圆角 - 对齐 Web --radius-* -->
+    <!-- 圆角 - 对齐 Web radius -->
     <dimen name="radius_xs">4dp</dimen>
     <dimen name="radius_sm">6dp</dimen>
     <dimen name="radius_md">10dp</dimen>
