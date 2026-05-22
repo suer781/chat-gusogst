@@ -107,7 +107,7 @@ class PersonaProfileFragment : Fragment() {
 
         // System prompt preview
         root.addView(TextView(requireContext()).apply {
-            text = persona.systemPrompt.ifEmpty { "No system prompt set" }
+            text = persona.prompt.ifEmpty { "No system prompt set" }
             setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f; lineSpacingMultiplier = 1.6f
             setPadding(dp(16), dp(16), dp(16), dp(16))
             background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); cornerRadius = dp(10).toFloat() }
