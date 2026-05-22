@@ -217,6 +217,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         store.saveSettings(new)
     }
 
+    
+    fun setModel(providerId: String, modelId: String) {
+        // TODO: persist model selection
+    }
+
     fun saveProviders(list: List<UIProvider>) {
         _providers.value = list
         store.saveProviders(list)

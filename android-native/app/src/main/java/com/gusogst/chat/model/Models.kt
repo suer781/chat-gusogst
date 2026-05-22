@@ -93,6 +93,14 @@ data class PresetPersona(
     val category: String = ""
 )
 
+
+// ===== Model =====
+data class ModelInfo(
+    val id: String,
+    val name: String? = null,
+    val contextLength: Long = 0
+)
+
 // ===== 服务商 =====
 data class UIProvider(
     val id: String = java.util.UUID.randomUUID().toString(),
@@ -100,7 +108,7 @@ data class UIProvider(
     var isCustom: Boolean = false,
     var baseUrl: String = "",
     var apiKey: String = "",
-    val models: MutableList<String> = mutableListOf(),
+    val models: MutableList<ModelInfo> = mutableListOf(),
     var enabled: Boolean = true
 )
 

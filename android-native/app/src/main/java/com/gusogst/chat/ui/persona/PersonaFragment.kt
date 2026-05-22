@@ -235,7 +235,7 @@ class PersonaFragment : Fragment() {
                     prompt = "You are ${preset.name}. ${preset.description}",
                     tags = preset.tags
                 )
-                viewModel.setActivePersona(persona)
+                viewModel.setActivePersona(persona.id)
             } else {
                 // Custom persona - already in ViewModel
                 allPersonas.find { it.id == id }?.let { viewModel.setActivePersona(it) }

@@ -319,7 +319,7 @@ class ProvidersFragment : Fragment() {
                 }
                 background = inputBg
                 inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
-                singleLine = true
+                setSingleLine(true)
                 if (provider.baseUrl.isNotEmpty()) {
                     setText(provider.baseUrl)
                 }
