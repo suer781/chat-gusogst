@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 字号 - 对齐 Web *text-* 变量 -->
+    <!-- ===== AndroidUI Design Tokens ===== -->
+    <!-- Source: main branch app/src/ui/tailwind.css -->
+    <!-- Synced: 2026-05-22 -->
+
+    <!-- === Typography === -->
     <dimen name="text_2xs">9sp</dimen>
     <dimen name="text_xs">10sp</dimen>
     <dimen name="text_sm">12sp</dimen>
@@ -11,8 +15,16 @@
     <dimen name="text_2xl">20sp</dimen>
     <dimen name="text_3xl">24sp</dimen>
     <dimen name="text_4xl">32sp</dimen>
+    <dimen name="text_5xl">40sp</dimen>
+    <dimen name="text_6xl">48sp</dimen>
 
-    <!-- 间距 - 对齐 Web space 4px阶梯 -->
+    <!-- === Font Weights (as integer values) === -->
+    <integer name="font_normal">400</integer>
+    <integer name="font_medium">500</integer>
+    <integer name="font_semibold">600</integer>
+    <integer name="font_bold">700</integer>
+
+    <!-- === Spacing (4px grid) === -->
     <dimen name="space_0">0dp</dimen>
     <dimen name="space_1">4dp</dimen>
     <dimen name="space_2">8dp</dimen>
@@ -23,8 +35,9 @@
     <dimen name="space_8">32dp</dimen>
     <dimen name="space_10">40dp</dimen>
     <dimen name="space_12">48dp</dimen>
+    <dimen name="space_16">64dp</dimen>
 
-    <!-- 圆角 - 对齐 Web radius -->
+    <!-- === Border Radius === -->
     <dimen name="radius_xs">4dp</dimen>
     <dimen name="radius_sm">6dp</dimen>
     <dimen name="radius_md">10dp</dimen>
@@ -32,20 +45,50 @@
     <dimen name="radius_xl">24dp</dimen>
     <dimen name="radius_full">9999dp</dimen>
 
-    <!-- 气泡 -->
-    <dimen name="bubble_radius">18dp</dimen>
-    <dimen name="bubble_padding_h">14dp</dimen>
-    <dimen name="bubble_padding_v">10dp</dimen>
-    <dimen name="bubble_max_width">280dp</dimen>
-
-    <!-- 布局关键尺寸 - 对齐 App.tsx -->
+    <!-- === Layout (from App.tsx) === -->
     <dimen name="header_height">48dp</dimen>
+    <dimen name="header_padding_h">16dp</dimen>
+    <dimen name="header_padding_v">12dp</dimen>
+    <dimen name="header_icon_size">20dp</dimen>
+    <dimen name="header_icon_gap">8dp</dimen>
     <dimen name="nav_height">56dp</dimen>
-    <dimen name="input_height">48dp</dimen>
+    <dimen name="nav_padding_v">8dp</dimen>
+    <dimen name="nav_gap">4dp</dimen>
     <dimen name="nav_btn_padding_h">18dp</dimen>
     <dimen name="nav_btn_padding_v">10dp</dimen>
     <dimen name="nav_btn_min_width">64dp</dimen>
     <dimen name="nav_btn_min_height">48dp</dimen>
-    <dimen name="space_lg">24dp</dimen>
-    <dimen name="space_3xl">48dp</dimen>
+    <dimen name="input_height">48dp</dimen>
+
+    <!-- === Chat Bubbles === -->
+    <dimen name="bubble_radius">18dp</dimen>
+    <dimen name="bubble_padding_h">14dp</dimen>
+    <dimen name="bubble_padding_v">10dp</dimen>
+    <dimen name="bubble_max_width">280dp</dimen>
+    <dimen name="bubble_gap">8dp</dimen>
+    <dimen name="bubble_group_gap">16dp</dimen>
+
+    <!-- === Elevation / Shadows (for Paint.setShadowLayer) === -->
+    <dimen name="shadow_sm_radius">3dp</dimen>
+    <dimen name="shadow_sm_y">1dp</dimen>
+    <dimen name="shadow_md_radius">12dp</dimen>
+    <dimen name="shadow_md_y">4dp</dimen>
+    <dimen name="shadow_lg_radius">24dp</dimen>
+    <dimen name="shadow_lg_y">8dp</dimen>
+
+    <!-- === Animation Durations === -->
+    <integer name="anim_page_exit">250</integer>
+    <integer name="anim_page_enter">350</integer>
+    <integer name="anim_theme_transition">650</integer>
+    <integer name="anim_hdr_toggle">300</integer>
+    <integer name="anim_glass_toggle">400</integer>
+
+    <!-- === Glass Effect === -->
+    <dimen name="glass_blur_radius">24dp</dimen>
+    <integer name="glass_blur_radius_px">24</integer>
+
+    <!-- === HDR Lighting === -->
+    <dimen name="hdr_light_offset_x">250dp</dimen>
+    <dimen name="hdr_light_offset_y">200dp</dimen>
+    <dimen name="hdr_light_radius">400dp</dimen>
 </resources>

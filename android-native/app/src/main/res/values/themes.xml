@@ -1,15 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- === Base Dark Theme (default) === -->
     <style name="Theme.ChatGusogst" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/accent</item>
         <item name="colorPrimaryDark">@color/accent_hover</item>
         <item name="colorAccent">@color/accent</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="android:windowBackground">@color/bg_primary</item>
-        <item name="android:statusBarColor">@color/bg_primary</item>
-        <item name="android:navigationBarColor">@color/bg_primary</item>
+        <item name="android:colorBackground">@color/bg_primary_dark</item>
+        <item name="android:windowBackground">@color/bg_primary_dark</item>
+        <item name="android:statusBarColor">@color/bg_primary_dark</item>
+        <item name="android:navigationBarColor">@color/bg_primary_dark</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- custom theme attrs -->
+        <item name="themeBgPrimary">@color/bg_primary_dark</item>
+        <item name="themeBgSecondary">@color/bg_secondary_dark</item>
+        <item name="themeBgTertiary">@color/bg_tertiary_dark</item>
+        <item name="themeBgElevated">@color/bg_elevated_dark</item>
+        <item name="themeTextPrimary">@color/text_primary_dark</item>
+        <item name="themeTextSecondary">@color/text_secondary_dark</item>
+        <item name="themeTextTertiary">@color/text_tertiary_dark</item>
+        <item name="themeBorderColor">@color/border_color_dark</item>
+        <item name="themeBorder">@color/border_dark</item>
+        <item name="themeDivider">@color/divider_dark</item>
+        <item name="themeAmbientTop">@color/bg_ambient_top_dark</item>
+        <item name="themeAmbientLeft">@color/bg_ambient_left_dark</item>
+        <item name="themeAmbientRight">@color/bg_ambient_right_dark</item>
+    </style>
+
+    <!-- === Light Theme === -->
+    <style name="Theme.ChatGusogst.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorPrimaryDark">@color/accent_hover</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:colorBackground">@color/bg_primary_light</item>
+        <item name="android:windowBackground">@color/bg_primary_light</item>
+        <item name="android:statusBarColor">@color/bg_primary_light</item>
+        <item name="android:navigationBarColor">@color/bg_primary_light</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="themeBgPrimary">@color/bg_primary_light</item>
+        <item name="themeBgSecondary">@color/bg_secondary_light</item>
+        <item name="themeBgTertiary">@color/bg_tertiary_light</item>
+        <item name="themeBgElevated">@color/bg_elevated_light</item>
+        <item name="themeTextPrimary">@color/text_primary_light</item>
+        <item name="themeTextSecondary">@color/text_secondary_light</item>
+        <item name="themeTextTertiary">@color/text_tertiary_light</item>
+        <item name="themeBorderColor">@color/border_color_light</item>
+        <item name="themeBorder">@color/border_light</item>
+        <item name="themeDivider">@color/divider_light</item>
+        <item name="themeAmbientTop">@color/bg_ambient_top_light</item>
+        <item name="themeAmbientLeft">@color/bg_ambient_left_light</item>
+        <item name="themeAmbientRight">@color/bg_ambient_right_light</item>
+    </style>
+
+    <!-- === Amoled Black === -->
+    <style name="Theme.ChatGusogst.Amoled" parent="Theme.ChatGusogst">
+        <item name="android:colorBackground">@color/bg_primary_amoled</item>
+        <item name="android:windowBackground">@color/bg_primary_amoled</item>
+        <item name="android:statusBarColor">@color/bg_primary_amoled</item>
+        <item name="android:navigationBarColor">@color/bg_primary_amoled</item>
+        <item name="themeBgPrimary">@color/bg_primary_amoled</item>
+        <item name="themeAmbientTop">@color/bg_ambient_top_amoled</item>
+        <item name="themeAmbientLeft">@color/bg_ambient_left_amoled</item>
+        <item name="themeAmbientRight">@color/bg_ambient_right_amoled</item>
     </style>
 </resources>

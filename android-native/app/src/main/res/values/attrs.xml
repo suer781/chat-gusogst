@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="themeBgPrimary" format="reference|color" />
+    <attr name="themeBgSecondary" format="reference|color" />
+    <attr name="themeBgTertiary" format="reference|color" />
+    <attr name="themeBgElevated" format="reference|color" />
+    <attr name="themeTextPrimary" format="reference|color" />
+    <attr name="themeTextSecondary" format="reference|color" />
+    <attr name="themeTextTertiary" format="reference|color" />
+    <attr name="themeBorderColor" format="reference|color" />
+    <attr name="themeBorder" format="reference|color" />
+    <attr name="themeDivider" format="reference|color" />
+    <attr name="themeAmbientTop" format="reference|color" />
+    <attr name="themeAmbientLeft" format="reference|color" />
+    <attr name="themeAmbientRight" format="reference|color" />
+</resources>
