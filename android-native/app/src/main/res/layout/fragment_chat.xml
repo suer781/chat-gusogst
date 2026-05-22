@@ -5,59 +5,148 @@
     android:orientation="vertical"
     android:background="@color/bg_primary">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMessages"
+    <!-- 顶栏 - 对齐 ChatView 顶栏: padding 8px 16px, borderBottom 1px #1a1a3a -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/space_4"
+        android:paddingVertical="@dimen/space_2"
+        android:background="@color/bg_primary">
+
+        <!-- 角色头像: 32x32 圆形, bg=accent-soft -->
+        <TextView
+            android:id="@+id/tvPersonaAvatar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:gravity="center"
+            android:textSize="@dimen/text_base"
+            android:textStyle="bold"
+            android:textColor="@color/accent"
+            android:background="@drawable/bg_avatar_circle" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/space_2">
+
+            <TextView
+                android:id="@+id/tvPersonaName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_base"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tvPersonaTags"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_xs"
+                android:textColor="@color/text_secondary" />
+        </LinearLayout>
+
+        <!-- 新对话按钮 -->
+        <ImageButton
+            android:id="@+id/btnNewChat"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_send"
+            android:scaleType="centerInside"
+            android:contentDescription="新对话" />
+    </LinearLayout>
+
+    <!-- 消息列表 - padding 16px -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingHorizontal="@dimen/space_md"
-        android:paddingTop="@dimen/space_sm"
-        android:paddingBottom="@dimen/space_sm"
-        android:scrollbars="none" />
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/tvEmpty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/chat_empty"
-        android:textSize="@dimen/text_lg"
-        android:textColor="@color/text_tertiary" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMessages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="16dp"
+            android:scrollbars="none" />
 
+        <!-- 空状态: 居中, 星号 + 标题 + 提示 -->
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✦"
+                android:textSize="48sp"
+                android:textColor="@color/text_tertiary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:text="开始新的对话"
+                android:textSize="@dimen/text_xl"
+                android:textStyle="bold"
+                android:textColor="@color/text_tertiary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:text="输入消息开始聊天"
+                android:textSize="@dimen/text_base"
+                android:textColor="@color/text_disabled" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 输入栏 - padding 12px 16px, borderTop 1px #1a1a3a -->
     <LinearLayout
         android:id="@+id/inputBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/space_md"
-        android:paddingVertical="@dimen/space_sm"
+        android:gravity="bottom"
+        android:paddingHorizontal="@dimen/space_4"
+        android:paddingVertical="@dimen/space_3"
         android:background="@color/bg_primary">
 
         <EditText
             android:id="@+id/etInput"
             android:layout_width="0dp"
-            android:layout_height="@dimen/input_height"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/bg_input"
-            android:hint="@string/chat_hint"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_tertiary"
+            android:background="@drawable/bg_input_field"
+            android:hint="说点什么..."
+            android:textColor="@color/gray_100"
+            android:textColorHint="@color/gray_500"
             android:textSize="@dimen/text_base"
-            android:paddingHorizontal="@dimen/space_lg"
+            android:paddingHorizontal="@dimen/space_4"
+            android:paddingVertical="@dimen/space_3"
             android:maxLines="4"
-            android:inputType="textMultiLine"
+            android:minHeight="40dp"
+            android:inputType="textMultiLine|textCapSentences"
             android:importantForAutofill="no" />
 
-        <ImageButton
+        <!-- 发送/停止按钮: 40x40, rounded-xl, bg=accent -->
+        <TextView
             android:id="@+id/btnSend"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginStart="@dimen/space_sm"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_send"
-            android:contentDescription="@string/chat_send"
-            android:scaleType="centerInside" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="@dimen/space_2"
+            android:gravity="center"
+            android:text="➤"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:background="@drawable/bg_send_button" />
     </LinearLayout>
 </LinearLayout>

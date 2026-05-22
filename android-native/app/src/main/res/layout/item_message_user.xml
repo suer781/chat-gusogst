@@ -4,31 +4,31 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="end"
-    android:paddingVertical="3dp">
+    android:paddingVertical="6dp">
 
     <TextView
         android:id="@+id/tvMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxWidth="@dimen/bubble_max_width"
+        android:maxWidth="280dp"
         android:background="@drawable/bg_bubble_user"
-        android:paddingHorizontal="@dimen/bubble_padding_h"
-        android:paddingVertical="@dimen/bubble_padding_v"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
         android:textColor="@color/bubble_user_text"
         android:textSize="@dimen/text_base"
-        android:lineSpacingMultiplier="1.4" />
+        android:lineSpacingMultiplier="1.6" />
 
-    <!-- 用户消息操作按钮 -->
+    <!-- 操作栏: 默认隐藏, 长按显示 -->
     <LinearLayout
         android:id="@+id/actionBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="@dimen/space_xs"
-        android:gravity="end"
+        android:layout_marginTop="4dp"
+        android:paddingStart="4dp"
         android:visibility="gone">
 
-        <TextView android:id="@+id/btnCopy" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/chat_copy" android:textSize="@dimen/text_xs" android:textColor="@color/text_tertiary" android:paddingHorizontal="@dimen/space_sm" android:paddingVertical="@dimen/space_xs" android:background="?attr/selectableItemBackground" />
-        <TextView android:id="@+id/btnDelete" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/chat_delete" android:textSize="@dimen/text_xs" android:textColor="@color/text_tertiary" android:paddingHorizontal="@dimen/space_sm" android:paddingVertical="@dimen/space_xs" android:background="?attr/selectableItemBackground" />
+        <TextView android:id="@+id/btnCopy" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/chat_copy" android:textSize="@dimen/text_sm" android:textColor="@color/text_secondary" android:paddingHorizontal="@dimen/space_2" android:paddingVertical="4dp" android:background="?attr/selectableItemBackground" />
+        <TextView android:id="@+id/btnDelete" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/chat_delete" android:textSize="@dimen/text_sm" android:textColor="@color/text_secondary" android:paddingHorizontal="@dimen/space_2" android:paddingVertical="4dp" android:background="?attr/selectableItemBackground" />
     </LinearLayout>
 </LinearLayout>
