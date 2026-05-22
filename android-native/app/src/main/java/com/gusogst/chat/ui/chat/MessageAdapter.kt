@@ -10,9 +10,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
 import com.gusogst.chat.model.Message
+import com.gusogst.chat.model.MessageStatus
 import com.gusogst.chat.model.Role
 
 class MessageAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallback()) {
+
     companion object {
         private const val TYPE_USER = 0
         private const val TYPE_ASSISTANT = 1
@@ -20,7 +22,7 @@ class MessageAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallbac
 
     override fun getItemViewType(position: Int): Int =
         when (getItem(position).role) {
-            Role.USER -> TYPE_USER
+            Role.user -> TYPE_USER
             else -> TYPE_ASSISTANT
         }
 
@@ -51,10 +53,34 @@ class MessageAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallbac
         private val tvThinkingContent: TextView = view.findViewById(R.id.tvThinkingContent)
 
         fun bind(msg: Message) {
-            tvMessage.text = msg.content
+            // 显示消息内容，streaming 时显示光标
+            val displayContent = if (msg.content.isEmpty() && msg.status == MessageStatus.streaming) {
+                "..."
+            } else if (msg.status == MessageStatus.error) {
+                msg.content
+            } else {
+                msg.content
+            }
+            tvMessage.text = displayContent
+            tvMessage.alpha = if (msg.status == MessageStatus.streaming) 0.8f else 1f
+
+            // 思考折叠块
             if (!msg.thinking.isNullOrBlank()) {
                 thinkingBlock.visibility = View.VISIBLE
                 tvThinkingContent.text = msg.thinking
+                if (msg.thinkingCollapsed) {
+                    tvThinkingContent.maxLines = 2
+                } else {
+                    tvThinkingContent.maxLines = Int.MAX_VALUE
+                }
+                thinkingBlock.setOnClickListener {
+                    // Toggle collapse - 通过点击切换
+                    if (tvThinkingContent.maxLines == 2) {
+                        tvThinkingContent.maxLines = Int.MAX_VALUE
+                    } else {
+                        tvThinkingContent.maxLines = 2
+                    }
+                }
             } else {
                 thinkingBlock.visibility = View.GONE
             }

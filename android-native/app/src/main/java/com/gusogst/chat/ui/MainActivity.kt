@@ -38,14 +38,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun initNav() {
         val configs = listOf(
-            Triple(R.id.navChat, R.id.navChatIcon, R.id.navChatText) to (ChatFragment() to getString(R.string.nav_chat)),
-            Triple(R.id.navPersona, R.id.navPersonaIcon, R.id.navPersonaText) to (PersonaFragment() to getString(R.string.nav_persona)),
-            Triple(R.id.navProviders, R.id.navProvidersIcon, R.id.navProvidersText) to (ProvidersFragment() to getString(R.string.nav_providers)),
-            Triple(R.id.navSettings, R.id.navSettingsIcon, R.id.navSettingsText) to (SettingsFragment() to getString(R.string.nav_settings))
+            Triple(R.id.navChat, R.id.navChatIcon, R.id.navChatText) to
+                (ChatFragment() to getString(R.string.nav_chat)),
+            Triple(R.id.navPersona, R.id.navPersonaIcon, R.id.navPersonaText) to
+                (PersonaFragment() to getString(R.string.nav_persona)),
+            Triple(R.id.navProviders, R.id.navProvidersIcon, R.id.navProvidersText) to
+                (ProvidersFragment() to getString(R.string.nav_providers)),
+            Triple(R.id.navSettings, R.id.navSettingsIcon, R.id.navSettingsText) to
+                (SettingsFragment() to getString(R.string.nav_settings))
         )
         for ((ids, pair) in configs) {
             val (fragment, title) = pair
-            val item = NavItem(findViewById(ids.first), findViewById(ids.second), findViewById(ids.third), fragment, title)
+            val item = NavItem(
+                findViewById(ids.first),
+                findViewById(ids.second),
+                findViewById(ids.third),
+                fragment,
+                title
+            )
             item.container.setOnClickListener { selectNav(item) }
             navItems.add(item)
         }

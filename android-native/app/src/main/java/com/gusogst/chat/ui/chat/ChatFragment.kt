@@ -8,19 +8,21 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
 import com.gusogst.chat.model.Message
-import com.gusogst.chat.model.Role
+import com.gusogst.chat.viewmodel.ChatViewModel
 
 class ChatFragment : Fragment() {
+
+    private val viewModel: ChatViewModel by activityViewModels()
     private lateinit var rvMessages: RecyclerView
     private lateinit var tvEmpty: TextView
     private lateinit var etInput: EditText
     private lateinit var btnSend: ImageButton
     private lateinit var adapter: MessageAdapter
-    private val messages = mutableListOf<Message>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_chat, container, false)
@@ -36,23 +38,24 @@ class ChatFragment : Fragment() {
         adapter = MessageAdapter()
         rvMessages.layoutManager = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
         rvMessages.adapter = adapter
+
         btnSend.setOnClickListener { sendMessage() }
-        updateEmptyState()
+
+        viewModel.messages.observe(viewLifecycleOwner) { msgs ->
+            adapter.submitList(msgs)
+            if (msgs.isNotEmpty()) rvMessages.scrollToPosition(msgs.size - 1)
+            tvEmpty.visibility = if (msgs.isEmpty()) View.VISIBLE else View.GONE
+        }
+
+        viewModel.isStreaming.observe(viewLifecycleOwner) { streaming ->
+            btnSend.isEnabled = !streaming
+        }
     }
 
     private fun sendMessage() {
         val text = etInput.text.toString().trim()
         if (text.isEmpty()) return
-        messages.add(Message(role = Role.USER, content = text))
         etInput.text.clear()
-        // TODO: 接入 AI API
-        messages.add(Message(role = Role.ASSISTANT, content = "(AI 接口尚未接入)"))
-        adapter.submitList(messages.toList())
-        rvMessages.scrollToPosition(messages.size - 1)
-        updateEmptyState()
-    }
-
-    private fun updateEmptyState() {
-        tvEmpty.visibility = if (messages.isEmpty()) View.VISIBLE else View.GONE
+        viewModel.sendMessage(text)
     }
 }
