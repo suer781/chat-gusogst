@@ -12,7 +12,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
-import com.gusogst.chat.model.Message
 import com.gusogst.chat.viewmodel.ChatViewModel
 
 class ChatFragment : Fragment() {
@@ -35,7 +34,10 @@ class ChatFragment : Fragment() {
         etInput = view.findViewById(R.id.etInput)
         btnSend = view.findViewById(R.id.btnSend)
 
-        adapter = MessageAdapter()
+        adapter = MessageAdapter(
+            onRegenerate = { msg -> viewModel.regenerate(msg) },
+            onDelete = { msg -> viewModel.deleteMessage(msg.id) }
+        )
         rvMessages.layoutManager = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
         rvMessages.adapter = adapter
 
@@ -49,6 +51,7 @@ class ChatFragment : Fragment() {
 
         viewModel.isStreaming.observe(viewLifecycleOwner) { streaming ->
             btnSend.isEnabled = !streaming
+            etInput.isEnabled = !streaming
         }
     }
 

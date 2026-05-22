@@ -18,44 +18,34 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val store = ChatStore.getInstance(app)
     private val streamProcessor = StreamProcessor()
 
-    // ===== 对话列表 =====
     private val _conversations = MutableLiveData<List<Conversation>>(emptyList())
     val conversations: LiveData<List<Conversation>> = _conversations
 
     private val _activeConversation = MutableLiveData<Conversation?>(null)
     val activeConversation: LiveData<Conversation?> = _activeConversation
 
-    // ===== 当前消息列表 =====
     private val _messages = MutableLiveData<List<Message>>(emptyList())
     val messages: LiveData<List<Message>> = _messages
 
-    // ===== 设置 =====
     private val _settings = MutableLiveData(UISettings())
     val settings: LiveData<UISettings> = _settings
 
-    // ===== 服务商 =====
     private val _providers = MutableLiveData<List<UIProvider>>(emptyList())
     val providers: LiveData<List<UIProvider>> = _providers
 
-    // ===== 角色 =====
     private val _personas = MutableLiveData<List<Persona>>(emptyList())
     val personas: LiveData<List<Persona>> = _personas
 
-    // ===== 流式状态 =====
     private val _isStreaming = MutableLiveData(false)
     val isStreaming: LiveData<Boolean> = _isStreaming
 
-    init {
-        loadAll()
-    }
+    init { loadAll() }
 
     private fun loadAll() {
         _conversations.value = store.loadConversations()
         _settings.value = store.loadSettings()
         _providers.value = store.loadProviders()
         _personas.value = store.loadPersonas()
-
-        // 恢复活跃对话
         val activeId = store.loadActiveConversationId()
         val conv = _conversations.value?.find { it.id == activeId }
         if (conv != null) {
@@ -94,25 +84,41 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         store.saveConversations(list)
     }
 
+    // ===== 消息操作 =====
+    fun deleteMessage(messageId: String) {
+        val conv = _activeConversation.value ?: return
+        conv.messages.removeAll { it.id == messageId }
+        _messages.value = conv.messages.toList()
+        store.saveConversations(_conversations.value.orEmpty())
+    }
+
+    fun regenerate(msg: Message) {
+        val conv = _activeConversation.value ?: return
+        // 找到最后一条 AI 消息并删除
+        val idx = conv.messages.indexOfLast { it.id == msg.id }
+        if (idx >= 0) {
+            conv.messages.removeAt(idx)
+            _messages.value = conv.messages.toList()
+        }
+        // 重新调用
+        callAiApi(conv)
+        store.saveConversations(_conversations.value.orEmpty())
+    }
+
     // ===== 发送消息 =====
     fun sendMessage(content: String) {
-        val conv = _activeConversation.value ?: return
-        val userMsg = Message(
-            conversationId = conv.id,
-            role = Role.user,
-            content = content
-        )
+        val conv = _activeConversation.value ?: run {
+            createConversation()
+            _activeConversation.value ?: return
+        }
+        val userMsg = Message(conversationId = conv.id, role = Role.user, content = content)
         conv.messages.add(userMsg)
         conv.updatedAt = System.currentTimeMillis()
         _messages.value = conv.messages.toList()
-
-        // 首条消息自动命名
         if (conv.messages.size == 1) {
             conv.title = content.take(20)
             _conversations.value = _conversations.value
         }
-
-        // 调用 AI API
         callAiApi(conv)
         store.saveConversations(_conversations.value.orEmpty())
     }
@@ -135,7 +141,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
         val request = ChatRequest(model = model, messages = apiMessages, stream = true)
 
-        // 创建 AI 消息占位
         val aiMsg = Message(
             conversationId = conv.id,
             role = Role.assistant,
@@ -184,13 +189,13 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     }
                 } else {
                     aiMsg.status = MessageStatus.error
-                    aiMsg.content = "HTTP ${response.code()}: ${response.message()}"
+                    aiMsg.content = "HTTP \${response.code()}: \${response.message()}"
                     _messages.value = conv.messages.toList()
                     _isStreaming.value = false
                 }
             } catch (e: Exception) {
                 aiMsg.status = MessageStatus.error
-                aiMsg.content = "Error: ${e.message}"
+                aiMsg.content = "Error: \${e.message}"
                 _messages.value = conv.messages.toList()
                 _isStreaming.value = false
             }
@@ -204,13 +209,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         store.saveSettings(new)
     }
 
-    // ===== 服务商 =====
     fun saveProviders(list: List<UIProvider>) {
         _providers.value = list
         store.saveProviders(list)
     }
 
-    // ===== 角色 =====
     fun savePersonas(list: List<Persona>) {
         _personas.value = list
         store.savePersonas(list)

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bubble_assistant"
+    android:padding="@dimen/space_md"
+    android:layout_marginTop="@dimen/space_xs">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvToolLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/accent"
+            android:textSize="@dimen/text_xs"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvToolStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_xs" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvToolArgs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_xs"
+        android:maxLines="4"
+        android:ellipsize="end"
+        android:fontFamily="monospace" />
+
+    <TextView
+        android:id="@+id/tvToolResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:textColor="@color/text_tertiary"
+        android:textSize="@dimen/text_xs"
+        android:maxLines="6"
+        android:ellipsize="end"
+        android:visibility="gone" />
+</LinearLayout>
