@@ -123,4 +123,27 @@
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
     <color name="ic_launcher_background">#E9597D</color>
+
+    <!-- === Short aliases (backward compat, default = dark) === -->
+    <color name="bg_tertiary">@color/bg_tertiary_dark</color>
+    <color name="bg_elevated">@color/bg_elevated_dark</color>
+    <color name="bg_overlay">@color/bg_overlay_dark</color>
+    <color name="bg_card">@color/bg_card_dark</color>
+    <color name="bg_ambient_top">@color/bg_ambient_top_dark</color>
+    <color name="bg_ambient_left">@color/bg_ambient_left_dark</color>
+    <color name="bg_ambient_right">@color/bg_ambient_right_dark</color>
+    <color name="bg_secondary">@color/bg_secondary_dark</color>
+    <color name="bg_primary">@color/bg_primary_dark</color>
+    <color name="text_primary">@color/text_primary_dark</color>
+    <color name="text_secondary">@color/text_secondary_dark</color>
+    <color name="text_tertiary">@color/text_tertiary_dark</color>
+    <color name="text_disabled">@color/text_disabled_dark</color>
+    <color name="text_inverse">@color/text_inverse_dark</color>
+    <color name="border_color">@color/border_color_dark</color>
+    <color name="border">@color/border_dark</color>
+    <color name="border_soft">@color/border_soft_dark</color>
+    <color name="border_focus">@color/border_focus_dark</color>
+    <color name="divider">@color/divider_dark</color>
+    <color name="nav_bg">@color/bg_primary_dark</color>
+    <color name="nav_inactive">@color/gray_400</color>
 </resources>

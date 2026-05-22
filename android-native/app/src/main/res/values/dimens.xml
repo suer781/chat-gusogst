@@ -91,4 +91,8 @@
     <dimen name="hdr_light_offset_x">250dp</dimen>
     <dimen name="hdr_light_offset_y">200dp</dimen>
     <dimen name="hdr_light_radius">400dp</dimen>
+
+    <!-- Short aliases for backward compat -->
+    <dimen name="space_lg">@dimen/space_4</dimen>
+    <dimen name="space_3xl">@dimen/space_12</dimen>
 </resources>

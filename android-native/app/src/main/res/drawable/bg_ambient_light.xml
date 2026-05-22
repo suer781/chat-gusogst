@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Top-right light cone -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="1.0"
+                android:centerY="0.0"
+                android:gradientRadius="500dp"
+                android:startColor="@color/bg_ambient_top"
+                android:endColor="@color/transparent" />
+        </shape>
+    </item>
+    <!-- Left ambient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.0"
+                android:centerY="0.5"
+                android:gradientRadius="400dp"
+                android:startColor="@color/bg_ambient_left"
+                android:endColor="@color/transparent" />
+        </shape>
+    </item>
+    <!-- Right ambient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="1.0"
+                android:centerY="0.7"
+                android:gradientRadius="350dp"
+                android:startColor="@color/bg_ambient_right"
+                android:endColor="@color/transparent" />
+        </shape>
+    </item>
+</layer-list>
