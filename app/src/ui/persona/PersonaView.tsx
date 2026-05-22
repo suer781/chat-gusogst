@@ -30,7 +30,7 @@ export function PersonaView({ onDone, onProfile }: { onDone: () => void; onProfi
 
   return (
     <div className="h-full flex flex-col" style={{ background: 'var(--bg-primary)' }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a1a3a' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #101020' }}>
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-secondary)' }} />
           <input type="text" placeholder={t('persona.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full outline-none" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: "var(--radius-md)", padding: '8px 12px 8px 36px', fontSize: "var(--text-base)", color: 'var(--text-primary)' }} />

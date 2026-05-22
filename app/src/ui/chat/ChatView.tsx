@@ -14,14 +14,14 @@ function ThinkingBlock({ content, showThinking }: { content: string; showThinkin
   const [collapsed, setCollapsed] = useState(true)
   if (!showThinking) return null
   return (
-    <div className="my-1 rounded-lg" style={{ background: 'var(--bg-tertiary)', border: '1px solid #2a2a5a' }}>
+    <div className="my-1 rounded-lg" style={{ background: 'var(--bg-tertiary)', border: '1px solid #1a1a30' }}>
       <button onClick={() => { hapticUnfold(); setCollapsed(!collapsed) }} className="flex items-center gap-1 w-full px-3 py-1.5 text-left" style={{ fontSize: "var(--text-sm)", color: 'var(--gray-300)' }}>
         {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
         <span>💭 思考过程</span>
         <span style={{ color: 'var(--gray-400)', marginLeft: 'auto', fontSize: "var(--text-xs)" }}>{content.length} 字</span>
       </button>
       {!collapsed && (
-        <div className="px-3 pb-2" style={{ fontSize: "var(--text-base)", color: 'var(--gray-100)', whiteSpace: 'pre-wrap', borderTop: '1px solid #2a2a5a', paddingTop: "var(--space-2)" }}>
+        <div className="px-3 pb-2" style={{ fontSize: "var(--text-base)", color: 'var(--gray-100)', whiteSpace: 'pre-wrap', borderTop: '1px solid #1a1a30', paddingTop: "var(--space-2)" }}>
           {content}
         </div>
       )}
@@ -37,7 +37,7 @@ function ToolCallCard({ tc, showToolCalls }: { tc: ToolCall; showToolCalls: bool
     : tc.status === 'done' ? <CheckCircle2 size={12} style={{ color: 'var(--success)' }} />
     : <XCircle size={12} style={{ color: 'var(--accent)' }} />
   return (
-    <div className="my-1 rounded-lg" style={{ background: 'var(--bg-tertiary)', border: '1px solid #2a2a5a' }}>
+    <div className="my-1 rounded-lg" style={{ background: 'var(--bg-tertiary)', border: '1px solid #1a1a30' }}>
       <button onClick={() => { hapticUnfold(); setExpanded(!expanded) }} className="flex items-center gap-2 w-full px-3 py-1.5 text-left" style={{ fontSize: "var(--text-sm)", color: 'var(--gray-300)' }}>
         <Wrench size={12} style={{ color: 'var(--blue)' }} />
         {statusIcon}
@@ -45,7 +45,7 @@ function ToolCallCard({ tc, showToolCalls }: { tc: ToolCall; showToolCalls: bool
         <span style={{ color: 'var(--gray-400)', marginLeft: 'auto', fontSize: "var(--text-xs)" }}>{expanded ? '▾' : '▸'}</span>
       </button>
       {expanded && (
-        <div className="px-3 pb-2" style={{ fontSize: "var(--text-sm)", borderTop: '1px solid #2a2a5a', paddingTop: "var(--space-2)" }}>
+        <div className="px-3 pb-2" style={{ fontSize: "var(--text-sm)", borderTop: '1px solid #1a1a30', paddingTop: "var(--space-2)" }}>
           <div style={{ color: 'var(--gray-300)', marginBottom: 4 }}>输入：</div>
           <pre style={{ color: 'var(--gray-100)', whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'monospace', fontSize: "var(--text-xs)" }}>{JSON.stringify(tc.input, null, 2)}</pre>
           {tc.output && (<>
@@ -162,7 +162,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   return (
     <div className="h-full flex flex-col">
       {/* ─── 顶栏 ─── */}
-      <div className="shrink-0 flex items-center justify-between" style={{ padding: 'var(--space-2) var(--space-4)', borderBottom: '1px solid #1a1a3a' }}>
+      <div className="shrink-0 flex items-center justify-between" style={{ padding: 'var(--space-2) var(--space-4)', borderBottom: '1px solid #101020' }}>
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center rounded-full" style={{ width: 32, height: 32, background: 'var(--accent-soft)', color: 'var(--accent)', fontSize: "var(--text-base)", fontWeight: 600 }}>{persona.name[0]}</div>
           <div>
@@ -243,11 +243,11 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
       </div>
 
       {/* ─── 输入栏 ─── */}
-      <div className="shrink-0" style={{ padding: 'var(--space-3) var(--space-4)', borderTop: '1px solid #1a1a3a', background: 'var(--bg-primary)' }}>
+      <div className="shrink-0" style={{ padding: 'var(--space-3) var(--space-4)', borderTop: '1px solid #101020', background: 'var(--bg-primary)' }}>
         <div className="flex items-end gap-2">
           <textarea
             className="flex-1 resize-none rounded-xl"
-            style={{ background: 'var(--bg-tertiary)', color: 'var(--gray-100)', padding: 'var(--space-3) var(--space-4)', fontSize: "var(--text-base)", border: '1px solid #2a2a5a', outline: 'none', maxHeight: 120, minHeight: 40 }}
+            style={{ background: 'var(--bg-tertiary)', color: 'var(--gray-100)', padding: 'var(--space-3) var(--space-4)', fontSize: "var(--text-base)", border: '1px solid #1a1a30', outline: 'none', maxHeight: 120, minHeight: 40 }}
             rows={1}
             placeholder={t('chat.placeholder')}
             value={input}

@@ -55,14 +55,14 @@ body::after {
   background: radial-gradient(ellipse 80% 50% at 50% 0%, var(--bg-ambient-top, transparent) 0%, transparent 60%),
               radial-gradient(ellipse 60% 40% at 20% 100%, var(--bg-ambient-left, transparent) 0%, transparent 50%),
               radial-gradient(ellipse 50% 35% at 80% 90%, var(--bg-ambient-right, transparent) 0%, transparent 50%),
-              var(--bg-primary, #0f0f23);
-  opacity: 0.6;
+              var(--bg-primary, #08080f);
+  opacity: 0.35;
   transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
 }
 /* === App initial fade-in === */
 /* App fade-in controlled by React (appReady state) — no CSS animation needed */
 #root {
-  background: var(--bg-primary, #0f0f23);
+  background: var(--bg-primary, #08080f);
 }
 
 
@@ -89,12 +89,12 @@ nav, button, [role="button"] {
 /* === Scrollbar === */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--bg-elevated, #2a2a4a); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--bg-elevated, #1c1c30); border-radius: 2px; }
 
 /* === Placeholder color for input === */
 input::placeholder, textarea::placeholder {
-  color: var(--text-tertiary, #555577);
-  -webkit-text-fill-color: var(--text-tertiary, #555577);
+  color: var(--text-tertiary, #444458);
+  -webkit-text-fill-color: var(--text-tertiary, #444458);
 }
 
 /* === Focus style for inputs === */
@@ -121,28 +121,28 @@ textarea {
   transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: var(--bg-primary);
   /* ── 背景层级 ── */
-  --bg-primary:     #0d0d2b;
-  --bg-secondary:   #151538;
-  --bg-tertiary:    #1a1a3a;
-  --bg-elevated:    #22224a;
-  --bg-overlay:     rgba(0, 0, 0, 0.25);
+  --bg-primary:     #08080f;
+  --bg-secondary:   #0e0e1a;
+  --bg-tertiary:    #141422;
+  --bg-elevated:    #1c1c30;
+  --bg-overlay:     rgba(0, 0, 0, 0.35);
   /* 保留兼容 */
-  --bg-card:        #151538;
+  --bg-card:        #0e0e1a;
 
   /* ── 文字层级 ── */
-  --text-primary:   #ffffff;
-  --text-secondary: #a0a0b8;
-  --text-tertiary:  #6b6b80;
-  --text-disabled:  #4a4a5e;
-  --text-inverse:   #0d0d2b;
+  --text-primary:   #e8e8ee;
+  --text-secondary: #8888a0;
+  --text-tertiary:  #555568;
+  --text-disabled:  #3a3a4e;
+  --text-inverse:   #08080f;
   /* 保留兼容 */
-  --border-color:   rgba(255,255,255,0.08);
+  --border-color:   rgba(255,255,255,0.05);
 
   /* ── 主题色 ── */
   --accent:         #e94560;
   --accent-hover:   #c73e54;
   --accent-soft:    rgba(233, 69, 96, 0.12);
-  --accent-glow:    rgba(233, 69, 96, 0.25);
+  --accent-glow:    rgba(233, 69, 96, 0.18);
 
   /* ── 功能色 ── */
   --purple:         #6C5CE7;
@@ -161,22 +161,22 @@ textarea {
   --blue-soft:      rgba(52, 152, 219, 0.12);
 
   /* ── 深色灰度 ── */
-  --gray-50:    #f0f0f5;
-  --gray-100:   #d8d8e8;
-  --gray-200:   #b0b0c0;
-  --gray-300:   #8888a0;
-  --gray-400:   #6b6b80;
-  --gray-500:   #4e4e65;
-  --gray-600:   #3a3a50;
-  --gray-700:   #2a2a40;
-  --gray-800:   #1e1e35;
-  --gray-900:   #141428;
+  --gray-50:    #e8e8ee;
+  --gray-100:   #c0c0d0;
+  --gray-200:   #9090a5;
+  --gray-300:   #707088;
+  --gray-400:   #585870;
+  --gray-500:   #404058;
+  --gray-600:   #2e2e42;
+  --gray-700:   #1e1e32;
+  --gray-800:   #141425;
+  --gray-900:   #0c0c1a;
 
   /* ── 边框与分割 ── */
-  --border:         #2a2a4a;
+  --border:         #1a1a2e;
   --border-focus:   var(--accent);
-  --border-soft:    #1e1e3e;
-  --divider:        rgba(255, 255, 255, 0.06);
+  --border-soft:    #141428;
+  --divider:        rgba(255, 255, 255, 0.04);
 
   /* ── 圆角 ── */
   --radius-xs:    4px;
@@ -187,9 +187,9 @@ textarea {
   --radius-full:  9999px;
 
   /* ── 阴影 ── */
-  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.7);
   --shadow-glow: 0 0 20px var(--accent-glow);
 
   /* ── 间距阶梯（4px 倍数） ── */
@@ -246,11 +246,11 @@ textarea {
 }
 
 [data-theme="dark"] {
-  --bg-primary: #0f0f23;
-  --text-primary: #e0e0e0;
-  --bg-ambient-top: rgba(22, 22, 60, 0.6);
-  --bg-ambient-left: rgba(40, 10, 60, 0.4);
-  --bg-ambient-right: rgba(10, 25, 60, 0.3);
+  --bg-primary: #08080f;
+  --text-primary: #e8e8ee;
+  --bg-ambient-top: rgba(12, 12, 35, 0.3);
+  --bg-ambient-left: rgba(18, 5, 30, 0.18);
+  --bg-ambient-right: rgba(5, 12, 30, 0.12);
 }
 [data-theme="light"] {
   --bg-primary: #f5f5f5;
@@ -336,7 +336,7 @@ body {
 /* Force theme on all containers — solid bg blocks gradient bleed */
 #root,
 #root > div {
-  background: var(--bg-primary, #0f0f23) !important;
+  background: var(--bg-primary, #08080f) !important;
   color: var(--text-primary) !important;
 }
 
@@ -849,10 +849,10 @@ input[type="range"]::-webkit-slider-thumb:active {
 }
 
 /* ── GPU isolation + solid layering ── */
-.app-root { contain: layout style; background: var(--bg-primary, #0f0f23); }
-.app-content { contain: layout style; overflow-y: auto; overflow-x: hidden; background: var(--bg-primary, #0f0f23); }
+.app-root { contain: layout style; background: var(--bg-primary, #08080f); }
+.app-content { contain: layout style; overflow-y: auto; overflow-x: hidden; background: var(--bg-primary, #08080f); }
 .app-nav { contain: layout style; }
-.app-header { background: var(--bg-primary, #0f0f23); }
+.app-header { background: var(--bg-primary, #08080f); }
 
 /* ── Theme cross-fade: only the background layer transitions ── */
 body.theme-transitioning::after {

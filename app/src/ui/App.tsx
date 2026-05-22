@@ -143,7 +143,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e0e0e0)', overflow: 'hidden', opacity: appReady ? 1 : 0, transition: 'opacity 0.6s cubic-bezier(0.4,0,0.2,1), background-color 0.6s cubic-bezier(0.4,0,0.2,1), color 0.6s cubic-bezier(0.4,0,0.2,1)' }}>
+    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e8e8ee)', overflow: 'hidden', opacity: appReady ? 1 : 0, transition: 'opacity 0.6s cubic-bezier(0.4,0,0.2,1), background-color 0.6s cubic-bezier(0.4,0,0.2,1), color 0.6s cubic-bezier(0.4,0,0.2,1)' }}>
       {/* ── Page transition wrapper (header + content) ── */}
       <div className={pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {/* ── Header ── */}

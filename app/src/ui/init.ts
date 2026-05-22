@@ -8,7 +8,7 @@ export async function initApp() {
 
   try {
     await StatusBar.setStyle({ style: Style.Dark })
-    await StatusBar.setBackgroundColor({ color: '#0f0f23' })
+    await StatusBar.setBackgroundColor({ color: '#08080f' })
   } catch (e) {
     console.warn('StatusBar init failed:', e)
   }
