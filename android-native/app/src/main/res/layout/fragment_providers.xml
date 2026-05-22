@@ -31,14 +31,14 @@
             android:gravity="center_vertical">
 
             <TextView
-                android:id="+id/tvModelCount"
+                android:id="@+id/tvModelCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_secondary"
                 android:textSize="@dimen/text_sm" />
 
             <TextView
-                android:id="+id/btnDone"
+                android:id="@+id/btnDone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_md"
@@ -52,7 +52,7 @@
 
     <!-- Current Model Badge -->
     <LinearLayout
-        android:id="+id/currentModelBadge"
+        android:id="@+id/currentModelBadge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_lg"
@@ -63,7 +63,7 @@
         android:background="@drawable/bg_card_dark">
 
         <TextView
-            android:id="+id/tvCurrentModelLabel"
+            android:id="@+id/tvCurrentModelLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/providers_current_model"
@@ -71,7 +71,7 @@
             android:textSize="@dimen/text_sm" />
 
         <TextView
-            android:id="+id/tvCurrentModel"
+            android:id="@+id/tvCurrentModel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -83,7 +83,7 @@
 
     <!-- Guide Card -->
     <LinearLayout
-        android:id="+id/guideCard"
+        android:id="@+id/guideCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_lg"
@@ -122,7 +122,7 @@
             android:textSize="@dimen/text_sm" />
 
         <TextView
-            android:id="+id/btnDismissGuide"
+            android:id="@+id/btnDismissGuide"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
@@ -141,7 +141,7 @@
         android:scrollbars="none">
 
         <LinearLayout
-            android:id="+id/categoryTabs"
+            android:id="@+id/categoryTabs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -168,7 +168,7 @@
             android:contentDescription="null" />
 
         <EditText
-            android:id="+id/etSearch"
+            android:id="@+id/etSearch"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -193,7 +193,7 @@
         android:paddingBottom="@dimen/spacing_xxl">
 
         <LinearLayout
-            android:id="+id/providerList"
+            android:id="@+id/providerList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"

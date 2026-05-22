@@ -13,12 +13,12 @@
         android:layout_width="40dp"
         android:layout_height="40dp">
         <View
-            android:id="+id/providerIconBg"
+            android:id="@+id/providerIconBg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/bg_card_dark" />
         <TextView
-            android:id="+id/tvProviderIcon"
+            android:id="@+id/tvProviderIcon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
@@ -40,7 +40,7 @@
             android:gravity="center_vertical">
 
             <TextView
-                android:id="+id/tvProviderName"
+                android:id="@+id/tvProviderName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
@@ -48,7 +48,7 @@
                 android:textStyle="bold" />
 
             <View
-                android:id="+id/statusDot"
+                android:id="@+id/statusDot"
                 android:layout_width="6dp"
                 android:layout_height="6dp"
                 android:layout_marginStart="@dimen/spacing_sm"
@@ -57,7 +57,7 @@
         </LinearLayout>
 
         <TextView
-            android:id="+id/tvModelCount"
+            android:id="@+id/tvModelCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_tertiary"
@@ -65,7 +65,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="+id/tvSelected"
+        android:id="@+id/tvSelected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="✓"
@@ -75,7 +75,7 @@
         android:visibility="gone" />
 
     <ImageView
-        android:id="+id/ivExpand"
+        android:id="@+id/ivExpand"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:src="@drawable/ic_expand_more"

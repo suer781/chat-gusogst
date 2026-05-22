@@ -31,7 +31,7 @@
         android:paddingBottom="@dimen/spacing_xxl">
 
         <LinearLayout
-            android:id="+id/settingsList"
+            android:id="@+id/settingsList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
