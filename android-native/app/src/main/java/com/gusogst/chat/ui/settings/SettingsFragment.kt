@@ -1,8 +1,6 @@
 // ⚠️ 此文件不能为空（0字节），MainActivity 导航依赖此类
-// 子 Fragment 通过 childFragmentManager 加载
 // ⚠️ 此文件不能为空（0字节），MainActivity 导航依赖此类
-// 子 Fragment 通过 childFragmentManager 加载
-// DO NOT leave this file empty (0 bytes) - MainActivity navigation depends on this class
+// [NOTE] 此文件曾因内容为空（0字节）导致 CI 编译失败，清空内容前请确认无依赖（2026-05-22）
 // Sub-fragments are loaded via childFragmentManager
 package com.gusogst.chat.ui.settings
 

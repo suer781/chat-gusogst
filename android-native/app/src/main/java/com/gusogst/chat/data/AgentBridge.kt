@@ -30,7 +30,7 @@ object AgentBridge {
         systemPrompt: String,
         // ⚠️ UIMessage 是 Models.kt 里 Message 的 typealias，别改回 Message（会跟本地 Message 冲突）
     // ⚠️ UIMessage 是 Models.kt 里 Message 的 typealias，别改回 Message（会跟本地 Message 冲突）
-    // DO NOT change UIMessage to Message - conflicts with local Message class
+// [NOTE] UIMessage 是 Models.kt 里 Message 的 typealias，不能直接用 Message（会跟本地 data class Message 冲突）
     history: List<com.gusogst.chat.model.UIMessage>
     ): List<Message> {
         val messages = mutableListOf<Message>()
