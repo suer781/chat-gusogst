@@ -6,6 +6,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -48,6 +52,31 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             WindowInsetsCompat.CONSUMED
+        }
+    }
+
+    private fun applyTheme(theme: String) {
+        val mode = when (theme) {
+            "system" -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            "light", "pureWhite" -> AppCompatDelegate.MODE_NIGHT_NO
+            "dark", "pureBlack" -> AppCompatDelegate.MODE_NIGHT_YES
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        if (AppCompatDelegate.getDefaultNightMode() != mode) {
+            AppCompatDelegate.setDefaultNightMode(mode)
+        }
+    }
+
+    private fun applyGlassEffect(view: View?, enabled: Boolean) {
+        if (view == null) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (enabled) {
+                view.setBackgroundColor(0x33FFFFFF)
+                view.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.CLAMP))
+            } else {
+                view.setBackgroundResource(R.drawable.bg_header)
+                view.setRenderEffect(null)
+            }
         }
     }
 
