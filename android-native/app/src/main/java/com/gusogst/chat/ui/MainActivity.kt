@@ -11,6 +11,7 @@ import android.graphics.Shader
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import android.view.View
+import android.view.animation.OvershootInterpolator
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -35,6 +36,8 @@ class MainActivity : AppCompatActivity() {
 
     private val navItems = mutableListOf<NavItem>()
     private var currentNavItem: NavItem? = null
+    private lateinit var navIndicator: View
+    private lateinit var bottomNav: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +106,10 @@ class MainActivity : AppCompatActivity() {
             item.container.setOnClickListener { selectNav(item) }
             navItems.add(item)
         }
+        bottomNav = findViewById(R.id.bottomNav)
+        navIndicator = findViewById(R.id.navIndicator)
+        // Position indicator on first tab after layout
+        navIndicator.post { moveIndicator(0, false) }
     }
 
     private fun selectNav(item: NavItem) {
@@ -119,6 +126,23 @@ class MainActivity : AppCompatActivity() {
             nav.text.setTextColor(color)
         }
         tvHeaderTitle.text = item.title
+        val index = navItems.indexOf(item)
+        moveIndicator(index, true)
         currentNavItem = item
+    }
+
+    private fun moveIndicator(index: Int, animate: Boolean) {
+        val tabWidth = bottomNav.width / navItems.size
+        val indicatorWidth = navIndicator.width
+        val targetX = tabWidth * index + (tabWidth - indicatorWidth) / 2f
+        if (animate) {
+            navIndicator.animate()
+                .translationX(targetX)
+                .setDuration(300)
+                .setInterpolator(OvershootInterpolator(1.2f))
+                .start()
+        } else {
+            navIndicator.translationX = targetX
+        }
     }
 }

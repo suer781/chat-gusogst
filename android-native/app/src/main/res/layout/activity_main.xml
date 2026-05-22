@@ -151,5 +151,11 @@
                 android:textSize="@dimen/text_2xs"
                 android:textColor="@color/nav_inactive" />
         </LinearLayout>
-    </LinearLayout>
+                <View
+                android:id="@+id/navIndicator"
+                android:layout_width="30dp"
+                android:layout_height="3dp"
+                android:layout_gravity="top|center_horizontal"
+                android:background="@drawable/bg_nav_indicator" />
+        </LinearLayout>
 </FrameLayout>
