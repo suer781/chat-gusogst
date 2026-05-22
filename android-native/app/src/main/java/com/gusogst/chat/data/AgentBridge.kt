@@ -28,7 +28,10 @@ object AgentBridge {
 
     fun buildMessages(
         systemPrompt: String,
-        history: List<com.gusogst.chat.model.UIMessage>
+        // ⚠️ UIMessage 是 Models.kt 里 Message 的 typealias，别改回 Message（会跟本地 Message 冲突）
+    // ⚠️ UIMessage 是 Models.kt 里 Message 的 typealias，别改回 Message（会跟本地 Message 冲突）
+    // DO NOT change UIMessage to Message - conflicts with local Message class
+    history: List<com.gusogst.chat.model.UIMessage>
     ): List<Message> {
         val messages = mutableListOf<Message>()
         if (systemPrompt.isNotEmpty()) {

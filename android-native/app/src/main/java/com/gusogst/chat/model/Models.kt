@@ -3,6 +3,9 @@ package com.gusogst.chat.model
 import com.google.gson.annotations.SerializedName
 
 // ===== 消息 =====
+// AgentBridge 引用 UIMessage，别删这个别名
+// AgentBridge 引用 UIMessage，别删这个别名
+// DO NOT remove: AgentBridge references UIMessage, alias avoids name conflict with local Message
 typealias UIMessage = Message
 
 data class Message(
@@ -20,7 +23,9 @@ data class Message(
     val attachments: List<Attachment>? = null
 )
 
+// WARNING: enum values are lowercase, always use Role.user (not Role.USER)
 enum class Role { system, user, assistant }
+// WARNING: always use MessageStatus.ready (not MessageStatus.READY)
 enum class MessageStatus { streaming, ready, error }
 
 data class ToolCall(
@@ -71,6 +76,7 @@ data class Persona(
     var textColor: String = ""
 )
 
+// WARNING: always use AvatarType.emoji (not AvatarType.EMOJI)
 enum class AvatarType { url, blob, base64, emoji }
 
 data class PresetPersona(
