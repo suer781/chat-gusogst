@@ -57,4 +57,14 @@
 
     <!-- General -->
     <string name="back">返回</string>
+    <!-- Nav -->
+    <string name="nav_chat">对话</string>
+    <string name="nav_persona">角色</string>
+    <string name="nav_providers">供应商</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- Chat actions -->
+    <string name="chat_copy">复制</string>
+    <string name="chat_delete">删除</string>
+    <string name="chat_regen">重新生成</string>
 </resources>
