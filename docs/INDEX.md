@@ -28,10 +28,10 @@
 - `features/ui/interaction/adapter.md` — Input adapter
 
 ### Something is broken
-- `troubleshooting/build/` — Build fails
-- `troubleshooting/runtime/` — Crash, white screen, freeze
-- `troubleshooting/compatibility/` — WebView / Android version
-- `network/troubleshooting/endpoint-prober.md` — Network probe
+- [troubleshooting/](../troubleshooting/) — All debugging - `troubleshooting/build/` — Build fails problem solving
+, freeze
+
+
 
 ### I want to configure something
 - `api/` — API setup

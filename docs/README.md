@@ -1,8 +1,9 @@
 # Documentation
 
-All project docs live here, organized by topic.
+Project docs, organized by topic.
 
-**Need help finding something?** → [INDEX.md](INDEX.md)
+- **Need help?** → [troubleshooting/INDEX.md](../troubleshooting/INDEX.md)
+- **Full index?** → [INDEX.md](INDEX.md)
 
 ## Structure
 
@@ -12,8 +13,7 @@ architecture/    System design, code map, native integration
 features/        Feature modules (chat, UI, cloud)
 api/             External service integration
 network/         Connectivity & mirrors
-troubleshooting/ Problem solving (build / runtime / compat)
 changelog/       Version history
 ```
 
-Each folder narrows the scope. The deeper you go, the more specific.
+Problems & debugging → `/troubleshooting/`
