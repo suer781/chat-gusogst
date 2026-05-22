@@ -144,6 +144,4 @@
     <color name="border_soft">@color/border_soft_dark</color>
     <color name="border_focus">@color/border_focus_dark</color>
     <color name="divider">@color/divider_dark</color>
-    <color name="nav_bg">@color/bg_primary_dark</color>
-    <color name="nav_inactive">@color/gray_400</color>
 </resources>
