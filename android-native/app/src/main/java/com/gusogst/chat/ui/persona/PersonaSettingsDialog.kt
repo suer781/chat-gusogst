@@ -22,6 +22,7 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
+import com.gusogst.chat.model.ModelParamsConfig
 import com.gusogst.chat.model.Persona
 import com.gusogst.chat.viewmodel.ChatViewModel
 
@@ -134,7 +135,7 @@ class PersonaSettingsDialog : DialogFragment() {
             temperature = (temperature + adj[0]).coerceIn(0f, 2f)
             topP = (topP + adj[1]).coerceIn(0f, 1f)
             maxTokens = (maxTokens + adj[2].toInt()).coerceIn(100, 8000)
-        }, 1f)
+        })
         presetRow.addView(createPresetBtn("\uD83E\uDDE0 \u81EA\u4E3B\u7406\u89E3") {
             // LLM analysis: use local fallback
             val fallback = analyzeWithLLM(prompt)
@@ -142,7 +143,7 @@ class PersonaSettingsDialog : DialogFragment() {
             topP = fallback[1]
             maxTokens = fallback[2].toInt()
             autoMode = "llm"
-        }, 1f)
+        })
         content.addView(presetRow)
 
         // Sliders
