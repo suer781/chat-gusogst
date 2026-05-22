@@ -46,4 +46,6 @@
     <dimen name="nav_btn_padding_v">10dp</dimen>
     <dimen name="nav_btn_min_width">64dp</dimen>
     <dimen name="nav_btn_min_height">48dp</dimen>
+    <dimen name="space_lg">24dp</dimen>
+    <dimen name="space_3xl">48dp</dimen>
 </resources>
