@@ -18,7 +18,7 @@ object AgentBridge {
         return AgentConfig(
             apiKey = activeProvider?.apiKey ?: "",
             baseUrl = activeProvider?.baseUrl ?: "https://api.openai.com/v1",
-            model = activeProvider?.models?.firstOrNull() ?: "gpt-4o-mini",
+            model = activeProvider?.models?.firstOrNull()?.id ?: "gpt-4o-mini",
             systemPrompt = systemPrompt
         )
     }

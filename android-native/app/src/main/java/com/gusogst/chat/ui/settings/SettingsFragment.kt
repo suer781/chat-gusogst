@@ -129,7 +129,7 @@ class SettingsFragment : Fragment() {
             }
             fragment?.let {
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.mainContent, it)
+                    .replace(R.id.fragmentContainer, it)
                     .addToBackStack(null)
                     .commit()
             }

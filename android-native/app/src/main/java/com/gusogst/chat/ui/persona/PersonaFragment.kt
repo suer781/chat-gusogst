@@ -238,7 +238,7 @@ class PersonaFragment : Fragment() {
                 viewModel.setActivePersona(persona.id)
             } else {
                 // Custom persona - already in ViewModel
-                allPersonas.find { it.id == id }?.let { viewModel.setActivePersona(it) }
+                allPersonas.find { it.id == id }?.let { viewModel.setActivePersona(it.id) }
             }
         }
 
@@ -315,7 +315,7 @@ class PersonaFragment : Fragment() {
                 prompt = "You are a helpful assistant.",
                 tags = listOf("custom")
             )
-            viewModel.setActivePersona(newPersona)
+            viewModel.setActivePersona(newPersona.id)
         }
 
         personaList.addView(card)

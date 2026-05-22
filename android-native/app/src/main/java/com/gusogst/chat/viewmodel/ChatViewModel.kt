@@ -133,7 +133,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         val provider = _providers.value?.firstOrNull { it.enabled } ?: return
         val apiKey = provider.apiKey
         val baseUrl = provider.baseUrl
-        val model = conv.modelId ?: provider.models.firstOrNull() ?: return
+        val model = conv.modelId ?: provider.models.firstOrNull()?.id ?: return
 
         val systemMsg = conv.personaId?.let { pid ->
             _personas.value?.find { it.id == pid }?.prompt
