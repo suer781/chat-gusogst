@@ -6,6 +6,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
 import com.gusogst.chat.ui.chat.ChatFragment
@@ -32,8 +36,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
+        setupWindowInsets()
         initNav()
         if (savedInstanceState == null) selectNav(navItems[0])
+    }
+
+    private fun setupWindowInsets() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val root = findViewById<View>(android.R.id.content)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun initNav() {
