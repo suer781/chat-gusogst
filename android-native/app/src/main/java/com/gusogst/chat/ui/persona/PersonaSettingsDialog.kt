@@ -177,7 +177,7 @@ class PersonaSettingsDialog : DialogFragment() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 2f)
             setOnClickListener {
                 viewModel.updatePersona(personaId) { p ->
-                    p.copy(systemPrompt = prompt, modelParamsConfig = ModelParamsConfig(
+                    p.copy(prompt = prompt, modelParamsConfig = ModelParamsConfig(
                         autoMode = autoMode, overrideGlobal = overrideGlobal,
                         temperature = temperature, topP = topP, maxTokens = maxTokens
                     ))
@@ -226,7 +226,7 @@ class PersonaSettingsDialog : DialogFragment() {
         val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
         row.addView(TextView(requireContext()).apply { text = String.format("%.2f", min); setTextColor(resources.getColor(R.color.gray_500, null)); textSize = 11f; minWidth = (32 * dp).toInt() })
         row.addView(SeekBar(requireContext()).apply {
-            max = ((max - min) / step).toInt(); progress = ((value - min) / step).toInt()
+            setMax(((max - min) / step).toInt()); progress = ((value - min) / step).toInt()
             progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
             thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)

@@ -10,10 +10,10 @@ data class Message(
     val id: String = java.util.UUID.randomUUID().toString(),
     val conversationId: String = "",
     val role: Role = Role.user,
-    val content: String = "",
+    var content: String = "",
     val timestamp: Long = System.currentTimeMillis(),
-    val status: MessageStatus = MessageStatus.ready,
-    val thinking: String? = null,
+    var status: MessageStatus = MessageStatus.ready,
+    var thinking: String? = null,
     val thinkingCollapsed: Boolean = true,
     val providerId: String? = null,
     val modelId: String? = null,
@@ -80,7 +80,9 @@ data class Persona(
     val avatarType: AvatarType = AvatarType.emoji,
     val prompt: String = "",
     var bgColor: String = "",
-    var textColor: String = ""
+    var textColor: String = "",
+    val tags: List<String> = emptyList(),
+    val modelParamsConfig: ModelParamsConfig? = null
 )
 
 // [NOTE] 同上

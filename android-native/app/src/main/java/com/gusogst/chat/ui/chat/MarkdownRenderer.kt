@@ -41,7 +41,7 @@ object MarkdownRenderer {
                     ssb.append("  • ")
                     processInline(line.removeRange(0, 2), ssb)
                 }
-                line.matches(Regex("^\d+\. .*")) -> {
+                line.matches(Regex("""^\d+\. .*""")) -> {
                     val num = line.substringBefore(". ")
                     ssb.append("  $num. ")
                     processInline(line.substringAfter(". "), ssb)

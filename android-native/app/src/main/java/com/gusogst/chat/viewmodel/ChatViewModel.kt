@@ -227,6 +227,16 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         store.savePersonas(list)
     }
 
+    fun updatePersona(personaId: String, update: (Persona) -> Persona) {
+        val list = _personas.value.orEmpty().toMutableList()
+        val idx = list.indexOfFirst { it.id == personaId }
+        if (idx >= 0) {
+            list[idx] = update(list[idx])
+            _personas.value = list
+            store.savePersonas(list)
+        }
+    }
+
     fun setActivePersona(id: String?) {
         // [Fix-4] 触发LiveData通知UI刷新 + 持久化对话列表
         // 之前只存了activePersonaId，没存conversation.personaId
