@@ -1,34 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="text_xs">12sp</dimen>
-    <dimen name="text_sm">13sp</dimen>
+    <!-- 字号 - 对齐 Web --text-* 变量 -->
+    <dimen name="text_2xs">9sp</dimen>
+    <dimen name="text_xs">10sp</dimen>
+    <dimen name="text_sm">12sp</dimen>
     <dimen name="text_base">14sp</dimen>
     <dimen name="text_md">15sp</dimen>
     <dimen name="text_lg">16sp</dimen>
     <dimen name="text_xl">18sp</dimen>
     <dimen name="text_2xl">20sp</dimen>
     <dimen name="text_3xl">24sp</dimen>
+    <dimen name="text_4xl">32sp</dimen>
 
-    <dimen name="space_xs">4dp</dimen>
-    <dimen name="space_sm">8dp</dimen>
-    <dimen name="space_md">12dp</dimen>
-    <dimen name="space_lg">16dp</dimen>
-    <dimen name="space_xl">20dp</dimen>
-    <dimen name="space_2xl">24dp</dimen>
-    <dimen name="space_3xl">32dp</dimen>
+    <!-- 间距 - 对齐 Web --space-* 4px阶梯 -->
+    <dimen name="space_0">0dp</dimen>
+    <dimen name="space_1">4dp</dimen>
+    <dimen name="space_2">8dp</dimen>
+    <dimen name="space_3">12dp</dimen>
+    <dimen name="space_4">16dp</dimen>
+    <dimen name="space_5">20dp</dimen>
+    <dimen name="space_6">24dp</dimen>
+    <dimen name="space_8">32dp</dimen>
+    <dimen name="space_10">40dp</dimen>
+    <dimen name="space_12">48dp</dimen>
 
+    <!-- 圆角 - 对齐 Web --radius-* -->
     <dimen name="radius_xs">4dp</dimen>
-    <dimen name="radius_sm">8dp</dimen>
-    <dimen name="radius_md">12dp</dimen>
+    <dimen name="radius_sm">6dp</dimen>
+    <dimen name="radius_md">10dp</dimen>
     <dimen name="radius_lg">16dp</dimen>
-    <dimen name="radius_xl">20dp</dimen>
-    <dimen name="radius_full">999dp</dimen>
+    <dimen name="radius_xl">24dp</dimen>
+    <dimen name="radius_full">9999dp</dimen>
 
+    <!-- 气泡 -->
     <dimen name="bubble_radius">18dp</dimen>
     <dimen name="bubble_padding_h">14dp</dimen>
     <dimen name="bubble_padding_v">10dp</dimen>
     <dimen name="bubble_max_width">280dp</dimen>
-    <dimen name="input_height">48dp</dimen>
+
+    <!-- 布局关键尺寸 - 对齐 App.tsx -->
+    <dimen name="header_height">48dp</dimen>
     <dimen name="nav_height">56dp</dimen>
-    <dimen name="header_height">52dp</dimen>
+    <dimen name="input_height">48dp</dimen>
+    <dimen name="nav_btn_padding_h">18dp</dimen>
+    <dimen name="nav_btn_padding_v">10dp</dimen>
+    <dimen name="nav_btn_min_width">64dp</dimen>
+    <dimen name="nav_btn_min_height">48dp</dimen>
 </resources>
