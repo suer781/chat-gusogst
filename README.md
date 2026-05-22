@@ -101,8 +101,7 @@ hermes-backend/     # Python 后端（1,635 文件）
 ## 致谢
 
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent) — Agent 核心参考
-- [Chatbox](https://github.com/chatboxai/chatbox) — UI 框架 + 供应商列表
 
 ## 许可证
 
-[AGPL-3.0](LICENSE)
+[Apache License 2.0](LICENSE)

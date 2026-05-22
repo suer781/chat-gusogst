@@ -29,7 +29,7 @@
 | 仓库 | URL | 用途 |
 |------|-----|------|
 | 主仓库 | ghfast.top/https://github.com/suer781/chat-gusogst.git | 读写 |
-| 上游 | chatboxai/chatbox（只读） | UI 代码参考 |
+hatbox/d
 
 ### 分支
 

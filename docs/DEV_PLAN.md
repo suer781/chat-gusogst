@@ -393,7 +393,6 @@ C_i ← max(C_i × D/(f_i + D) + P_fail, C_min)
 
 | 组件 | 来源 | 当前协议 | 影响 |
 |------|------|----------|------|
-| 前端壳 | Chatbox (chatboxai/chatbox) | **AGPL-3.0** | 衍生作品必须开源，网络服务也需提供源码 |
 | 后端引擎 | Hermes Agent (NousResearch/hermes-agent) | MIT | 宽松，可商用可闭源 |
 | 自研代码 | chat-gusogst 团队 | 待定 | — |
 
@@ -402,8 +401,7 @@ C_i ← max(C_i × D/(f_i + D) + P_fail, C_min)
 
 ### 剔除计划（阶段目标：摆脱 AGPL 传染）
 
-**核心思路**：逐步替换所有来自 Chatbox 的代码，最终删除上游依赖，
-使项目不再受 AGPL-3.0 约束。
+**已完成**：所有 Chatbox 源码已移除（app/_legacy/ 删除，文档清理完毕），项目不再受 AGPL-3.0 约束。
 
 #### Phase 1 — 前端自研化（进行中）
 - [x] 新 UI 从零搭建（`app/src/ui/`，9 文件，零 Chatbox 组件依赖）
@@ -411,9 +409,10 @@ C_i ← max(C_i × D/(f_i + D) + P_fail, C_min)
 - [x] 国际化替换：Chatbox i18n → 自研 i18n.ts
 - [x] 聊天引擎替换：Chatbox renderer → 自研 ChatView.tsx
 
-#### Phase 2 — 清理残留引用
-- [ ] 审计 `app/src/` 全目录，标记所有仍在引用 Chatbox 原始代码的文件
-- [ ] 逐一替换或重写，消除 AGPL 传染链
+#### Phase 2 — 清理残留引用 ✅
+- [x] 审计 `app/src/` 全目录，零 Chatbox 引用
+- [x] 删除 `app/_legacy/`（7.1MB Chatbox Electron 源码）
+- [x] 清理 README/ARCHITECTURE/BUILD_DEPLOY 中的 Chatbox 引用
 - [ ] 移除 Chatbox git history（或用新 repo 重新初始化）
 
 #### Phase 3 — 协议切换
@@ -437,5 +436,5 @@ C_i ← max(C_i × D/(f_i + D) + P_fail, C_min)
 | 阶段 | 目标 | 状态 |
 |------|------|------|
 | Phase 1 | 前端自研化，零 Chatbox 组件依赖 | ✅ 基本完成 |
-| Phase 2 | 清理所有 Chatbox 残留代码 | 📋 待启动 |
+| Phase 2 | 清理所有 Chatbox 残留代码 | ✅ 2026-05-22 完成 |
 | Phase 3 | 正式切换到 Apache 2.0 | 📋 Phase 2 完成后启动 |

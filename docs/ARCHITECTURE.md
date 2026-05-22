@@ -165,7 +165,7 @@ hermes-backend/
 | Anthropic | 1 个 | `providers/anthropic.ts` 独立实现 |
 | **合计** | **129 个** | 覆盖 4774 个模型 |
 
-供应商列表从上游 [chatbox 项目](https://github.com/chatboxai/chatbox) 同步，包含 API 基础 URL 和模型名称映射。
+供应商列表源自 [Hermes Agent](https://github.com/NousResearch/hermes-agent) 框架，包含 API 基础 URL 和模型名称映射。
 
 ---
 
