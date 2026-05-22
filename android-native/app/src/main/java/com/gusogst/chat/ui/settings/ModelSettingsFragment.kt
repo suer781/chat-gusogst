@@ -1,0 +1,174 @@
+package com.gusogst.chat.ui.settings
+
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.os.Bundle
+import android.text.InputType
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.SeekBar
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.gusogst.chat.R
+import com.gusogst.chat.viewmodel.ChatViewModel
+
+class ModelSettingsFragment : Fragment() {
+    private val viewModel: ChatViewModel by activityViewModels()
+    private lateinit var root: LinearLayout
+
+    private val providers = listOf(
+        Triple("openai", "OpenAI", "sk-..."),
+        Triple("anthropic", "Anthropic", "sk-ant-..."),
+        Triple("ollama", "Ollama", ""),
+        Triple("custom", "\u81EA\u5B9A\u4E49", "API Key")
+    )
+    private val tokenOptions = listOf(1024, 2048, 4096, 8192, 16384)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val sv = ScrollView(requireContext()).apply { setBackgroundColor(resources.getColor(R.color.bg_primary, null)) }
+        root = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, dp(100)) }
+        sv.addView(root)
+        return sv
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.settings.observe(viewLifecycleOwner) { buildUI(it) }
+    }
+
+    private fun buildUI(s: com.gusogst.chat.model.UISettings) {
+        root.removeAllViews()
+        addHeader("AI \u6A21\u578B")
+
+        val currentProvider = viewModel.providers.value?.firstOrNull { it.enabled }?.name?.lowercase() ?: "openai"
+
+        // Provider 4-grid - purple accent
+        addSection("\u6A21\u578B\u63D0\u4F9B\u5546", "\u2699") {
+            val grid = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
+            for ((id, label, _) in providers) {
+                val isActive = id == currentProvider
+                grid.addView(TextView(requireContext()).apply {
+                    text = label; textSize = 14f; gravity = Gravity.CENTER; setPadding(dp(4), dp(12), dp(4), dp(12))
+                    setTextColor(if (isActive) Color.parseColor("#6C5CE7") else resources.getColor(R.color.gray_300, null))
+                    setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
+                    background = GradientDrawable().apply {
+                        setColor(if (isActive) Color.parseColor("#1A6C5CE7") else Color.parseColor("#0AFFFFFF"))
+                        setStroke(if (isActive) 2 else 1, if (isActive) Color.parseColor("#806C5CE7") else Color.TRANSPARENT)
+                        cornerRadius = dp(10).toFloat()
+                    }
+                }, lp)
+            }
+            return@addSection grid
+        }
+
+        // Model name
+        addSection("\u6A21\u578B\u540D\u79F0", "") {
+            return@addSection createInput("gpt-4o / claude-3-opus / qwen2", "")
+        }
+
+        // API Key
+        addSection("API Key", "\u26BF") {
+            return@addSection createInput("sk-xxx", "", true)
+        }
+
+        // API URL
+        addSection("API \u5730\u5740", "\u2641") {
+            return@addSection createInput("https://api.openai.com/v1", "")
+        }
+
+        // Temperature
+        addSection("\u521B\u610F\u5EA6", "\u2668") {
+            val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+            row.addView(TextView(requireContext()).apply { text = "\u7CBE\u786E"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32) })
+            row.addView(SeekBar(requireContext()).apply {
+                max = 100; progress = 70
+                progressTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#6C5CE7"))
+                thumbTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#6C5CE7"))
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            })
+            row.addView(TextView(requireContext()).apply { text = "\u968F\u673A"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32); gravity = Gravity.END })
+            row.addView(TextView(requireContext()).apply { text = "0.70"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 14f; setTypeface(null, Typeface.BOLD); minWidth = dp(40); gravity = Gravity.END })
+            return@addSection row
+        }
+
+        // Max Token buttons
+        addSection("\u6700\u5927 Token", "#") {
+            val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
+            for (t in tokenOptions) {
+                val isActive = t == 4096
+                row.addView(TextView(requireContext()).apply {
+                    text = if (t >= 1024) "${t / 1024}K" else t.toString()
+                    textSize = 12f; gravity = Gravity.CENTER; setPadding(dp(8), dp(8), dp(8), dp(8))
+                    setTextColor(if (isActive) Color.parseColor("#6C5CE7") else resources.getColor(R.color.gray_400, null))
+                    setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
+                    background = GradientDrawable().apply {
+                        setColor(if (isActive) Color.parseColor("#1A6C5CE7") else Color.parseColor("#0AFFFFFF"))
+                        setStroke(if (isActive) 1 else 0, if (isActive) Color.parseColor("#666C5CE7") else Color.TRANSPARENT)
+                        cornerRadius = dp(10).toFloat()
+                    }
+                }, lp)
+            }
+            return@addSection row
+        }
+
+        // Auto understand
+        addSection("\u81EA\u4E3B\u7406\u89E3", "\u2728") {
+            val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
+            col.addView(TextView(requireContext()).apply {
+                text = "\u6839\u636E\u5F53\u524D\u7CFB\u7EDF\u63D0\u793A\u8BCD\u63CF\u8FF0\u7684\u6027\u683C\u60C5\u7EEA\uFF0C\u8C03\u7528\u6A21\u578B\u81EA\u52A8\u63A8\u8350\u6700\u4F73\u53C2\u6570"
+                setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, 0, 0, dp(12))
+            })
+            col.addView(TextView(requireContext()).apply {
+                text = "\u5F00\u59CB\u5206\u6790"; setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD)
+                gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
+                background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(Color.parseColor("#6C5CE7")) }
+            })
+            return@addSection col
+        }
+    }
+
+    private fun addHeader(title: String) {
+        root.addView(LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(20), dp(16), dp(20), dp(12))
+            addView(TextView(requireContext()).apply { text = "\u2190"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 20f; setPadding(dp(4), dp(4), dp(12), dp(4)); setOnClickListener { parentFragmentManager.popBackStack() } })
+            addView(TextView(requireContext()).apply { text = title; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f; setTypeface(null, Typeface.BOLD) })
+        })
+    }
+
+    private fun addSection(title: String, icon: String, content: () -> View) {
+        val card = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
+            background = GradientDrawable().apply { setColor(Color.parseColor("#03FFFFFF")); setStroke(1, Color.parseColor("#05FFFFFF")); cornerRadius = dp(16).toFloat() }
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
+        }
+        if (title.isNotEmpty()) {
+            val header = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, 0, dp(14)) }
+            if (icon.isNotEmpty()) header.addView(TextView(requireContext()).apply { text = icon; textSize = 18f; setPadding(0, 0, dp(8), 0) })
+            header.addView(TextView(requireContext()).apply { text = title; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f; setTypeface(null, Typeface.BOLD) })
+            card.addView(header)
+        }
+        card.addView(content()); root.addView(card)
+    }
+
+    private fun createInput(hint: String, value: String, isPassword: Boolean = false): EditText {
+        return EditText(requireContext()).apply {
+            this.hint = hint; setText(value)
+            setTextColor(resources.getColor(R.color.gray_100, null)); setHintTextColor(resources.getColor(R.color.gray_500, null)); textSize = 14f
+            setPadding(dp(14), dp(10), dp(14), dp(10))
+            inputType = if (isPassword) InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD else InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, resources.getColor(R.color.thinking_border, null)); cornerRadius = dp(10).toFloat() }
+        }
+    }
+
+    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+}
