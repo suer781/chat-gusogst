@@ -21,6 +21,11 @@ class MessageAdapter(
     private val onRegenerate: ((Message) -> Unit)? = null,
     private val onDelete: ((Message) -> Unit)? = null
 ) : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallback()) {
+    var glassEnabled = false
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     companion object {
         private const val TYPE_USER = 0
@@ -56,7 +61,7 @@ class MessageAdapter(
         private val btnCopy: TextView = view.findViewById(R.id.btnCopy)
         private val btnDelete: TextView = view.findViewById(R.id.btnDelete)
 
-        fun bind(msg: Message, onDelete: ((Message) -> Unit)?) {
+        fun bind(msg: Message, onDelete: ((Message) -> Unit)?, glass: Boolean = false) {
             MarkdownRenderer.render(msg.content, tvMessage)
 
             // 长按显示操作
@@ -101,7 +106,7 @@ class MessageAdapter(
         private val btnRegen: TextView = view.findViewById(R.id.btnRegen)
         private val btnDelete: TextView = view.findViewById(R.id.btnDelete)
 
-        fun bind(msg: Message, onRegen: ((Message) -> Unit)?, onDelete: ((Message) -> Unit)?) {
+        fun bind(msg: Message, onRegen: ((Message) -> Unit)?, onDelete: ((Message) -> Unit)?, glass: Boolean = false) {
             // 正文 - Markdown 渲染
             if (msg.content.isEmpty() && msg.status == MessageStatus.streaming) {
                 tvMessage.text = "..."
@@ -109,6 +114,7 @@ class MessageAdapter(
                 MarkdownRenderer.render(msg.content, tvMessage)
             }
             tvMessage.alpha = if (msg.status == MessageStatus.streaming) 0.8f else 1f
+            tvMessage.background?.alpha = if (glass) 80 else 255
 
             // 思考折叠块
             if (!msg.thinking.isNullOrBlank()) {

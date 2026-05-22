@@ -54,6 +54,10 @@ class ChatFragment : Fragment() {
             btnSend.isEnabled = !streaming
             etInput.isEnabled = !streaming
         }
+
+        viewModel.settings.observe(viewLifecycleOwner) { s ->
+            adapter.glassEnabled = s.glassEnabled
+        }
     }
 
     private fun sendMessage() {

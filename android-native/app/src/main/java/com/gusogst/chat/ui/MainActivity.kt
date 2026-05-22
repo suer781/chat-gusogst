@@ -6,9 +6,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import android.graphics.RenderEffect
-import android.graphics.Shader
-import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import android.view.View
 import android.view.animation.OvershootInterpolator
@@ -72,14 +69,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyGlassEffect(view: View?, enabled: Boolean) {
         if (view == null) return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (enabled) {
-                view.setBackgroundColor(0x33FFFFFF)
-                view.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.CLAMP))
-            } else {
-                view.setBackgroundResource(R.drawable.bg_header)
-                view.setRenderEffect(null)
-            }
+        if (enabled) {
+            view.setBackgroundColor(0x331A1A2E)
+        } else {
+            view.setBackgroundResource(R.drawable.bg_header)
         }
     }
 
