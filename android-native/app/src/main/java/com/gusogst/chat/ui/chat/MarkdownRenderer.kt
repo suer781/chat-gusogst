@@ -70,7 +70,7 @@ object MarkdownRenderer {
 
         // 行内代码
         val codeInlinePattern = Regex("`([^`]+)`")
-        val matcher = codeInlinePattern.matcher(ssb)
+        val matcher = codeInlinePattern.toPattern().matcher(ssb)
         while (matcher.find()) {
             ssb.setSpan(
                 TypefaceSpan("monospace"), matcher.start(), matcher.end(),
@@ -95,7 +95,7 @@ object MarkdownRenderer {
         val end = ssb.length
 
         // 粗体 **text**
-        val boldPattern = Regex("\*\*(.+?)\*\*")
+        val boldPattern = Regex("""\*\*(.+?)\*\*""")
         for (m in boldPattern.findAll(line)) {
             val s = start + m.range.first
             val e = start + m.range.last + 1
@@ -103,7 +103,7 @@ object MarkdownRenderer {
         }
 
         // 斜体 *text*
-        val italicPattern = Regex("(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)")
+        val italicPattern = Regex("""(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)""")
         for (m in italicPattern.findAll(line)) {
             val s = start + m.range.first
             val e = start + m.range.last + 1

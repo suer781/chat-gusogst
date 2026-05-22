@@ -130,10 +130,10 @@ class MessageAdapter(
                 val inflater = LayoutInflater.from(itemView.context)
                 for (tool in tools) {
                     val card = inflater.inflate(R.layout.item_tool_call, toolCallsContainer, false)
-                    card.findViewById<TextView>(R.id.tvToolLabel).text = tool.name
-                    card.findViewById<TextView>(R.id.tvToolArgs).text = tool.arguments
+                    card.findViewById<TextView>(R.id.tvToolName).text = tool.name
+                    card.findViewById<TextView>(R.id.tvToolInput).text = tool.arguments
                     val statusTv = card.findViewById<TextView>(R.id.tvToolStatus)
-                    val resultTv = card.findViewById<TextView>(R.id.tvToolResult)
+                    val resultTv = card.findViewById<TextView>(R.id.tvToolOutput)
                     if (tool.result != null) {
                         statusTv.text = itemView.context.getString(R.string.tool_done)
                         statusTv.setTextColor(itemView.context.getColor(R.color.success))

@@ -30,7 +30,7 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rvMessages = view.findViewById(R.id.rvMessages)
-        tvEmpty = view.findViewById(R.id.tvEmpty)
+        tvEmpty = view.findViewById(R.id.emptyState)
         etInput = view.findViewById(R.id.etInput)
         btnSend = view.findViewById(R.id.btnSend)
 

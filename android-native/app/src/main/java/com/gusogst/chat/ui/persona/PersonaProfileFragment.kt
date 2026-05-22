@@ -95,7 +95,7 @@ class PersonaProfileFragment : Fragment() {
 
         // Tags
         val tagRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, 0, 0, dp(12)) }
-        for (tag in persona.tags) {
+        for (tag: String in persona.tags) {
             tagRow.addView(TextView(requireContext()).apply {
                 text = tag; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f
                 setPadding(dp(10), dp(4), dp(10), dp(4))

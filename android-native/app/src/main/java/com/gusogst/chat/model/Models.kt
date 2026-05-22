@@ -42,6 +42,15 @@ data class Attachment(
 )
 
 // ===== 对话 =====
+
+data class ModelParamsConfig(
+    val temperature: Float = 0.7f,
+    val topP: Float = 0.9f,
+    val maxTokens: Int = 2048,
+    val overrideGlobal: Boolean = false,
+    val autoMode: String = "off"
+)
+
 data class Conversation(
     val id: String = java.util.UUID.randomUUID().toString(),
     var title: String = "新对话",
@@ -107,7 +116,9 @@ data class UISettings(
     val eyeCareMode: Boolean = false,
     val eyeCareWarmth: Int = 0,
     val hdrEnabled: Boolean = false,
-    val bgAnimationEnabled: Boolean = true
+    val bgAnimationEnabled: Boolean = true,
+    val searchEnabled: Boolean = false,
+    val activeSearchEngine: String = "duckduckgo"
 )
 
 enum class ThemeMode { system, light, dark, pureWhite, pureBlack }

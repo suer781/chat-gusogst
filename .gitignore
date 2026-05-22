@@ -62,3 +62,4 @@ __pycache__/
 ACEKEY/
 mcp/
 mcpkeys/
+fix_*.py >> .gitignore

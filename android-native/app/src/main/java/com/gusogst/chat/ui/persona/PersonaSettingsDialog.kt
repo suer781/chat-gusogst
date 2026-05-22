@@ -47,7 +47,7 @@ class PersonaSettingsDialog : DialogFragment() {
         personaId = arguments?.getString(ARG_PERSONA_ID) ?: ""
         val persona = viewModel.personas.value.orEmpty().find { it.id == personaId }
         persona?.let {
-            prompt = it.systemPrompt
+            prompt = it.prompt
             it.modelParamsConfig?.let { cfg ->
                 temperature = cfg.temperature
                 topP = cfg.topP
@@ -177,7 +177,7 @@ class PersonaSettingsDialog : DialogFragment() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 2f)
             setOnClickListener {
                 viewModel.updatePersona(personaId) { p ->
-                    p.copy(systemPrompt = prompt, modelParamsConfig = Persona.ModelParamsConfig(
+                    p.copy(systemPrompt = prompt, modelParamsConfig = ModelParamsConfig(
                         autoMode = autoMode, overrideGlobal = overrideGlobal,
                         temperature = temperature, topP = topP, maxTokens = maxTokens
                     ))

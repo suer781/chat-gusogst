@@ -12,7 +12,6 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.gusogst.chat.BuildConfig
 import com.gusogst.chat.R
 
 class AboutSettingsFragment : Fragment() {
