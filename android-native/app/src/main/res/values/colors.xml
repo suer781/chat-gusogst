@@ -122,7 +122,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
-    <color name="ic_launcher_background">#E9597D</color>
+    <color name="ic_launcher_background">#0D0D2B</color>
 
     <!-- === Short aliases (backward compat, default = dark) === -->
     <color name="bg_tertiary">@color/bg_tertiary_dark</color>
