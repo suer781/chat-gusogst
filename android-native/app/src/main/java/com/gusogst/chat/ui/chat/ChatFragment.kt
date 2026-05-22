@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.ImageButton
+import com.google.android.material.textview.MaterialTextView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -21,7 +21,7 @@ class ChatFragment : Fragment() {
     private lateinit var rvMessages: RecyclerView
     private lateinit var tvEmpty: LinearLayout
     private lateinit var etInput: EditText
-    private lateinit var btnSend: ImageButton
+    private lateinit var btnSend: MaterialTextView
     private lateinit var adapter: MessageAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
