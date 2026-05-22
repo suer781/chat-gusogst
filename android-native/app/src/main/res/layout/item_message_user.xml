@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="3dp">
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:maxWidth="@dimen/bubble_max_width"
+        android:background="@drawable/bg_bubble_user"
+        android:paddingHorizontal="@dimen/bubble_padding_h"
+        android:paddingVertical="@dimen/bubble_padding_v"
+        android:textColor="@color/bubble_user_text"
+        android:textSize="@dimen/text_base"
+        android:lineSpacingMultiplier="1.4" />
+</FrameLayout>

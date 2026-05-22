@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#E94560</color>
+    <color name="accent_hover">#C73E54</color>
+    <color name="accent_soft">#1FE94560</color>
+    <color name="accent_glow">#40E94560</color>
+
+    <!-- 深色主题（默认） -->
+    <color name="bg_primary">#0D0D2B</color>
+    <color name="bg_secondary">#151538</color>
+    <color name="bg_tertiary">#1A1A3A</color>
+    <color name="bg_elevated">#22224A</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A0A0B8</color>
+    <color name="text_tertiary">#6B6B80</color>
+    <color name="border">#2A2A4A</color>
+    <color name="divider">#1E1E3E</color>
+
+    <color name="bubble_user">@color/accent</color>
+    <color name="bubble_assistant">@color/bg_tertiary</color>
+    <color name="bubble_user_text">#FFFFFF</color>
+    <color name="bubble_assistant_text">@color/text_primary</color>
+    <color name="input_bg">@color/bg_secondary</color>
+    <color name="nav_bg">@color/bg_primary</color>
+    <color name="nav_active">@color/accent</color>
+    <color name="nav_inactive">@color/text_tertiary</color>
+
+    <color name="success">#4CAF50</color>
+    <color name="danger">#FF5252</color>
+    <color name="warning">#FF9800</color>
+    <color name="blue">#2196F3</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">gusogst</string>
+    <string name="nav_chat">聊天</string>
+    <string name="nav_persona">角色</string>
+    <string name="nav_providers">服务</string>
+    <string name="nav_settings">设置</string>
+    <string name="chat_hint">说点什么…</string>
+    <string name="chat_send">发送</string>
+    <string name="chat_empty">开始新的对话</string>
+    <string name="chat_thinking">思考中…</string>
+    <string name="chat_copy">复制</string>
+    <string name="chat_regen">重新生成</string>
+    <string name="settings_title">设置</string>
+    <string name="persona_title">角色</string>
+    <string name="providers_title">服务商</string>
+</resources>
