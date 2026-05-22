@@ -3,13 +3,15 @@ package com.gusogst.chat.model
 import com.google.gson.annotations.SerializedName
 
 // ===== 消息 =====
+typealias UIMessage = Message
+
 data class Message(
     val id: String = java.util.UUID.randomUUID().toString(),
     val conversationId: String = "",
-    val role: Role = Role.USER,
+    val role: Role = Role.user,
     val content: String = "",
     val timestamp: Long = System.currentTimeMillis(),
-    val status: MessageStatus = MessageStatus.READY,
+    val status: MessageStatus = MessageStatus.ready,
     val thinking: String? = null,
     val thinkingCollapsed: Boolean = true,
     val providerId: String? = null,
@@ -63,7 +65,7 @@ data class Persona(
     val id: String = java.util.UUID.randomUUID().toString(),
     val name: String = "",
     val avatar: String = "",
-    val avatarType: AvatarType = AvatarType.EMOJI,
+    val avatarType: AvatarType = AvatarType.emoji,
     val prompt: String = "",
     var bgColor: String = "",
     var textColor: String = ""
