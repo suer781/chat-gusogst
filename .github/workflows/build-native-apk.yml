@@ -3,8 +3,6 @@ name: Build Native APK
 on:
   push:
     branches: [ AndroidUI ]
-    paths:
-      - 'android-native/**'
   workflow_dispatch:
 
 jobs:
