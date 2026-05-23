@@ -14,13 +14,17 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.activity.viewModels
 import com.gusogst.chat.R
 import com.gusogst.chat.ui.chat.ChatFragment
+import com.gusogst.chat.viewmodel.ChatViewModel
 import com.gusogst.chat.ui.persona.PersonaFragment
 import com.gusogst.chat.ui.providers.ProvidersFragment
 import com.gusogst.chat.ui.settings.SettingsFragment
 
 class MainActivity : AppCompatActivity() {
+
+    private val viewModel: ChatViewModel by viewModels()
 
     private lateinit var tvHeaderTitle: TextView
 
