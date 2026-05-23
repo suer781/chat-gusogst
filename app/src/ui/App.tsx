@@ -172,7 +172,7 @@ export default function App() {
       <nav className="app-nav" style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-around',
+        justifyContent: 'space-evenly',
         flexShrink: 0,
         position: 'fixed',
         bottom: 0,
