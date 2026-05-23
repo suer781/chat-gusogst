@@ -1,5 +1,6 @@
 package com.gusogst.chat.ui
 
+import android.os.Build
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -8,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatDelegate
 import android.view.View
+import android.view.WindowManager
 import android.view.HapticFeedbackConstants
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -57,6 +59,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupWindowInsets() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Edge-to-edge: allow content in display cutout area
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
         val root = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
