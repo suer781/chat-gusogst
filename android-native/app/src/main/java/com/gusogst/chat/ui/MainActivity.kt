@@ -168,9 +168,12 @@ class MainActivity : AppCompatActivity() {
         val navCount = navItems.size
         val navWidth = bottomNav.width
         if (navWidth == 0) return
-        val tabWidth = navWidth / navCount
+        val paddingLeft = bottomNav.paddingLeft
+        val paddingRight = bottomNav.paddingRight
+        val contentWidth = navWidth - paddingLeft - paddingRight
+        val tabWidth = contentWidth / navCount
         val indicatorWidth = navIndicator.width
-        val targetX = tabWidth * index + (tabWidth - indicatorWidth) / 2f
+        val targetX = paddingLeft + tabWidth * index + (tabWidth - indicatorWidth) / 2f
         if (animate) {
             navIndicator.animate()
                 .translationX(targetX)
