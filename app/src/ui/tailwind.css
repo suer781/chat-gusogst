@@ -243,6 +243,30 @@ textarea {
   --z-tooltip:   7000;
   --z-toast:     8000;
   --z-loading:   9000;
+
+  /* ── Defensive defaults (runtime-set variables) ── */
+  /* JS 动态设置的变量，:root 提供兜底值，防止 JS 未执行时样式崩塌 */
+  --app-font-size:    14;
+  --app-font-size-px: 14px;
+  --glass-opacity:    1;
+  --ripple-x:         50%;
+  --ripple-y:         50%;
+  --eyecare-intensity: 0;
+  --eyecare-bg:       transparent;
+  --eyecare-text:     inherit;
+  --sat: 0px;  /* safe-area-inset-top */
+  --sab: 0px;  /* safe-area-inset-bottom */
+  --sal: 0px;  /* safe-area-inset-left */
+  --sar: 0px;  /* safe-area-inset-right */
+
+  /* 主题选择器才设置的环境光变量，:root 兜底 transparent 防闪烁 */
+  --bg-ambient-top:   transparent;
+  --bg-ambient-left:  transparent;
+  --bg-ambient-right: transparent;
+
+  /* 毛玻璃噪声纹理（仅 data-glass=on 时生效，:root 提供空兜底） */
+  --glass-noise:       none;
+  --glass-noise-light: none;
 }
 
 [data-theme="dark"] {
@@ -770,6 +794,8 @@ input[type="range"]::-webkit-slider-thumb:active {
   transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   position: absolute;
   bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 
