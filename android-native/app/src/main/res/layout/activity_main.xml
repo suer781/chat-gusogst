@@ -54,7 +54,7 @@
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="@dimen/nav_height"
-        android:layout_gravity="bottom"
+        android:layout_gravity="bottom|start"
         android:orientation="horizontal"
         android:gravity="center"
         android:paddingTop="@dimen/nav_padding_v"
@@ -156,8 +156,8 @@
                 android:textSize="@dimen/text_2xs"
                 android:textColor="@color/nav_inactive" />
         </LinearLayout>
-        </LinearLayout>
-        <!-- Nav indicator - positioned in FrameLayout overlay -->
+
+        <!-- Nav indicator overlay -->
         <View
             android:id="@+id/navIndicator"
             android:layout_width="30dp"
@@ -165,5 +165,6 @@
             android:layout_gravity="bottom|start"
             android:layout_marginBottom="3dp"
             android:background="@drawable/bg_nav_indicator" />
+        </LinearLayout>
     </FrameLayout>
 </FrameLayout>

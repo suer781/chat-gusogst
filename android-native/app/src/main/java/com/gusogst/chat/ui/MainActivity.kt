@@ -155,8 +155,7 @@ class MainActivity : AppCompatActivity() {
         if (navWidth == 0) return
         val tabWidth = navWidth / navCount
         val indicatorWidth = navIndicator.width
-        // Calculate absolute X from the FrameLayout left edge
-        val targetX = (tabWidth * index + (tabWidth - indicatorWidth) / 2f)
+        val targetX = tabWidth * index + (tabWidth - indicatorWidth) / 2f
         if (animate) {
             navIndicator.animate()
                 .translationX(targetX)
