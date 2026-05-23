@@ -158,7 +158,7 @@ export default function App() {
       </header>
 
       {/* ── Content Area ── with page transitions */}
-      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', paddingBottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         {displayedView === 'chat' && <ChatView onNavigate={setView} />}
         {displayedView === 'settings' && <SettingsView onDone={() => setView('chat')} />}
         {displayedView === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}
@@ -174,10 +174,14 @@ export default function App() {
         alignItems: 'center',
         justifyContent: 'space-around',
         flexShrink: 0,
-        position: 'relative',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
         height: 56,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        background: 'transparent',
+        background: 'var(--bg-primary)',
         borderTop: '1px solid var(--border-color)',
         transition: 'background 0.4s ease',
       }}>
