@@ -45,6 +45,10 @@
     </LinearLayout>
 
     <!-- Bottom nav -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_nav_height">
+
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -67,8 +71,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navChatIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_chat"
                 android:contentDescription="@string/nav_chat" />
             <TextView
@@ -91,8 +95,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navPersonaIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_persona"
                 android:contentDescription="@string/nav_persona" />
             <TextView
@@ -115,8 +119,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navProvidersIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_server"
                 android:contentDescription="@string/nav_providers" />
             <TextView
@@ -139,8 +143,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navSettingsIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_settings"
                 android:contentDescription="@string/nav_settings" />
             <TextView
@@ -151,11 +155,14 @@
                 android:textSize="@dimen/text_2xs"
                 android:textColor="@color/nav_inactive" />
         </LinearLayout>
-                <View
-                android:id="@+id/navIndicator"
-                android:layout_width="30dp"
-                android:layout_height="3dp"
-                android:layout_gravity="top|center_horizontal"
-                android:background="@drawable/bg_nav_indicator" />
         </LinearLayout>
+        <!-- Nav indicator - positioned in FrameLayout overlay -->
+        <View
+            android:id="@+id/navIndicator"
+            android:layout_width="30dp"
+            android:layout_height="3dp"
+            android:layout_gravity="bottom|start"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/bg_nav_indicator" />
+    </FrameLayout>
 </FrameLayout>

@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
 import com.gusogst.chat.model.Persona
+import com.gusogst.chat.ui.MainActivity
 import com.gusogst.chat.viewmodel.ChatViewModel
 
 class PersonaFragment : Fragment() {
@@ -239,6 +240,10 @@ class PersonaFragment : Fragment() {
             } else {
                 // Custom persona - already in ViewModel
                 allPersonas.find { it.id == id }?.let { viewModel.setActivePersona(it.id) }
+            }
+            // Navigate to chat tab
+            (activity as? MainActivity)?.let { main ->
+                main.navigateToChat()
             }
         }
 

@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatDelegate
 import android.view.View
+import android.view.HapticFeedbackConstants
 import android.view.animation.OvershootInterpolator
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -43,6 +44,11 @@ class MainActivity : AppCompatActivity() {
         setupWindowInsets()
         initNav()
         if (savedInstanceState == null) selectNav(navItems[0])
+
+        viewModel.settings.observe(this) { s ->
+            applyTheme(s.theme)
+            applyGlassEffect(findViewById(R.id.header), s.glassEnabled)
+        }
     }
 
     private fun setupWindowInsets() {
@@ -96,7 +102,10 @@ class MainActivity : AppCompatActivity() {
                 fragment,
                 title
             )
-            item.container.setOnClickListener { selectNav(item) }
+            item.container.setOnClickListener {
+                it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                selectNav(item)
+            }
             navItems.add(item)
         }
         bottomNav = findViewById(R.id.bottomNav)
@@ -108,15 +117,24 @@ class MainActivity : AppCompatActivity() {
     private fun selectNav(item: NavItem) {
         if (item == currentNavItem) return
         supportFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
             .replace(R.id.fragmentContainer, item.fragment)
             .commit()
         val activeColor = ContextCompat.getColor(this, R.color.nav_active)
         val inactiveColor = ContextCompat.getColor(this, R.color.nav_inactive)
         for (nav in navItems) {
-            val color = if (nav == item) activeColor else inactiveColor
-            nav.icon.setColorFilter(color)
-            nav.text.setTextColor(color)
+            val targetColor = if (nav == item) activeColor else inactiveColor
+            // Animate icon color
+            val currentColor = (nav.icon.colorFilter as? android.graphics.PorterDuffColorFilter)?.color ?: inactiveColor
+            val evaluator = android.animation.ArgbEvaluator()
+            val iconAnim = android.animation.ValueAnimator.ofObject(evaluator, currentColor, targetColor)
+            iconAnim.duration = 200
+            iconAnim.addUpdateListener { nav.icon.setColorFilter(it.animatedValue as Int) }
+            iconAnim.start()
+            // Animate text color
+            val textAnim = android.animation.ValueAnimator.ofObject(evaluator, nav.text.currentTextColor, targetColor)
+            textAnim.duration = 200
+            textAnim.addUpdateListener { nav.text.setTextColor(it.animatedValue as Int) }
+            textAnim.start()
         }
         tvHeaderTitle.text = item.title
         val index = navItems.indexOf(item)
@@ -124,15 +142,23 @@ class MainActivity : AppCompatActivity() {
         currentNavItem = item
     }
 
+    fun navigateToChat() {
+        if (navItems.isNotEmpty()) selectNav(navItems[0])
+    }
+
     private fun moveIndicator(index: Int, animate: Boolean) {
-        val tabWidth = bottomNav.width / navItems.size
+        val navCount = navItems.size
+        val navWidth = bottomNav.width
+        if (navWidth == 0) return
+        val tabWidth = navWidth / navCount
         val indicatorWidth = navIndicator.width
-        val targetX = tabWidth * index + (tabWidth - indicatorWidth) / 2f
+        // Calculate absolute X from the FrameLayout left edge
+        val targetX = (tabWidth * index + (tabWidth - indicatorWidth) / 2f)
         if (animate) {
             navIndicator.animate()
                 .translationX(targetX)
-                .setDuration(300)
-                .setInterpolator(OvershootInterpolator(1.2f))
+                .setDuration(200)
+                .setInterpolator(android.view.animation.DecelerateInterpolator())
                 .start()
         } else {
             navIndicator.translationX = targetX
