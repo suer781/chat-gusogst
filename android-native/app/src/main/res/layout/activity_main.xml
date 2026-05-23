@@ -47,7 +47,7 @@
     <!-- Bottom nav -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_nav_height">
+        android:layout_height="@dimen/nav_height">
 
     <LinearLayout
         android:id="@+id/bottomNav"
