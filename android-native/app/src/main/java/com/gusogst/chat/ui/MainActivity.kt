@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatDelegate
 import android.view.View
 import android.view.HapticFeedbackConstants
-import android.view.animation.OvershootInterpolator
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -17,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.activity.viewModels
 import com.gusogst.chat.R
 import com.gusogst.chat.ui.chat.ChatFragment
+import com.gusogst.chat.model.UISettings
 import com.gusogst.chat.viewmodel.ChatViewModel
 import com.gusogst.chat.ui.persona.PersonaFragment
 import com.gusogst.chat.ui.providers.ProvidersFragment
@@ -128,9 +128,8 @@ class MainActivity : AppCompatActivity() {
         for (nav in navItems) {
             val targetColor = if (nav == item) activeColor else inactiveColor
             // Animate icon color
-            val currentColor = (nav.icon.colorFilter as? android.graphics.PorterDuffColorFilter)?.color ?: inactiveColor
             val evaluator = android.animation.ArgbEvaluator()
-            val iconAnim = android.animation.ValueAnimator.ofObject(evaluator, currentColor, targetColor)
+            val iconAnim = android.animation.ValueAnimator.ofObject(evaluator, inactiveColor, targetColor)
             iconAnim.duration = 200
             iconAnim.addUpdateListener { nav.icon.setColorFilter(it.animatedValue as Int) }
             iconAnim.start()
