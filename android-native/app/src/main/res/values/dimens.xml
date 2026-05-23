@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Spacing -->
-    <dimen name="space_2">2dp</dimen>
-    <dimen name="space_4">4dp</dimen>
+    <dimen name="space_2">8dp</dimen>
+    <dimen name="space_4">16dp</dimen>
     <dimen name="spacing_xs">4dp</dimen>
     <dimen name="spacing_sm">8dp</dimen>
     <dimen name="spacing_md">12dp</dimen>
@@ -43,8 +43,8 @@
     <dimen name="header_icon_size">44dp</dimen>
 
     <!-- Layout specific -->
-    <dimen name="space_3">3dp</dimen>
-    <dimen name="header_padding_h">12dp</dimen>
+    <dimen name="space_3">12dp</dimen>
+    <dimen name="header_padding_h">16dp</dimen>
     <dimen name="nav_height">56dp</dimen>
-    <dimen name="nav_padding_v">6dp</dimen>
+    <dimen name="nav_padding_v">8dp</dimen>
 </resources>

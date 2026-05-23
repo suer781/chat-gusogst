@@ -12,14 +12,14 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="@dimen/space_4"
-        android:paddingVertical="@dimen/space_2"
+        android:paddingVertical="@dimen/space_3"
         android:background="@color/bg_primary">
 
         <!-- 角色头像: 32x32 圆形, bg=accent-soft -->
         <TextView
             android:id="@+id/tvPersonaAvatar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:gravity="center"
             android:textSize="@dimen/text_base"
             android:textStyle="bold"

@@ -67,8 +67,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navChatIcon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_chat"
                 android:contentDescription="@string/nav_chat" />
             <TextView
@@ -76,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/nav_chat"
-                android:textSize="@dimen/text_2xs"
+                android:textSize="@dimen/text_xs"
                 android:textColor="@color/nav_active" />
         </LinearLayout>
 
@@ -91,8 +91,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navPersonaIcon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_persona"
                 android:contentDescription="@string/nav_persona" />
             <TextView
@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/nav_persona"
-                android:textSize="@dimen/text_2xs"
+                android:textSize="@dimen/text_xs"
                 android:textColor="@color/nav_inactive" />
         </LinearLayout>
 
@@ -115,8 +115,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navProvidersIcon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_server"
                 android:contentDescription="@string/nav_providers" />
             <TextView
@@ -124,7 +124,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/nav_providers"
-                android:textSize="@dimen/text_2xs"
+                android:textSize="@dimen/text_xs"
                 android:textColor="@color/nav_inactive" />
         </LinearLayout>
 
@@ -139,8 +139,8 @@
             android:background="@android:color/transparent">
             <ImageView
                 android:id="@+id/navSettingsIcon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_settings"
                 android:contentDescription="@string/nav_settings" />
             <TextView
@@ -148,7 +148,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/nav_settings"
-                android:textSize="@dimen/text_2xs"
+                android:textSize="@dimen/text_xs"
                 android:textColor="@color/nav_inactive" />
         </LinearLayout>
 
