@@ -52,8 +52,6 @@
        
         android:orientation="horizontal"
         android:gravity="center"
-        android:paddingTop="@dimen/nav_padding_v"
-        android:paddingBottom="@dimen/nav_padding_v"
         android:background="@color/bg_primary">
 
         <!-- Chat -->

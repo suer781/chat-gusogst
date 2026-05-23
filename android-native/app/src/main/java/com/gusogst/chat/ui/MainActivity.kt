@@ -66,16 +66,14 @@ class MainActivity : AppCompatActivity() {
         val root = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Top + horizontal padding on root (handles status bar + cutout)
-            // NO bottom padding — bottomNav handles nav bar insets separately
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             WindowInsetsCompat.CONSUMED
         }
-        // Bottom nav handles its own bottom inset
-        val nav = findViewById<View>(R.id.bottomNav)
+        val nav = bottomNav
+        val navPadV = resources.getDimensionPixelSize(R.dimen.nav_padding_v)
         ViewCompat.setOnApplyWindowInsetsListener(nav) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(0, 0, 0, systemBars.bottom)
+            view.setPadding(0, navPadV, 0, navPadV + systemBars.bottom)
             WindowInsetsCompat.CONSUMED
         }
     }
@@ -131,6 +129,13 @@ class MainActivity : AppCompatActivity() {
         navIndicator = findViewById(R.id.navIndicator)
         // Position indicator on first tab after layout
         navIndicator.post { moveIndicator(0, false) }
+        // Recalculate indicator position whenever bottomNav layout changes (e.g. insets applied)
+        bottomNav.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            if (navItems.isNotEmpty()) {
+                val idx = navItems.indexOf(currentNavItem).coerceAtLeast(0)
+                moveIndicator(idx, false)
+            }
+        }
     }
 
     private fun selectNav(item: NavItem) {
@@ -166,16 +171,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun moveIndicator(index: Int, animate: Boolean) {
         val navCount = navItems.size
-        val navWidth = bottomNav.width
-        if (navWidth == 0) return
-        val tabWidth = navWidth / navCount
+        if (navCount == 0) return
+        // Use first nav item's width as source of truth (matches actual weighted layout)
+        val sampleItem = navItems[0].container
+        val itemWidth = sampleItem.width
+        if (itemWidth == 0) {
+            // Not laid out yet — retry after layout
+            bottomNav.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    bottomNav.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    moveIndicator(index, animate)
+                }
+            })
+            return
+        }
         val indicatorWidth = navIndicator.width
-        val targetX = tabWidth * index + (tabWidth - indicatorWidth) / 2f
+        if (indicatorWidth == 0) return
+        val targetX = itemWidth * index + (itemWidth - indicatorWidth) / 2f
         if (animate) {
             navIndicator.animate()
                 .translationX(targetX)
                 .setDuration(200)
-                .setInterpolator(android.view.animation.DecelerateInterpolator())
+                .setInterpolator(DecelerateInterpolator())
                 .start()
         } else {
             navIndicator.translationX = targetX
