@@ -59,23 +59,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupWindowInsets() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // Edge-to-edge: allow content in display cutout area
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-        // Apply insets to individual views instead of root to avoid
-        // squeezing bottomNav width (which breaks moveIndicator calculation)
-        val header = findViewById<View>(R.id.header)
-        ViewCompat.setOnApplyWindowInsetsListener(header) { view, insets ->
+        val root = findViewById<View>(android.R.id.content)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Top + horizontal padding on root (handles status bar + cutout)
+            // NO bottom padding — bottomNav handles nav bar insets separately
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             WindowInsetsCompat.CONSUMED
         }
+        // Bottom nav handles its own bottom inset
         val nav = findViewById<View>(R.id.bottomNav)
         ViewCompat.setOnApplyWindowInsetsListener(nav) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+            view.setPadding(0, 0, 0, systemBars.bottom)
             WindowInsetsCompat.CONSUMED
         }
     }
@@ -168,12 +168,9 @@ class MainActivity : AppCompatActivity() {
         val navCount = navItems.size
         val navWidth = bottomNav.width
         if (navWidth == 0) return
-        val paddingLeft = bottomNav.paddingLeft
-        val paddingRight = bottomNav.paddingRight
-        val contentWidth = navWidth - paddingLeft - paddingRight
-        val tabWidth = contentWidth / navCount
+        val tabWidth = navWidth / navCount
         val indicatorWidth = navIndicator.width
-        val targetX = paddingLeft + tabWidth * index + (tabWidth - indicatorWidth) / 2f
+        val targetX = tabWidth * index + (tabWidth - indicatorWidth) / 2f
         if (animate) {
             navIndicator.animate()
                 .translationX(targetX)
