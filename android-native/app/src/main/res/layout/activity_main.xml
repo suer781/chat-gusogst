@@ -49,7 +49,7 @@
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="@dimen/nav_height"
-        android:layout_gravity="bottom|start"
+       
         android:orientation="horizontal"
         android:gravity="center"
         android:paddingTop="@dimen/nav_padding_v"
