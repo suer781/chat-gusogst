@@ -1,14 +1,23 @@
 package com.gusogst.chat.data
 
+import com.gusogst.chat.model.Message
 import com.gusogst.chat.model.UISettings
 import com.gusogst.chat.model.UIProvider
 
 /**
- * Agent bridge - mirrors Web bridge.ts
- * Converts app settings to AgentConfig, handles stream events
+ * Agent bridge —— 转换 UI 层数据为 API 层数据。
+ *
+ * 命名说明：
+ *   Message / UISettings / UIProvider    → model 包（UI 层）
+ *   ApiMessage / AgentConfig / ApiToolCall → data 包（API 层，见 AgentTypes.kt）
+ *   两者命名不同源，import 无冲突，无需 typealias 绕路。
  */
 object AgentBridge {
 
+    /**
+     * 将 UI 设置 + 供应商列表转为 AgentConfig。
+     * 取第一个启用的供应商，若无则用 OpenAI 默认值。
+     */
     fun settingsToConfig(
         settings: UISettings,
         providers: List<UIProvider>,
@@ -23,17 +32,20 @@ object AgentBridge {
         )
     }
 
+    /**
+     * 将 UI 层的 Message 列表转为 API 层的 ApiMessage 列表。
+     * 自动插入 system prompt 作为首条。
+     */
     fun buildMessages(
         systemPrompt: String,
-        // [NOTE] UIMessage 是 Models.kt 里 Message 的 typealias，不能直接用 Message（会跟本地 data class Message 冲突）
-    history: List<com.gusogst.chat.model.UIMessage>
-    ): List<Message> {
-        val messages = mutableListOf<Message>()
+        history: List<Message>
+    ): List<ApiMessage> {
+        val messages = mutableListOf<ApiMessage>()
         if (systemPrompt.isNotEmpty()) {
-            messages.add(Message(role = "system", content = systemPrompt))
+            messages.add(ApiMessage(role = "system", content = systemPrompt))
         }
         for (msg in history) {
-            messages.add(Message(
+            messages.add(ApiMessage(
                 id = msg.id,
                 role = msg.role.name,
                 content = msg.content
