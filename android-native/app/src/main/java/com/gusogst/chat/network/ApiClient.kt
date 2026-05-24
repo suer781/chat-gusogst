@@ -4,11 +4,21 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
+/**
+ * Retrofit 客户端管理器。
+ *
+ * 缓存逻辑：
+ *   用 ConcurrentHashMap 缓存 baseUrl → Retrofit 的映射，
+ *   切换供应商时直接命中缓存，无需重建 OkHttpClient 和 Retrofit 实例。
+ *
+ *   旧的单槽实现只记住最后一个 baseUrl，切换就重建，浪费。
+ */
 object ApiClient {
     private val logging = HttpLoggingInterceptor().apply {
-        // [Fix-6a] 改为HEADERS级别，避免BODY级别将Authorization/API Key明文泄露到logcat
+        // [Fix-6a] HEADERS级别，避免BODY将Authorization/API Key明文泄露到logcat
         level = HttpLoggingInterceptor.Level.HEADERS
     }
 
@@ -19,20 +29,26 @@ object ApiClient {
         .addInterceptor(logging)
         .build()
 
-    private var currentBaseUrl: String = ""
-    private var currentRetrofit: Retrofit? = null
+    /** baseUrl → Retrofit 实例缓存（线程安全） */
+    private val retrofitCache = ConcurrentHashMap<String, Retrofit>()
 
-    @Synchronized
+    /**
+     * 获取 [baseUrl] 对应的 ApiService 实例。
+     * 缓存命中直接返回，未命中则创建并缓存。
+     */
     fun getService(baseUrl: String): ApiService {
         val normalized = baseUrl.trimEnd('/') + "/"
-        if (normalized != currentBaseUrl) {
-            currentBaseUrl = normalized
-            currentRetrofit = Retrofit.Builder()
+        return retrofitCache.getOrPut(normalized) {
+            Retrofit.Builder()
                 .baseUrl(normalized)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-        }
-        return currentRetrofit!!.create(ApiService::class.java)
+        }.create(ApiService::class.java)
+    }
+
+    /** 清理所有缓存（切换账号等场景） */
+    fun clearCache() {
+        retrofitCache.clear()
     }
 }
