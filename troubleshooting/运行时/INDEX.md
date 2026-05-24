@@ -14,5 +14,6 @@
 
 | 日期 | 问题 | 入口 |
 |------|------|------|
+| 2026-05-24 | 死代码、单槽缓存、TODO 遗留 — AgentBridge 死代码、ApiClient 缓存升级、setModel 实现 | [死代码与单槽缓存清理/](死代码与单槽缓存清理/INDEX.md) |
 | 2026-05-24 | 构造参数顺序错误 — `ApiMessage` 位置参数导致 role/content 错位 | [构造参数顺序错误/](构造参数顺序错误/INDEX.md) |
 | 2026-05-24 | 命名规范与类型统一 — 消除 ApiMessage/model.Message 冲突，删除 typealias 绕路 | [命名规范与类型统一/](命名规范与类型统一/INDEX.md) |
