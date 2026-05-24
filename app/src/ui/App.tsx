@@ -58,7 +58,9 @@ export default function App() {
     const btn = btnRefs.current.get(view)
     const nav = navRef.current
     if (btn && nav) {
-      setIndicatorPos({ left: btn.offsetLeft, width: btn.offsetWidth })
+      const btnRect = btn.getBoundingClientRect()
+      const navRect = nav.getBoundingClientRect()
+      setIndicatorPos({ left: btnRect.left - navRect.left, width: btnRect.width })
     }
   }, [view])
 
