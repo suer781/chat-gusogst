@@ -249,19 +249,36 @@ class MainActivity : AppCompatActivity() {
     //       always sets the same absolute target, unlike translationX
     //       which is relative to the view's last laid-out position.
     //
-    //  OLD APPROACH (removed):
+    //  COORDINATE-SYSTEM NOTE:
+    //    navItem is nested inside bottomNav → inner LinearLayout →
+    //    FrameLayout.  navIndicator is a DIRECT child of FrameLayout.
+    //    navItem.getX() returns the X within bottomNav, NOT within
+    //    the FrameLayout.  FrameLayout may have padding (from
+    //    system-bar insets), so the coordinate spaces don't match.
+    //
+    //    To bridge the gap we use getLocationOnScreen() on both the
+    //    target (navItem) and the reference (FrameLayout), then
+    //    compute the relative offset within the FrameLayout.
+    //    This works regardless of nesting depth or padding.
+    //
+    //  OLD APPROACH #1 (removed):
     //    The indicator was the 5th child of bottomNav's horizontal
     //    LinearLayout.  Code used translationX to slide it left
     //    across the 4 tabs.  This broke when system-bar insets were
     //    applied, because translationX is relative to the view's
     //    ORIGINAL layout position, not the post-inset position.
-    //    The result was a persistent rightward offset.
+    //
+    //  OLD APPROACH #2 (removed):
+    //    Moved indicator to FrameLayout overlay but computed
+    //    targetX from navItem.x (relative to bottomNav), ignoring
+    //    the FrameLayout's padding offset.  Result: leftward offset.
     // ---------------------------------------------------------------
 
     /**
      * Move the navIndicator to the horizontal centre of the tab at
-     * [index].  Uses [View.setX()] for absolute positioning within
-     * the FrameLayout parent.
+     * [index].  Uses screen coordinates to bridge view hierarchy
+     * nesting — the indicator lives in the FrameLayout, while the
+     * tabs live in a deeply nested LinearLayout.
      *
      * @param index   The 0-based tab index.
      * @param animate Whether to animate the transition (200 ms decelerate).
@@ -289,15 +306,22 @@ class MainActivity : AppCompatActivity() {
         if (navIndicator.width == 0) return
 
         // --- Calculate target X within the FrameLayout ---
-        // We use navItem.x (the tab container's visual left edge
-        // within the FrameLayout) plus half its width to find the
-        // centre.  Then subtract half the indicator width so the
-        // indicator's own centre aligns with the tab's centre.
         //
-        // View.getX() returns the absolute X within the parent,
-        // which is stable regardless of LinearLayout padding,
-        // system-bar insets, or any other layout adjustments.
-        val targetX = navItem.x + (navItem.width / 2f) - (navIndicator.width / 2f)
+        // Strategy: use screen coordinates to eliminate nesting.
+        //
+        // 1. Get the nav item's center X on screen.
+        val navItemLoc = IntArray(2)
+        navItem.getLocationOnScreen(navItemLoc)
+        val navCenterX = navItemLoc[0] + navItem.width / 2f
+
+        // 2. Get the FrameLayout's left edge on screen
+        //    (the indicator's coordinate reference).
+        val parentLoc = IntArray(2)
+        (navIndicator.parent as View).getLocationOnScreen(parentLoc)
+
+        // 3. The indicator's X within FrameLayout = navCenter on screen
+        //    minus FrameLayout's left edge on screen.
+        val targetX = navCenterX - parentLoc[0] - navIndicator.width / 2f
 
         if (animate) {
             navIndicator.animate()
