@@ -1,57 +1,44 @@
-# Troubleshooting
+# 疑难解答
 
-Something broken? Start here.
-
-Pick the stage where it failed, then follow the path.
-
-## Build Stage
-
-Problems before the app runs.
-
-```
-troubleshooting/build/
-  (reserved)
-```
-
-## Runtime Stage
-
-Problems while the app is running.
-
-```
-troubleshooting/runtime/
-  (reserved)
-```
-
-## Compatibility
-
-Problems caused by environment differences.
-
-```
-troubleshooting/compatibility/
-  (reserved)
-```
-
-## Network
-
-Problems with connectivity, mirrors, endpoints.
-
-```
-troubleshooting/network/
-  endpoint-prober.md    Network probing & endpoint health
-```
-
-## Quick Reference
-
-| Symptom | Go to |
-|---|---|
-| Build fails in CI | `build/` |
-| Gradle error | `build/` |
-| App crashes on launch | `runtime/` |
-| White screen | `runtime/` |
-| WebView incompatibility | `compatibility/` |
-| API unreachable | `network/` |
-| Mirror not working | `network/` |
+> 最后更新：2026-05-24
+>
+> **使用方法**：从顶层分类进入，逐层深入，直到找到具体问题的修复方案。
+> 每一层都有 INDEX.md 做入口。
 
 ---
 
-Not here? Check [docs/INDEX.md](../docs/INDEX.md) for feature docs.
+## 六大分类
+
+| 分类 | 入口 | 说明 |
+|------|------|------|
+| 编译构建 | [编译构建/](编译构建/INDEX.md) | 编译失败、CI、依赖 |
+| 运行时 | [运行时/](运行时/INDEX.md) | 崩溃、白屏、内存 |
+| 网络通信 | [网络通信/](网络通信/INDEX.md) | API、镜像、端点 |
+| 用户界面 | [用户界面/](用户界面/INDEX.md) | 布局、主题、效果 |
+| 平台适配 | [平台适配/](平台适配/INDEX.md) | Capacitor、Android |
+| 环境兼容 | [环境兼容/](环境兼容/INDEX.md) | WebView、CSS |
+
+---
+
+## 深度示例
+
+```
+编译构建
+└── 编译
+    └── Gradle
+        └── 依赖
+            └── 下载
+                └── 网络不通
+                    └── 镜像
+                        └── 阿里云配置
+```
+
+```
+用户界面
+└── 布局
+    └── 安全区域
+        └── 四角锚点
+            └── 变量
+                └── 声明
+                    └── :root 规范
+```
