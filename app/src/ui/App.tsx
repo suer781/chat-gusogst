@@ -50,6 +50,29 @@ export default function App() {
   const activeIdx = NAV_ITEMS.findIndex((item) =>
     view === item.id || (view === 'personaProfile' && item.id === 'persona')
   )
+  const navRef = useRef<HTMLElement>(null)
+  const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 0 })
+  const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+
+  const updateIndicatorPos = useCallback(() => {
+    const btn = btnRefs.current.get(view)
+    const nav = navRef.current
+    if (btn && nav) {
+      setIndicatorPos({ left: btn.offsetLeft, width: btn.offsetWidth })
+    }
+  }, [view])
+
+  useEffect(() => {
+    const t = setTimeout(updateIndicatorPos, 50)
+    const ro = new ResizeObserver(updateIndicatorPos)
+    if (navRef.current) ro.observe(navRef.current)
+    return () => { clearTimeout(t); ro.disconnect() }
+  }, [updateIndicatorPos])
+
+  const btnRef = useCallback((id: string) => (el: HTMLButtonElement | null) => {
+    if (el) btnRefs.current.set(id, el)
+    else btnRefs.current.delete(id)
+  }, [])
 
   // Resolve 'system' theme to actual light/dark
   const resolveTheme = (mode: string) => {
@@ -169,7 +192,7 @@ export default function App() {
       </div> {/* end page transition wrapper */}
 
       {/* ── Bottom Nav ──  重做：渐变底 + 透镜指示器 + 毛玻璃一体 */}
-      <nav className="app-nav" style={{
+      <nav ref={navRef} className="app-nav" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-evenly',
@@ -191,14 +214,13 @@ export default function App() {
           style={{
             position: 'absolute',
             top: 0,
-            left: `${activeIdx * 25}%`,
-            width: '25%',
+            left: indicatorPos.left,
+            width: indicatorPos.width,
             height: '100%',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             pointerEvents: 'none',
-            transition: 'left 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
             zIndex: 0,
           }}
         >
@@ -211,6 +233,7 @@ export default function App() {
             <button
               key={item.id}
               onClick={() => { glassTap(); setView(item.id) }}
+              ref={btnRef(item.id)}
               className="nav-btn"
               style={{
                 display: 'flex',
