@@ -49,8 +49,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
-        setupWindowInsets()
         initNav()
+        setupWindowInsets()
         if (savedInstanceState == null) selectNav(navItems[0])
 
         viewModel.settings.observe(this) { s ->
