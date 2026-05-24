@@ -147,7 +147,7 @@ export default function App() {
       {/* ── Page transition wrapper (header + content) ── */}
       <div className={pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {/* ── Header ── */}
-      <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
+      <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'var(--header-total)', padding: 'var(--safe-top) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
         {view === 'personaProfile' ? (
           <button onClick={() => { glassTap(); setView('persona') }} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
@@ -158,7 +158,7 @@ export default function App() {
       </header>
 
       {/* ── Content Area ── with page transitions */}
-      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', paddingBottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', paddingBottom: 'var(--nav-total)' }}>
         {displayedView === 'chat' && <ChatView onNavigate={setView} />}
         {displayedView === 'settings' && <SettingsView onDone={() => setView('chat')} />}
         {displayedView === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}
@@ -179,8 +179,8 @@ export default function App() {
         left: 0,
         right: 0,
         zIndex: 100,
-        height: 56,
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        height: 'var(--nav-total)',
+        paddingBottom: 'var(--safe-bottom)',
         background: 'var(--bg-primary)',
         borderTop: '1px solid var(--border-color)',
         transition: 'background 0.4s ease',

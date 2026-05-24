@@ -16,10 +16,10 @@ export async function initApp() {
   try {
     const { insets } = await SafeArea.getSafeAreaInsets()
     const root = document.documentElement
-    root.style.setProperty('--sat', insets.top + 'px')
-    root.style.setProperty('--sab', insets.bottom + 'px')
-    root.style.setProperty('--sal', insets.left + 'px')
-    root.style.setProperty('--sar', insets.right + 'px')
+    root.style.setProperty('--safe-top', insets.top + 'px')
+    root.style.setProperty('--safe-bottom', insets.bottom + 'px')
+    root.style.setProperty('--safe-left', insets.left + 'px')
+    root.style.setProperty('--safe-right', insets.right + 'px')
   } catch (e) {
     console.warn('SafeArea init failed:', e)
   }

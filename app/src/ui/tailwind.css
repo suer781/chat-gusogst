@@ -254,10 +254,19 @@ textarea {
   --eyecare-intensity: 0;
   --eyecare-bg:       transparent;
   --eyecare-text:     inherit;
-  --sat: 0px;  /* safe-area-inset-top */
-  --sab: 0px;  /* safe-area-inset-bottom */
-  --sal: 0px;  /* safe-area-inset-left */
-  --sar: 0px;  /* safe-area-inset-right */
+  /* 四角锚点系统：从系统读取安全区，兜底值覆盖常见设备 */
+  --safe-top:    env(safe-area-inset-top, 48px);
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+  
+  /* 组件高度 */
+  --header-h: 48px;
+  --nav-h: 56px;
+  
+  /* 组合值：总高度 = 内容高度 + 安全区 */
+  --header-total: calc(var(--header-h) + var(--safe-top));
+  --nav-total: calc(var(--nav-h) + var(--safe-bottom));
 
   /* 主题选择器才设置的环境光变量，:root 兜底 transparent 防闪烁 */
   --bg-ambient-top:   transparent;
