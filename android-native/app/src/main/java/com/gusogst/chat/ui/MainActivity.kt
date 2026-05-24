@@ -189,7 +189,11 @@ class MainActivity : AppCompatActivity() {
         }
         val indicatorWidth = navIndicator.width
         if (indicatorWidth == 0) return
-        val targetX = itemWidth * index + (itemWidth - indicatorWidth) / 2f
+        // indicator is laid out after all nav items in the LinearLayout,
+        // so its layout position is at itemWidth * navCount.
+        // translationX is relative to layout position, not absolute.
+        val indicatorLayoutX = itemWidth * navCount
+        val targetX = itemWidth * index + (itemWidth - indicatorWidth) / 2f - indicatorLayoutX
         if (animate) {
             navIndicator.animate()
                 .translationX(targetX)
