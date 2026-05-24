@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     )
 
     private val navItems = mutableListOf<NavItem>()
-    private var currentIndex: Int = -1
+    private var currentNavItem: NavItem? = null
     private lateinit var navIndicator: View
     private lateinit var bottomNav: View
 
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
         initNav()
         setupWindowInsets()
-        if (savedInstanceState == null) selectTab(0)
+        if (savedInstanceState == null) selectNav(navItems[0])
 
         viewModel.settings.observe(this) { s ->
             applyTheme(s.theme)
@@ -132,18 +132,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---------------------------------------------------------------
-    //  Bottom navigation
-    //
-    //  INTERFACE:  selectTab(index) — single entry point for all
-    //              tab switching and indicator positioning.
-    //
-    //              moveIndicator(index) — private positioning helper.
-    //
-    //              navigateToChat() — public alias for selectTab(0).
-    //
-    //  All callers (click handlers, layout-change listener, initial
-    //  positioning) route through selectTab().  There is no second
-    //  code path — every tab switch applies the same logic.
+    //  Bottom navigation initialisation
     // ---------------------------------------------------------------
 
     /**
@@ -153,10 +142,10 @@ class MainActivity : AppCompatActivity() {
      * FrameLayout (activity_main.xml), NOT a child of bottomNav's
      * horizontal LinearLayout.  See the XML comment block for why.
      *
-     * After wiring, we schedule selectTab(0) on the next layout pass
-     * so the nav items have measurable widths.  We also register a
-     * layout-change listener on bottomNav so the indicator re-positions
-     * itself whenever insets or orientation change.
+     * We initialise its position after the first layout pass so
+     * the nav items have measurable widths.  We also register a
+     * layout-change listener on bottomNav so the indicator
+     * re-positions itself whenever insets or orientation change.
      */
     private fun initNav() {
         val configs = listOf(
@@ -178,129 +167,129 @@ class MainActivity : AppCompatActivity() {
                 fragment,
                 title
             )
+            item.container.setOnClickListener {
+                it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                selectNav(item)
+            }
             navItems.add(item)
         }
         bottomNav = findViewById(R.id.bottomNav)
         navIndicator = findViewById(R.id.navIndicator)
 
-        // -- Wire click handlers (all route through selectTab) --
-        for ((i, item) in navItems.withIndex()) {
-            item.container.setOnClickListener { _ ->
-                item.container.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                selectTab(i)
-            }
-        }
+        // Position indicator on first tab after the first layout pass.
+        navIndicator.post { moveIndicator(0, false) }
 
-        // -- Initial tab: position after first layout pass --
-        navIndicator.post { selectTab(0) }
-
-        // -- Re-position indicator whenever bottomNav's layout changes
-        //    (e.g. insets applied, orientation change).
+        // Re-position indicator whenever bottomNav's layout changes
+        // (e.g. insets applied, orientation change, padding recalculation).
         bottomNav.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-            if (currentIndex >= 0) selectTab(currentIndex)
+            if (navItems.isNotEmpty()) {
+                val idx = navItems.indexOf(currentNavItem).coerceAtLeast(0)
+                moveIndicator(idx, false)
+            }
         }
     }
 
-    /**
-     * Central tab-switching interface.
-     *
-     * Every tab switch — click, programmatic (navigateToChat),
-     * layout recovery — goes through this single method.
-     *
-     * It does three things:
-     *   1. Swaps the fragment in the container.
-     *   2. Animates icon/text colours across all tabs.
-     *   3. Positions the navIndicator under the selected tab.
-     *
-     * @param index   0-based tab index.
-     * @param animate Whether to animate the indicator slide
-     *                (default true).  Pass false for layout-change
-     *                recovery where animation looks jarring.
-     */
-    private fun selectTab(index: Int, animate: Boolean = true) {
-        if (index !in navItems.indices || index == currentIndex) return
-        val item = navItems[index]
+    // ---------------------------------------------------------------
+    //  Tab selection & indicator animation
+    // ---------------------------------------------------------------
 
-        // 1. Swap fragment
+    /**
+     * Switch to the given tab: swap fragment, animate icon/text colours,
+     * update the header title, and slide the navIndicator to the correct
+     * horizontal position.
+     */
+    private fun selectNav(item: NavItem) {
+        if (item == currentNavItem) return
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, item.fragment)
             .commit()
-
-        // 2. Animate icon/text colours
         val activeColor = ContextCompat.getColor(this, R.color.nav_active)
         val inactiveColor = ContextCompat.getColor(this, R.color.nav_inactive)
-        for ((i, nav) in navItems.withIndex()) {
-            val targetColor = if (i == index) activeColor else inactiveColor
+        for (nav in navItems) {
+            val targetColor = if (nav == item) activeColor else inactiveColor
+            // Animate icon color
             val evaluator = android.animation.ArgbEvaluator()
-            // Icon
-            val iconAnim = ValueAnimator.ofObject(evaluator, inactiveColor, targetColor)
+            val iconAnim = android.animation.ValueAnimator.ofObject(evaluator, inactiveColor, targetColor)
             iconAnim.duration = 200
             iconAnim.addUpdateListener { nav.icon.setColorFilter(it.animatedValue as Int) }
             iconAnim.start()
-            // Text
-            val textAnim = ValueAnimator.ofObject(evaluator, nav.text.currentTextColor, targetColor)
+            // Animate text color
+            val textAnim = android.animation.ValueAnimator.ofObject(evaluator, nav.text.currentTextColor, targetColor)
             textAnim.duration = 200
             textAnim.addUpdateListener { nav.text.setTextColor(it.animatedValue as Int) }
             textAnim.start()
         }
-
-        // 3. Update header
         tvHeaderTitle.text = item.title
-
-        // 4. Position indicator
-        moveIndicator(index, animate)
-
-        currentIndex = index
+        val index = navItems.indexOf(item)
+        moveIndicator(index, true)
+        currentNavItem = item
     }
 
     /**
-     * Public-facing shortcut to jump to the chat tab.
-     * Used by fragments or external callers.
+     * Programmatic "navigate to chat" — used by fragments or external
+     * callers to jump back to the first tab.
      */
     fun navigateToChat() {
-        selectTab(0)
+        if (navItems.isNotEmpty()) selectNav(navItems[0])
     }
 
     // ---------------------------------------------------------------
     //  Active-tab indicator positioning
     //
+    //  The navIndicator View is an OVERLAY in the outer FrameLayout,
+    //  positioned using absolute X coordinates.  This is the most
+    //  robust approach because:
+    //
+    //    a) The indicator doesn't take space inside the horizontal
+    //       LinearLayout — no layout-weight interference.
+    //    b) We use View.setX() which sets the absolute visual position
+    //       within the parent (FrameLayout), independent of any
+    //       system-bar padding or linear-layout child ordering.
+    //    c) View.setX() is not cumulative — calling it repeatedly
+    //       always sets the same absolute target, unlike translationX
+    //       which is relative to the view's last laid-out position.
+    //
     //  COORDINATE-SYSTEM NOTE:
     //    navItem is nested inside bottomNav → inner LinearLayout →
     //    FrameLayout.  navIndicator is a DIRECT child of FrameLayout.
-    //    getX() would return the X within the direct parent only,
-    //    which differs from FrameLayout's coordinate space when the
-    //    FrameLayout has system-bar padding.
+    //    navItem.getX() returns the X within bottomNav, NOT within
+    //    the FrameLayout.  FrameLayout may have padding (from
+    //    system-bar insets), so the coordinate spaces don't match.
     //
-    //    To eliminate nesting issues we use getLocationOnScreen()
-    //    on both the target (navItem) and the reference (FrameLayout),
-    //    then compute the relative offset.  This works regardless of
-    //    nesting depth or padding.
+    //    To bridge the gap we use getLocationOnScreen() on both the
+    //    target (navItem) and the reference (FrameLayout), then
+    //    compute the relative offset within the FrameLayout.
+    //    This works regardless of nesting depth or padding.
     //
-    //  WHY NOT translationX (v0):
+    //  OLD APPROACH #1 (removed):
     //    The indicator was the 5th child of bottomNav's horizontal
-    //    LinearLayout.  translationX is relative to the view's
-    //    ORIGINAL layout position (right of all 4 tabs).  System-bar
-    //    padding shifted the layout, breaking the reference → rightward.
+    //    LinearLayout.  Code used translationX to slide it left
+    //    across the 4 tabs.  This broke when system-bar insets were
+    //    applied, because translationX is relative to the view's
+    //    ORIGINAL layout position, not the post-inset position.
     //
-    //  WHY NOT getX() directly (v1):
-    //    Moved indicator to FrameLayout but used navItem.getX(),
-    //    which is relative to bottomNav, not FrameLayout.  FrameLayout
-    //    padding caused a coordinate mismatch → leftward.
+    //  OLD APPROACH #2 (removed):
+    //    Moved indicator to FrameLayout overlay but computed
+    //    targetX from navItem.x (relative to bottomNav), ignoring
+    //    the FrameLayout's padding offset.  Result: leftward offset.
     // ---------------------------------------------------------------
 
     /**
-     * Private helper: position the navIndicator at the centre of the
-     * tab at [index].  Uses screen coordinates to bridge nesting.
+     * Move the navIndicator to the horizontal centre of the tab at
+     * [index].  Uses screen coordinates to bridge view hierarchy
+     * nesting — the indicator lives in the FrameLayout, while the
+     * tabs live in a deeply nested LinearLayout.
      *
-     * External callers should use [selectTab] instead.
+     * @param index   The 0-based tab index.
+     * @param animate Whether to animate the transition (200 ms decelerate).
      */
     private fun moveIndicator(index: Int, animate: Boolean) {
-        // Guard: no tabs.
-        if (index !in navItems.indices) return
+        // Guard: no tabs to position against.
+        if (navItems.isEmpty()) return
 
         val navItem = navItems[index].container
 
-        // Guard: tab not yet laid out. Retry on next layout pass.
+        // Guard: tab not yet laid out (width == 0). Wait and retry.
         if (navItem.width == 0) {
             navItem.viewTreeObserver.addOnGlobalLayoutListener(
                 object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
@@ -313,30 +302,35 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Guard: indicator not yet measured.
+        // Guard: indicator itself not yet measured.
         if (navIndicator.width == 0) return
 
         // --- Calculate target X within the FrameLayout ---
-        // 1. Nav item centre on screen.
+        //
+        // Strategy: use screen coordinates to eliminate nesting.
+        //
+        // 1. Get the nav item's center X on screen.
         val navItemLoc = IntArray(2)
         navItem.getLocationOnScreen(navItemLoc)
         val navCenterX = navItemLoc[0] + navItem.width / 2f
 
-        // 2. FrameLayout left edge on screen.
+        // 2. Get the FrameLayout's left edge on screen
+        //    (the indicator's coordinate reference).
         val parentLoc = IntArray(2)
         (navIndicator.parent as View).getLocationOnScreen(parentLoc)
 
-        // 3. Indicator X = navCenter - FrameLayout left - half indicator.
+        // 3. The indicator's X within FrameLayout = navCenter on screen
+        //    minus FrameLayout's left edge on screen.
         val targetX = navCenterX - parentLoc[0] - navIndicator.width / 2f
 
         if (animate) {
             navIndicator.animate()
-                .x(targetX)
+                .x(targetX)              // View.setX() via animator
                 .setDuration(200)
                 .setInterpolator(DecelerateInterpolator())
                 .start()
         } else {
-            navIndicator.x = targetX
+            navIndicator.x = targetX     // Absolute, non-cumulative
         }
     }
 }
