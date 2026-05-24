@@ -64,21 +64,33 @@ FrameLayout
   └── View (navIndicator)                ← 现在在这里 (覆盖层)
 ```
 
-### `MainActivity.kt`
+### `MainActivity.kt`（两次修复）
 
-用 `View.setX()` 代替 `translationX`，**直接设置绝对坐标**：
+**第一次（v1）：** 用 `View.setX()` 代替 `translationX`，但用了 `navItem.x` 计算位置。
+**问题：** `navItem.x` 相对于 `bottomNav`，而 `navIndicator` 在外层 `FrameLayout`，坐标参考系不匹配。
+
+**第二次（v2 — 最终）：** 用 `getLocationOnScreen()` 统一参考系：
 
 ```kotlin
-val targetX = navItem.x + (navItem.width / 2f) - (navIndicator.width / 2f)
+// 1. 获取标签在屏幕上的中心坐标
+val navItemLoc = IntArray(2)
+navItem.getLocationOnScreen(navItemLoc)
+val navCenterX = navItemLoc[0] + navItem.width / 2f
+
+// 2. 获取 FrameLayout 在屏幕上的左边缘
+val parentLoc = IntArray(2)
+(navIndicator.parent as View).getLocationOnScreen(parentLoc)
+
+// 3. 计算相对偏移
+val targetX = navCenterX - parentLoc[0] - navIndicator.width / 2f
 navIndicator.x = targetX
 ```
 
-| 对比项 | 旧方案 (`translationX`) | 新方案 (`View.setX()`) |
-|--------|------------------------|------------------------|
-| 参考系 | 相对原始布局位置 | 父容器内绝对坐标 |
-| 受 padding 影响？ | 会——偏离 | 不会——始终读取最新位置 |
-| 需要 `- left` 修正？ | 需要 | 不需要 |
-| 缓存问题 | 布局变化后偏移 | 稳定 |
+| 对比项 | translationX (v0) | navItem.x + setX (v1) | getLocationOnScreen (v2) |
+|--------|-------------------|----------------------|--------------------------|
+| 参考系 | 原始布局位置 | bottomNav 内 | 屏幕坐标 → 统一 |
+| 受 padding 影响？| 会偏移 | 会偏移（参考系不匹配） | 不会 |
+| 适应性 | 差 | 中等 | 任何嵌套/任何 padding |
 
 ---
 
