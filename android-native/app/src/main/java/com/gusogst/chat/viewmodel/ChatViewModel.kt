@@ -218,8 +218,17 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     
+    /**
+     * 设置当前对话的模型。
+     * 更新对话的 providerId + modelId 并持久化。
+     */
     fun setModel(providerId: String, modelId: String) {
-        // TODO: persist model selection
+        val conv = _activeConversation.value ?: return
+        conv.providerId = providerId
+        conv.modelId = modelId
+        conv.updatedAt = System.currentTimeMillis()
+        _activeConversation.value = conv
+        store.saveConversations(_conversations.value.orEmpty())
     }
 
     fun saveProviders(list: List<UIProvider>) {
