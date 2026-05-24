@@ -60,7 +60,9 @@ export default function App() {
     if (btn && nav) {
       const btnRect = btn.getBoundingClientRect()
       const navRect = nav.getBoundingClientRect()
-      setIndicatorPos({ left: btnRect.left - navRect.left, width: btnRect.width })
+      const left = btnRect.left - navRect.left
+      console.log('[INDICATOR]', { view, btnLeft: btnRect.left, navLeft: navRect.left, left, width: btnRect.width, navWidth: navRect.width })
+      setIndicatorPos({ left, width: btnRect.width })
     }
   }, [view])
 
