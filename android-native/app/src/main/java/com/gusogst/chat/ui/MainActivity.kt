@@ -32,6 +32,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var tvHeaderTitle: TextView
 
+    /**
+     * Represents a single bottom-navigation tab.
+     *
+     * @param container  The tab's root LinearLayout (clickable area).
+     * @param icon       The icon ImageView (color-animated on select).
+     * @param text       The label TextView (color-animated on select).
+     * @param fragment   The Fragment to show when this tab is active.
+     * @param title      Header title string when this tab is active.
+     */
     private data class NavItem(
         val container: LinearLayout,
         val icon: ImageView,
@@ -59,18 +68,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ---------------------------------------------------------------
+    //  Window insets (status bar, navigation bar, notch, punch-hole)
+    // ---------------------------------------------------------------
+
+    /**
+     * Apply system-bar insets as padding so content avoids the
+     * status bar, notch, cutout, and gesture-navigation area.
+     *
+     * Two separate listeners:
+     *   1. The root content view → top/left/right padding only.
+     *   2. The bottom navigation bar → bottom padding only
+     *      (the nav bar sits above the gesture pill / nav hint).
+     */
     private fun setupWindowInsets() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
+
+        // -- Root content: avoid status bar / notch on top and sides --
         val root = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             WindowInsetsCompat.CONSUMED
         }
+
+        // -- Bottom nav: add bottom padding for gesture-navigation area --
         val nav = bottomNav
         val navPadV = resources.getDimensionPixelSize(R.dimen.nav_padding_v)
         ViewCompat.setOnApplyWindowInsetsListener(nav) { view, insets ->
@@ -79,6 +105,10 @@ class MainActivity : AppCompatActivity() {
             WindowInsetsCompat.CONSUMED
         }
     }
+
+    // ---------------------------------------------------------------
+    //  Theme handling
+    // ---------------------------------------------------------------
 
     private fun applyTheme(theme: String) {
         val mode = when (theme) {
@@ -101,6 +131,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ---------------------------------------------------------------
+    //  Bottom navigation initialisation
+    // ---------------------------------------------------------------
+
+    /**
+     * Wire up the 4 bottom-nav tabs and the active-tab indicator.
+     *
+     * LAYOUT NOTE — navIndicator is an OVERLAY child of the outer
+     * FrameLayout (activity_main.xml), NOT a child of bottomNav's
+     * horizontal LinearLayout.  See the XML comment block for why.
+     *
+     * We initialise its position after the first layout pass so
+     * the nav items have measurable widths.  We also register a
+     * layout-change listener on bottomNav so the indicator
+     * re-positions itself whenever insets or orientation change.
+     */
     private fun initNav() {
         val configs = listOf(
             Triple(R.id.navChat, R.id.navChatIcon, R.id.navChatText) to
@@ -129,9 +175,12 @@ class MainActivity : AppCompatActivity() {
         }
         bottomNav = findViewById(R.id.bottomNav)
         navIndicator = findViewById(R.id.navIndicator)
-        // Position indicator on first tab after layout
+
+        // Position indicator on first tab after the first layout pass.
         navIndicator.post { moveIndicator(0, false) }
-        // Recalculate indicator position whenever bottomNav layout changes (e.g. insets applied)
+
+        // Re-position indicator whenever bottomNav's layout changes
+        // (e.g. insets applied, orientation change, padding recalculation).
         bottomNav.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             if (navItems.isNotEmpty()) {
                 val idx = navItems.indexOf(currentNavItem).coerceAtLeast(0)
@@ -140,6 +189,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ---------------------------------------------------------------
+    //  Tab selection & indicator animation
+    // ---------------------------------------------------------------
+
+    /**
+     * Switch to the given tab: swap fragment, animate icon/text colours,
+     * update the header title, and slide the navIndicator to the correct
+     * horizontal position.
+     */
     private fun selectNav(item: NavItem) {
         if (item == currentNavItem) return
         supportFragmentManager.beginTransaction()
@@ -167,38 +225,88 @@ class MainActivity : AppCompatActivity() {
         currentNavItem = item
     }
 
+    /**
+     * Programmatic "navigate to chat" — used by fragments or external
+     * callers to jump back to the first tab.
+     */
     fun navigateToChat() {
         if (navItems.isNotEmpty()) selectNav(navItems[0])
     }
 
+    // ---------------------------------------------------------------
+    //  Active-tab indicator positioning
+    //
+    //  The navIndicator View is an OVERLAY in the outer FrameLayout,
+    //  positioned using absolute X coordinates.  This is the most
+    //  robust approach because:
+    //
+    //    a) The indicator doesn't take space inside the horizontal
+    //       LinearLayout — no layout-weight interference.
+    //    b) We use View.setX() which sets the absolute visual position
+    //       within the parent (FrameLayout), independent of any
+    //       system-bar padding or linear-layout child ordering.
+    //    c) View.setX() is not cumulative — calling it repeatedly
+    //       always sets the same absolute target, unlike translationX
+    //       which is relative to the view's last laid-out position.
+    //
+    //  OLD APPROACH (removed):
+    //    The indicator was the 5th child of bottomNav's horizontal
+    //    LinearLayout.  Code used translationX to slide it left
+    //    across the 4 tabs.  This broke when system-bar insets were
+    //    applied, because translationX is relative to the view's
+    //    ORIGINAL layout position, not the post-inset position.
+    //    The result was a persistent rightward offset.
+    // ---------------------------------------------------------------
+
+    /**
+     * Move the navIndicator to the horizontal centre of the tab at
+     * [index].  Uses [View.setX()] for absolute positioning within
+     * the FrameLayout parent.
+     *
+     * @param index   The 0-based tab index.
+     * @param animate Whether to animate the transition (200 ms decelerate).
+     */
     private fun moveIndicator(index: Int, animate: Boolean) {
-        val navCount = navItems.size
-        if (navCount == 0) return
-        // Use first nav item's width as source of truth (matches actual weighted layout)
-        val sampleItem = navItems[0].container
-        val itemWidth = sampleItem.width
-        if (itemWidth == 0) {
-            // Not laid out yet — retry after layout
-            bottomNav.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    bottomNav.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    moveIndicator(index, animate)
+        // Guard: no tabs to position against.
+        if (navItems.isEmpty()) return
+
+        val navItem = navItems[index].container
+
+        // Guard: tab not yet laid out (width == 0). Wait and retry.
+        if (navItem.width == 0) {
+            navItem.viewTreeObserver.addOnGlobalLayoutListener(
+                object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        navItem.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        moveIndicator(index, animate)
+                    }
                 }
-            })
+            )
             return
         }
-        val indicatorWidth = navIndicator.width
-        if (indicatorWidth == 0) return
-        // Use actual layout left instead of assuming position
-        val targetX = itemWidth * index + (itemWidth - indicatorWidth) / 2f - navIndicator.left
+
+        // Guard: indicator itself not yet measured.
+        if (navIndicator.width == 0) return
+
+        // --- Calculate target X within the FrameLayout ---
+        // We use navItem.x (the tab container's visual left edge
+        // within the FrameLayout) plus half its width to find the
+        // centre.  Then subtract half the indicator width so the
+        // indicator's own centre aligns with the tab's centre.
+        //
+        // View.getX() returns the absolute X within the parent,
+        // which is stable regardless of LinearLayout padding,
+        // system-bar insets, or any other layout adjustments.
+        val targetX = navItem.x + (navItem.width / 2f) - (navIndicator.width / 2f)
+
         if (animate) {
             navIndicator.animate()
-                .translationX(targetX)
+                .x(targetX)              // View.setX() via animator
                 .setDuration(200)
                 .setInterpolator(DecelerateInterpolator())
                 .start()
         } else {
-            navIndicator.translationX = targetX
+            navIndicator.x = targetX     // Absolute, non-cumulative
         }
     }
 }
