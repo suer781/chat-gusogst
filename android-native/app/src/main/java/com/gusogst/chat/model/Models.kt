@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 // ===== 消息 =====
 // [NOTE] AgentBridge 内部也有 Message 类（API 数据层），这里用 typealias 避免命名冲突，删除会导致 AgentBridge 编译失败（2026-05-22）
-typealias UIMessage = Message
 
 data class Message(
     val id: String = java.util.UUID.randomUUID().toString(),
