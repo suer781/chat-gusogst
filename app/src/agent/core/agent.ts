@@ -28,6 +28,8 @@ export class Agent {
   private mcpInitialized = false
   private bridge: HermesBridge | undefined
   private aborted = false
+  private maxToolDepth = 10
+  private currentDepth = 0
   private maxHistoryTokens: number
 
   constructor(config: AgentConfig) {
@@ -122,20 +124,46 @@ export class Agent {
   }
 
   private truncateHistory(): void {
+    const MAX_MESSAGES = 100  // hard cap on message count
     let totalChars = 0
-    const maxChars = this.maxHistoryTokens * 2
+    // Better token estimation: Chinese chars ~2 tokens, English ~0.25 tokens/char, +4 per message overhead
+    const maxChars = this.maxHistoryTokens * 1.5
     const systemMsgs = this.history.filter(m => m.role === 'system')
     const nonSystem = this.history.filter(m => m.role !== 'system')
-    let keepFrom = nonSystem.length
-    for (let i = nonSystem.length - 1; i >= 0; i--) {
-      totalChars += (nonSystem[i].content || '').length
+    
+    // First: hard cap on message count
+    let trimmed = nonSystem
+    if (trimmed.length > MAX_MESSAGES) {
+      const dropped = trimmed.slice(0, trimmed.length - MAX_MESSAGES)
+      const summary = dropped.slice(-5).map(m => {
+        const c = (m.content || '').substring(0, 80)
+        return m.role === 'tool' ? `[tool:${m.name || '?'}]` : c
+      }).join('; ')
+      trimmed = [
+        { role: 'system' as const, content: '[Earlier ' + dropped.length + ' msgs: ' + summary + ']', timestamp: Date.now() },
+        ...trimmed.slice(-MAX_MESSAGES)
+      ]
+    }
+    
+    // Then: char-based truncation
+    let keepFrom = trimmed.length
+    for (let i = trimmed.length - 1; i >= 0; i--) {
+      totalChars += (trimmed[i].content || '').length
       if (totalChars > maxChars) { keepFrom = i + 1; break }
     }
-    if (keepFrom < nonSystem.length) {
-      const dropped = nonSystem.slice(0, keepFrom)
-      const summary = dropped.slice(-3).map(m => (m.content || '').substring(0, 50)).join('; ')
-      this.history = [...systemMsgs, { role: 'system' as const, content: '[Earlier: ' + summary + ']', timestamp: Date.now() }, ...nonSystem.slice(keepFrom)]
+    if (keepFrom < trimmed.length) {
+      const dropped = trimmed.slice(0, keepFrom)
+      const summary = dropped.slice(-5).map(m => {
+        const c = (m.content || '').substring(0, 80)
+        return m.role === 'tool' ? `[tool:${m.name || '?'}]` : c
+      }).join('; ')
+      trimmed = [
+        { role: 'system' as const, content: '[Earlier ' + dropped.length + ' msgs: ' + summary + ']', timestamp: Date.now() },
+        ...trimmed.slice(keepFrom)
+      ]
     }
+    
+    this.history = [...systemMsgs, ...trimmed]
   }
 
   private buildContext(): Message[] {
@@ -150,6 +178,7 @@ export class Agent {
 
   async *sendMessage(content: string): AsyncGenerator<AgentEvent> {
     this.aborted = false
+    this.currentDepth = 0
     await this.initMCP()
     if (content) this.history.push({ role: 'user', content, timestamp: Date.now() })
     this.truncateHistory()
@@ -171,7 +200,12 @@ export class Agent {
           yield { type: 'tool_result', id: tc.id, name: tc.function.name, result }
           this.history.push({ role: 'tool', content: result, tool_call_id: tc.id, name: tc.function.name, timestamp: Date.now() })
         }
-        if (!this.aborted) yield* this.sendMessage('')
+        if (!this.aborted && this.currentDepth < this.maxToolDepth) {
+          this.currentDepth++
+          yield* this.sendMessage('')
+        } else if (this.currentDepth >= this.maxToolDepth) {
+          yield { type: 'error', error: 'Tool call depth exceeded limit (' + this.maxToolDepth + '), stopping to prevent infinite loop' }
+        }
         return
       }
       const msg: Message = { role: 'assistant', content: response.content || '', timestamp: Date.now() }

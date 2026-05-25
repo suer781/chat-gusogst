@@ -11,6 +11,7 @@ export interface MemoryEntry {
 
 const DB_NAME = 'chat-gusogst-memory'
 const DB_VERSION = 1
+const MAX_MEMORIES = 500  // max memory entries to prevent unbounded growth
 const STORE_NAME = 'memories'
 
 function openDB(): Promise<IDBDatabase> {

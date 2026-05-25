@@ -67,15 +67,25 @@ export class AnthropicProvider implements ProviderAdapter {
     const convertedTools = this.convertTools(tools)
     if (convertedTools) body.tools = convertedTools
 
-    const resp = await fetch(this.getEndpoint(config), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': config.apiKey || '',
-        'anthropic-version': '2023-06-01',
-      } as any,
-      body: JSON.stringify(body),
-    })
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 120000)
+    try {
+      const resp = await fetch(this.getEndpoint(config), {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': config.apiKey || '',
+          'anthropic-version': '2023-06-01',
+        } as any,
+        body: JSON.stringify(body),
+      })
+    } catch (e) {
+      if (controller.signal.aborted) throw new Error('Request timeout after 120000ms')
+      throw e
+    } finally {
+      clearTimeout(timeoutId)
+    }
     if (!resp.ok) {
       const err = await resp.text().catch(() => '')
       throw new Error('Anthropic error ' + resp.status + ': ' + err)

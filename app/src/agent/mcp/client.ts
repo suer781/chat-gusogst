@@ -74,11 +74,20 @@ export class MCPClient {
     this.tools = []
   }
 
+  async reconnect(): Promise<void> {
+    this.disconnect()
+    await this.connect()
+  }
+
   // ── Tool execution ──
 
   async callTool(name: string, args: Record<string, any>): Promise<MCPToolResult> {
+    if (this.state === 'error') {
+      console.log(`[MCP] ${this.config.name}: auto-reconnecting...`)
+      try { await this.reconnect() } catch (e) { /* keep original error */ }
+    }
     if (this.state !== 'connected') {
-      throw new Error(`MCP server ${this.config.name} not connected`)
+      throw new Error(`MCP server ${this.config.name} not connected (state: ${this.state})`)
     }
 
     const result = await this.rpc('tools/call', { name, arguments: args })
