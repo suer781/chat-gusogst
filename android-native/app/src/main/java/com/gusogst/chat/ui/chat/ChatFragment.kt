@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
 import com.gusogst.chat.viewmodel.ChatViewModel
 import com.gusogst.chat.util.MaterialAnimator
+import com.gusogst.chat.util.HapticsHelper
 
 class ChatFragment : Fragment() {
 
@@ -24,6 +25,10 @@ class ChatFragment : Fragment() {
     private lateinit var etInput: EditText
     private lateinit var btnSend: MaterialTextView
     private lateinit var adapter: MessageAdapter
+    private lateinit var haptics: HapticsHelper
+
+    // Grok 风格流式震动：记录上一个消息长度，检测增量
+    private var _lastStreamingLength = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_chat, container, false)
@@ -35,6 +40,7 @@ class ChatFragment : Fragment() {
         tvEmpty = view.findViewById(R.id.emptyState)
         etInput = view.findViewById(R.id.etInput)
         btnSend = view.findViewById(R.id.btnSend)
+        haptics = HapticsHelper(requireContext())
 
         adapter = MessageAdapter(
             onRegenerate = { msg -> viewModel.regenerate(msg) },
@@ -44,18 +50,29 @@ class ChatFragment : Fragment() {
         rvMessages.adapter = adapter
 
         btnSend.setOnClickListener { sendMessage() }
-        // 发送按钮按压动画 + 涟漪
         MaterialAnimator.applyButtonEffects(btnSend)
 
         viewModel.messages.observe(viewLifecycleOwner) { msgs ->
             adapter.submitList(msgs)
             if (msgs.isNotEmpty()) rvMessages.scrollToPosition(msgs.size - 1)
             tvEmpty.visibility = if (msgs.isEmpty()) View.VISIBLE else View.GONE
+
+            // Grok 风格：流式输出时每新增内容触发微震动
+            if (viewModel.isStreaming.value == true && msgs.isNotEmpty()) {
+                val lastMsg = msgs.last()
+                if (lastMsg.status.name == "streaming" && lastMsg.content.length > _lastStreamingLength) {
+                    haptics.microTick()
+                }
+                _lastStreamingLength = lastMsg.content.length
+            } else {
+                _lastStreamingLength = 0
+            }
         }
 
         viewModel.isStreaming.observe(viewLifecycleOwner) { streaming ->
             btnSend.isEnabled = !streaming
             etInput.isEnabled = !streaming
+            if (!streaming) _lastStreamingLength = 0
         }
 
         viewModel.settings.observe(viewLifecycleOwner) { s ->
@@ -64,7 +81,6 @@ class ChatFragment : Fragment() {
             adapter.isDark = s.theme in listOf("dark", "pureBlack", "system")
         }
 
-        // 页面进入动画 — 对应 Web viewEnter
         MaterialAnimator.viewEnter(view)
     }
 
@@ -72,6 +88,7 @@ class ChatFragment : Fragment() {
         val text = etInput.text.toString().trim()
         if (text.isEmpty()) return
         etInput.text.clear()
+        haptics.sendPulse()
         viewModel.sendMessage(text)
     }
 }
