@@ -32,7 +32,7 @@ jobs:
           sdkmanager 'platforms;android-35' 'build-tools;35.0.0' --sdk_root=$ANDROID_HOME
           yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME || true
 
-      - name: Generate Gradle wrapper
+      - name: Generate Gradle wrapper JAR
         run: |
           gradle wrapper --gradle-version=8.11.1
           chmod +x gradlew
