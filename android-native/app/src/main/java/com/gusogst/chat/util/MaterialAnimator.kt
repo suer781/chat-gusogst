@@ -9,10 +9,12 @@ import android.content.res.ColorStateList
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +25,6 @@ import android.view.animation.OvershootInterpolator
 import android.view.animation.PathInterpolator
 import android.widget.ScrollView
 import android.widget.EdgeEffect
-import androidx.core.widget.EdgeEffectCompat
 
 /**
  * Material You vitality animations — mirrors Web material_you.css
@@ -74,8 +75,6 @@ object MaterialAnimator {
     }
 
     // ── M8: Ripple ──
-    // Uses Android built-in RippleDrawable (native, zero overhead).
-    // Much faster than Web CSS ripple which triggers paint on every frame.
     fun applyRipple(view: View, color: Int = Color.argb(64, 255, 255, 255)) {
         val ripple = RippleDrawable(
             ColorStateList.valueOf(color),
@@ -83,7 +82,6 @@ object MaterialAnimator {
             null  // null = content bounds, cheaper than mask
         )
         view.background = ripple
-        // 保持原有点击高亮
         view.isClickable = true
     }
 
@@ -136,7 +134,6 @@ object MaterialAnimator {
     }
 
     // ── 导航指示器 spring 动画 ──
-    // 代替 Web 的 CSS spring transition on left/width
     fun animateIndicator(indicator: View, targetX: Float, targetWidth: Float) {
         indicator.animate()
             .x(targetX)
@@ -146,7 +143,6 @@ object MaterialAnimator {
     }
 
     // ── 主题切换交叉渐变 ──
-    // Web: 0.6s cross-fade via #root transition
     fun applyThemeTransition(rootView: View, durationMs: Long = 600) {
         rootView.animate()
             .alpha(0.7f)
@@ -162,22 +158,20 @@ object MaterialAnimator {
     }
 
     // ── M9: Overscroll glow ──
-    // Android 内置 EdgeEffect，比 Web 的 CSS sticky gradient 更高效
+    // 直接用反射设置 EdgeEffect 颜色，不依赖 AndroidX EdgeEffectCompat
     fun applyOverscrollGlow(scrollView: ScrollView, glowColor: Int = Color.argb(40, 180, 120, 200)) {
         if (Build.VERSION.SDK_INT >= 31) {
             scrollView.edgeEffectColor = glowColor
         } else {
             try {
-                val f = ScrollView::class.java.getDeclaredField("mEdgeGlowTop")
-                f.isAccessible = true
-                val edge = f.get(scrollView) as? EdgeEffect
+                // API 21-30: 反射设置 EdgeEffect 颜色
+                val edgeField = ScrollView::class.java.getDeclaredField("mEdgeGlowTop")
+                edgeField.isAccessible = true
+                val edge = edgeField.get(scrollView) as? EdgeEffect
                 if (edge != null) {
-                    EdgeEffectCompat(edge).let {
-                        // set color via reflection on older APIs
-                        val cf = EdgeEffect::class.java.getDeclaredField("mColor")
-                        cf.isAccessible = true
-                        cf.setInt(edge, glowColor)
-                    }
+                    val colorField = EdgeEffect::class.java.getDeclaredField("mColor")
+                    colorField.isAccessible = true
+                    colorField.setInt(edge, glowColor)
                 }
             } catch (_: Exception) {}
         }
@@ -185,15 +179,24 @@ object MaterialAnimator {
 
     // ── 环境光背景设置 ──
     // Web: body::after radial-gradient (独立合成层)
-    // Android: 直接设置 root 背景 drawable（GPU 单次合成）
-    fun setAmbientBackground(rootView: View, drawableRes: Int) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            rootView.background = rootView.context.getDrawable(drawableRes)
-        } else {
-            @Suppress("DEPRECATION")
-            rootView.setBackgroundDrawable(
-                rootView.context.resources.getDrawable(drawableRes)
+    // Android: 用 GradientDrawable 程序化创建径向渐变
+    fun setAmbientBackground(rootView: View) {
+        val density = rootView.resources.displayMetrics.density
+        val w = rootView.resources.displayMetrics.widthPixels
+        val h = rootView.resources.displayMetrics.heightPixels
+        val radius = Math.sqrt((w * w + h * h).toDouble()).toFloat() * 1.2f
+
+        val bg = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(
+                0x99FFE0FF,  // 顶部紫光
+                0x33E8D5FF,  // 中部
+                0x000D0D2B   // 底部透明（露出 bg_primary）
             )
-        }
+        )
+        bg.gradientType = GradientDrawable.RADIAL_GRADIENT
+        bg.gradientRadius = radius
+        bg.setGradientCenter((w / 2).toFloat(), 0f)
+        rootView.background = bg
     }
 }
