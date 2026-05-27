@@ -115,6 +115,7 @@ data class UIProvider(
 data class UISettings(
     val theme: String = "dark",
     val glassEnabled: Boolean = false,
+    val glassOpacity: Int = 80,
     val enableThinking: Boolean = true,
     val thinkingAutoExpand: Boolean = false,
     val toolCallAutoExpand: Boolean = false,
@@ -124,6 +125,7 @@ data class UISettings(
     val hapticEnabled: Boolean = true,
     val eyeCareMode: Boolean = false,
     val eyeCareWarmth: Int = 0,
+    val eyeCareIntensity: Int = 40,
     val hdrEnabled: Boolean = false,
     val bgAnimationEnabled: Boolean = true,
     val searchEnabled: Boolean = false,

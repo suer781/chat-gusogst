@@ -42,11 +42,11 @@ class BasicSettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.settings.observe(viewLifecycleOwner) { s ->
-            buildUI(s.theme, s.fontSize, s.eyeCareMode, s.glassEnabled, s.hapticEnabled, s.hdrEnabled)
+            buildUI(s.theme, s.fontSize, s.eyeCareMode, s.eyeCareIntensity, s.glassEnabled, s.glassOpacity, s.hapticEnabled, s.hdrEnabled)
         }
     }
 
-    private fun buildUI(theme: String, fontSize: String, eyeCare: Boolean, glass: Boolean, haptic: Boolean, hdr: Boolean) {
+    private fun buildUI(theme: String, fontSize: String, eyeCare: Boolean, eyeCareIntensity: Int, glass: Boolean, glassOpacity: Int, haptic: Boolean, hdr: Boolean) {
         root.removeAllViews()
         addHeader("\u57FA\u672C\u8BBE\u7F6E")
 
@@ -92,15 +92,50 @@ class BasicSettingsFragment : Fragment() {
         }
 
         // Eye care
-        addSection("\u62A4\u773C\u6A21\u5F0F", "\u25C9") {
+        addSection("护眼模式", "◉") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            col.addView(createToggleRow("\u62A4\u773C\u6A21\u5F0F", "\u964D\u4F4E\u84DD\u5149\uFF0C\u6696\u8272\u8C03\u4FDD\u62A4\u89C6\u529B", eyeCare) { viewModel.updateSettings { s -> s.copy(eyeCareMode = it) } })
+            col.addView(createToggleRow("护眼模式", "降低蓝光，暖色调保护视力", eyeCare) { viewModel.updateSettings { s -> s.copy(eyeCareMode = it) } })
+            if (eyeCare) {
+                // 暖色强度滑块
+                val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(8), 0, 0) }
+                row.addView(TextView(requireContext()).apply { text = "暖度"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
+                row.addView(SeekBar(requireContext()).apply {
+                    max = 100; progress = eyeCareIntensity
+                    progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
+                    thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) { if (fromUser) viewModel.updateSettings { it.copy(eyeCareIntensity = progress) } }
+                        override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
+                    })
+                })
+                row.addView(TextView(requireContext()).apply { text = "$eyeCareIntensity%"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; minWidth = dp(30); gravity = Gravity.END })
+                col.addView(row)
+            }
             return@addSection col
         }
 
         // Glass
-        addSection("\u73BB\u7483\u62DF\u6001", "\u25CF") {
-            return@addSection createToggleRow("\u6BDB\u73BB\u7483\u6548\u679C", "\u80CC\u666F\u6A21\u7CCA\u548C\u900F\u660E\u6548\u679C", glass) { viewModel.updateSettings { s -> s.copy(glassEnabled = it) } }
+        addSection("玻璃拟态", "●") {
+            val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
+            col.addView(createToggleRow("毛玻璃效果", "背景模糊和透明效果", glass) { viewModel.updateSettings { s -> s.copy(glassEnabled = it) } })
+            if (glass) {
+                val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(8), 0, 0) }
+                row.addView(TextView(requireContext()).apply { text = "透明度"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
+                row.addView(SeekBar(requireContext()).apply {
+                    max = 100; progress = glassOpacity
+                    progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
+                    thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) { if (fromUser) viewModel.updateSettings { it.copy(glassOpacity = progress) } }
+                        override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
+                    })
+                })
+                row.addView(TextView(requireContext()).apply { text = "$glassOpacity%"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; minWidth = dp(30); gravity = Gravity.END })
+                col.addView(row)
+            }
+            return@addSection col
         }
 
         // Haptic
