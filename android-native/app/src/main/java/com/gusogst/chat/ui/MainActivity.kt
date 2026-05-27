@@ -25,6 +25,7 @@ import com.gusogst.chat.viewmodel.ChatViewModel
 import com.gusogst.chat.ui.persona.PersonaFragment
 import com.gusogst.chat.ui.providers.ProvidersFragment
 import com.gusogst.chat.ui.settings.SettingsFragment
+import com.gusogst.chat.util.HdrHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -65,6 +66,20 @@ class MainActivity : AppCompatActivity() {
         viewModel.settings.observe(this) { s ->
             applyTheme(s.theme)
             applyGlassEffect(findViewById(R.id.header), s.glassEnabled)
+            applyHdrEffect(s.hdrEnabled, s.theme)
+        }
+
+        // 首次启动的淡入动画
+        if (savedInstanceState == null) {
+            val contentRoot = findViewById<View>(android.R.id.content)
+            contentRoot.alpha = 0f
+            contentRoot.post {
+                contentRoot.animate()
+                    .alpha(1f)
+                    .setDuration(600)
+                    .setInterpolator(DecelerateInterpolator())
+                    .start()
+            }
         }
     }
 
@@ -129,6 +144,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             view.setBackgroundResource(R.drawable.bg_header)
         }
+    }
+
+    /**
+     * Apply HDR glow to header and nav bar based on toggle + theme.
+     * Uses HdrHelper which mirrors the Web hdr_v3.css glow effect.
+     */
+    private fun applyHdrEffect(enabled: Boolean, theme: String) {
+        val isDark = theme in listOf("dark", "pureBlack", "system")
+        val header = findViewById<View>(R.id.header)
+        HdrHelper.applyHeaderGlow(header, enabled, isDark)
+        HdrHelper.applyNavGlow(bottomNav, enabled, isDark)
     }
 
     // ---------------------------------------------------------------
