@@ -168,6 +168,10 @@ class MainActivity : AppCompatActivity() {
     private fun selectNav(item: NavItem) {
         if (item == currentNavItem) return
         supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                android.R.anim.fade_in, android.R.anim.fade_out,
+                android.R.anim.fade_in, android.R.anim.fade_out
+            )
             .replace(R.id.fragmentContainer, item.fragment)
             .commit()
         val activeColor = ContextCompat.getColor(this, R.color.nav_active)
