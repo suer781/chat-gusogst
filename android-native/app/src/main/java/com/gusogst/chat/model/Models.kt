@@ -14,8 +14,8 @@ data class Message(
     var status: MessageStatus = MessageStatus.ready,
     var thinking: String? = null,
     val thinkingCollapsed: Boolean = true,
-    val providerId: String? = null,
-    val modelId: String? = null,
+    var providerId: String? = null,
+    var modelId: String? = null,
     val toolCalls: List<ToolCall>? = null,
     val attachments: List<Attachment>? = null
 )

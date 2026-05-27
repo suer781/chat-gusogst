@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_ambient_top">#9916163C</color>
+    <color name="bg_primary">#0F0F23</color>
+    <color name="text_primary">#E0E0E0</color>
+</resources>

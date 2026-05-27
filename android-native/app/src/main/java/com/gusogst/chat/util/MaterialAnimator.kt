@@ -158,23 +158,18 @@ object MaterialAnimator {
     }
 
     // ── M9: Overscroll glow ──
-    // 直接用反射设置 EdgeEffect 颜色，不依赖 AndroidX EdgeEffectCompat
     fun applyOverscrollGlow(scrollView: ScrollView, glowColor: Int = Color.argb(40, 180, 120, 200)) {
-        if (Build.VERSION.SDK_INT >= 31) {
-            scrollView.edgeEffectColor = glowColor
-        } else {
-            try {
-                // API 21-30: 反射设置 EdgeEffect 颜色
-                val edgeField = ScrollView::class.java.getDeclaredField("mEdgeGlowTop")
-                edgeField.isAccessible = true
-                val edge = edgeField.get(scrollView) as? EdgeEffect
-                if (edge != null) {
-                    val colorField = EdgeEffect::class.java.getDeclaredField("mColor")
-                    colorField.isAccessible = true
-                    colorField.setInt(edge, glowColor)
-                }
-            } catch (_: Exception) {}
-        }
+        // API 31+ EdgeEffect color via reflection (Kotlin property accessor unresolved)
+        try {
+            val edgeField = ScrollView::class.java.getDeclaredField("mEdgeGlowTop")
+            edgeField.isAccessible = true
+            val edge = edgeField.get(scrollView) as? EdgeEffect
+            if (edge != null) {
+                val colorField = EdgeEffect::class.java.getDeclaredField("mColor")
+                colorField.isAccessible = true
+                colorField.setInt(edge, glowColor)
+            }
+        } catch (_: Exception) {}
     }
 
     // ── 环境光背景设置 ──
@@ -189,9 +184,9 @@ object MaterialAnimator {
         val bg = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(
-                0x99FFE0FF,  // 顶部紫光
-                0x33E8D5FF,  // 中部
-                0x000D0D2B   // 底部透明（露出 bg_primary）
+                0x99FFE0FF.toInt(),  // 顶部紫光
+                0x33E8D5FF.toInt(),  // 中部
+                0x000D0D2B           // 底部透明（露出 bg_primary）
             )
         )
         bg.gradientType = GradientDrawable.RADIAL_GRADIENT

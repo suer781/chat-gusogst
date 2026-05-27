@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_tool_card"
+    android:layout_marginTop="4dp">
+
+    <LinearLayout
+        android:id="@+id/toolHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:id="@+id/tvToolIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚙"
+            android:textSize="12sp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/tvToolStatus"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/tvToolName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/gray_300"
+            android:textSize="@dimen/text_sm"
+            android:fontFamily="monospace" />
+
+        <TextView
+            android:id="@+id/tvToolToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="▸"
+            android:textColor="@color/gray_500"
+            android:textSize="@dimen/text_xs" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/toolDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/thinking_border" />
+
+        <TextView
+            android:id="@+id/tvToolInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/gray_100"
+            android:textSize="@dimen/text_xs"
+            android:fontFamily="monospace"
+            android:maxLines="8"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tvToolOutput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/gray_100"
+            android:textSize="@dimen/text_xs"
+            android:fontFamily="monospace"
+            android:maxLines="12"
+            android:ellipsize="end"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>

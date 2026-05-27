@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="6dp">
+
+    <LinearLayout
+        android:id="@+id/thinkingBlock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@drawable/bg_thinking_block"
+        android:padding="12dp"
+        android:layout_marginBottom="4dp">
+        <TextView android:id="@+id/tvThinkingLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="• 思考过程" android:textSize="@dimen/text_sm" android:textColor="@color/gray_300" />
+        <TextView android:id="@+id/tvThinkingContent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="@dimen/text_sm" android:textColor="@color/gray_200" android:lineSpacingMultiplier="1.3" android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/toolCallsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="280dp"
+        android:background="@drawable/bg_bubble_assistant"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:textColor="@color/gray_100"
+        android:textSize="@dimen/text_base"
+        android:lineSpacingMultiplier="1.6" />
+
+    <LinearLayout
+        android:id="@+id/actionBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp"
+        android:paddingStart="4dp"
+        android:visibility="gone">
+
+        <TextView android:id="@+id/btnCopy" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/chat_copy" android:textSize="@dimen/text_sm" android:textColor="@color/text_secondary" android:paddingHorizontal="@dimen/space_2" android:paddingVertical="4dp" android:background="?attr/selectableItemBackground" />
+        <TextView android:id="@+id/btnRegen" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/chat_regen" android:textSize="@dimen/text_sm" android:textColor="@color/text_secondary" android:paddingHorizontal="@dimen/space_2" android:paddingVertical="4dp" android:background="?attr/selectableItemBackground" />
+        <TextView android:id="@+id/btnDelete" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/chat_delete" android:textSize="@dimen/text_sm" android:textColor="@color/text_secondary" android:paddingHorizontal="@dimen/space_2" android:paddingVertical="4dp" android:background="?attr/selectableItemBackground" />
+    </LinearLayout>
+</LinearLayout>
