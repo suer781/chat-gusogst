@@ -2,15 +2,20 @@ package com.gusogst.chat.util
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.ColorDrawable
 import android.view.View
 
 /**
  * HDR v4.0 glass glow helper — mirrors Web hdr_v3.css
  *
- * Applies HDR glow effects to views when enabled.
- * Performance: uses simple color overlays + elevation shadows,
- * NOT CSS box-shadow which triggers repaint on every scroll.
- * Native Android drawables are GPU-composited for free.
+ * HDR 的目的是增强玻璃的透光性与真实感，模拟光线穿过玻璃时的：
+ *   1. 边缘辉光（border highlight）
+ *   2. 表面反光（diagonal reflection）
+ *   3. 透射光晕（shadow glow）
+ *   4. 环境色染（ambient tint）
+ *
+ * Performance: 使用 LayerDrawable 组合多层效果，GPU 单次合成
  */
 object HdrHelper {
 
@@ -18,10 +23,11 @@ object HdrHelper {
         val glowBase: Int, val glowAccent: Int, val glowWhite: Int,
         val borderHighlight: Int, val shadowGlow: Int, val bgTint: Int,
         val cardBorder: Int, val headerBg: Int, val navBg: Int, val bubbleTint: Int,
-        val buttonGlow: Int, val indicatorGlow: Int, val inputFocusGlow: Int
+        val buttonGlow: Int, val indicatorGlow: Int, val inputFocusGlow: Int,
+        val reflectionHighlight: Int  // 玻璃表面反光色
     )
 
-    // Dark theme HDR colors (from CSS vars)
+    // Dark theme HDR colors
     val DARK = HdrColors(
         glowBase = Color.argb(230, 220, 225, 245),
         glowAccent = Color.argb(230, 220, 100, 140),
@@ -35,7 +41,8 @@ object HdrHelper {
         bubbleTint = Color.argb(20, 180, 140, 220),
         buttonGlow = Color.argb(64, 200, 100, 150),
         indicatorGlow = Color.argb(230, 220, 100, 140),
-        inputFocusGlow = Color.argb(64, 200, 100, 150)
+        inputFocusGlow = Color.argb(64, 200, 100, 150),
+        reflectionHighlight = Color.argb(60, 255, 255, 255)  // 微微的白光反光
     )
 
     // Light theme HDR colors
@@ -52,72 +59,125 @@ object HdrHelper {
         bubbleTint = Color.argb(15, 180, 100, 200),
         buttonGlow = Color.argb(38, 180, 80, 140),
         indicatorGlow = Color.argb(217, 180, 60, 100),
-        inputFocusGlow = Color.argb(38, 180, 80, 140)
+        inputFocusGlow = Color.argb(38, 180, 80, 140),
+        reflectionHighlight = Color.argb(40, 255, 255, 255)
     )
 
     // ── 公开 API ──
 
-    /** Apply HDR glow to header view */
+    /**
+     * Apply HDR + 玻璃反光到 view
+     * 使用 LayerDrawable 叠加：底色 + 反光层
+     */
+    fun applyGlassWithHdr(view: View, enabled: Boolean, glassEnabled: Boolean, isDark: Boolean = true) {
+        if (!enabled && !glassEnabled) {
+            view.background = null
+            return
+        }
+        val c = if (isDark) DARK else LIGHT
+
+        // 底层：玻璃渐变底色
+        val bgGradient = GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            intArrayOf(
+                if (glassEnabled) 0x23FFFFFF else Color.TRANSPARENT,
+                if (enabled) c.headerBg else Color.TRANSPARENT
+            )
+        )
+        bgGradient.cornerRadius = 0f
+
+        if (enabled) {
+            // HDR 开启时：使用 LayerDrawable 叠加反光层
+            val reflection = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(
+                    c.reflectionHighlight,
+                    Color.TRANSPARENT
+                )
+            )
+
+            val layers = arrayOf<android.graphics.drawable.Drawable>(
+                bgGradient,
+                reflection
+            )
+            val layerDrawable = LayerDrawable(layers)
+            view.background = layerDrawable
+        } else {
+            view.background = bgGradient
+        }
+
+        // elevation 模拟阴影深度
+        view.elevation = if (enabled) 3f * view.resources.displayMetrics.density
+                         else if (glassEnabled) 2f * view.resources.displayMetrics.density
+                         else 0f
+    }
+
     fun applyHeaderGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) { view.setBackgroundColor(Color.TRANSPARENT); return }
         val c = if (isDark) DARK else LIGHT
-        view.setBackgroundColor(c.headerBg)
+        // HDR 头部：底色 + 反光层
+        val bottom = ColorDrawable(c.headerBg)
+        val reflection = GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            intArrayOf(c.reflectionHighlight, Color.TRANSPARENT)
+        )
+        view.background = LayerDrawable(arrayOf(bottom, reflection))
         view.elevation = 2f * view.resources.displayMetrics.density
     }
 
-    /** Apply HDR glow to nav bar */
     fun applyNavGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) { view.setBackgroundColor(Color.TRANSPARENT); return }
         val c = if (isDark) DARK else LIGHT
-        view.setBackgroundColor(c.navBg)
+        val bottom = ColorDrawable(c.navBg)
+        val reflection = GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            intArrayOf(Color.TRANSPARENT, c.reflectionHighlight)
+        )
+        view.background = LayerDrawable(arrayOf(bottom, reflection))
     }
 
-    /** Apply HDR glow to card (glass-card equivalent) */
     fun applyCardGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) return
         val c = if (isDark) DARK else LIGHT
+        val density = view.resources.displayMetrics.density
         val bg = GradientDrawable().apply {
             setColor(c.bgTint)
             setStroke(1, c.cardBorder)
-            cornerRadius = 16 * view.resources.displayMetrics.density
+            cornerRadius = 16f * density
         }
         view.background = bg
-        view.elevation = 4f * view.resources.displayMetrics.density
+        view.elevation = 4f * density
     }
 
-    /** Apply HDR glow to any message bubble */
     fun applyBubbleGlow(view: View, enabled: Boolean, isUser: Boolean, isDark: Boolean = true) {
         if (!enabled) return
         val c = if (isDark) DARK else LIGHT
+        val density = view.resources.displayMetrics.density
         if (isUser) {
-            val bg = view.background as? GradientDrawable ?: GradientDrawable()
-            bg.setColor(c.bubbleTint)
-            bg.setStroke(1, c.cardBorder)
+            val bg = GradientDrawable().apply {
+                setColor(c.bubbleTint)
+                setStroke(1, c.cardBorder)
+                cornerRadius = 16f * density
+            }
             view.background = bg
         }
-        // 非 user 气泡（assistant）只加边框辉光
-        view.elevation = 2f * view.resources.displayMetrics.density
+        view.elevation = 2f * density
     }
 
-    /** Apply HDR glow to accent button */
     fun applyButtonGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) return
         val c = if (isDark) DARK else LIGHT
         view.elevation = 6f * view.resources.displayMetrics.density
     }
 
-    /** Apply HDR glow to nav indicator */
     fun applyIndicatorGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) return
         val c = if (isDark) DARK else LIGHT
-        // indicator glow 通过半透明底色实现——比 CSS filter/backdrop-filter 省 GPU
         view.setBackgroundColor(c.indicatorGlow)
     }
 
-    /** Apply HDR glow to input focus state */
     fun applyInputGlow(view: View, enabled: Boolean, hasFocus: Boolean, isDark: Boolean = true) {
         if (!enabled || !hasFocus) return
-        val c = if (isDark) DARK else LIGHT
         view.elevation = 3f * view.resources.displayMetrics.density
     }
 }
