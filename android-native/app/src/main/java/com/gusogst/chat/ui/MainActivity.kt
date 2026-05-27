@@ -58,16 +58,17 @@ class MainActivity : AppCompatActivity() {
         setupWindowInsets()
         if (savedInstanceState == null) selectNav(navItems[0])
 
-        // 环境光背景 — 程序化径向渐变
         MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content))
 
         viewModel.settings.observe(this) { s ->
             applyTheme(s.theme)
-            applyGlassEffect(findViewById(R.id.header), s.glassEnabled)
-            applyHdrEffect(s.hdrEnabled, s.theme)
+            applyGlassAndHdr(
+                findViewById(R.id.header),
+                s.glassEnabled, s.hdrEnabled,
+                s.theme
+            )
         }
 
-        // 首次启动的淡入动画
         if (savedInstanceState == null) {
             val contentRoot = findViewById<View>(android.R.id.content)
             contentRoot.alpha = 0f
@@ -87,14 +88,12 @@ class MainActivity : AppCompatActivity() {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-
         val root = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             WindowInsetsCompat.CONSUMED
         }
-
         val nav = bottomNav
         val navPadV = resources.getDimensionPixelSize(R.dimen.nav_padding_v)
         ViewCompat.setOnApplyWindowInsetsListener(nav) { view, insets ->
@@ -117,30 +116,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun applyGlassEffect(view: View?, enabled: Boolean) {
+    /**
+     * 综合玻璃 + HDR 效果
+     * glass 控制透光模糊感，HDR 控制辉光反光层
+     */
+    private fun applyGlassAndHdr(view: View?, glassEnabled: Boolean, hdrEnabled: Boolean, theme: String) {
         if (view == null) return
-        if (enabled) {
-            val bg = android.graphics.drawable.GradientDrawable(
-                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
-                intArrayOf(
-                    0x23FFFFFF,
-                    0x14B4BEDC,
-                    0x6B0D0D2B
-                )
-            )
-            bg.cornerRadius = 0f
-            view.background = bg
-        } else {
-            view.setBackgroundResource(R.drawable.bg_header)
-        }
-    }
-
-    private fun applyHdrEffect(enabled: Boolean, theme: String) {
         val isDark = theme in listOf("dark", "pureBlack", "system")
-        val header = findViewById<View>(R.id.header)
-        HdrHelper.applyHeaderGlow(header, enabled, isDark)
-        HdrHelper.applyNavGlow(bottomNav, enabled, isDark)
-        HdrHelper.applyIndicatorGlow(navIndicator, enabled, isDark)
+        HdrHelper.applyGlassWithHdr(view, hdrEnabled, glassEnabled, isDark)
+        HdrHelper.applyNavGlow(bottomNav, hdrEnabled, isDark)
+        HdrHelper.applyIndicatorGlow(navIndicator, hdrEnabled, isDark)
     }
 
     private fun initNav() {
@@ -171,9 +156,7 @@ class MainActivity : AppCompatActivity() {
         }
         bottomNav = findViewById(R.id.bottomNav)
         navIndicator = findViewById(R.id.navIndicator)
-
         navIndicator.post { moveIndicator(0, false) }
-
         bottomNav.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             if (navItems.isNotEmpty()) {
                 val idx = navItems.indexOf(currentNavItem).coerceAtLeast(0)
@@ -213,9 +196,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun moveIndicator(index: Int, animate: Boolean) {
         if (navItems.isEmpty()) return
-
         val navItem = navItems[index].container
-
         if (navItem.width == 0) {
             navItem.viewTreeObserver.addOnGlobalLayoutListener(
                 object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
@@ -227,18 +208,13 @@ class MainActivity : AppCompatActivity() {
             )
             return
         }
-
         if (navIndicator.width == 0) return
-
         val navItemLoc = IntArray(2)
         navItem.getLocationOnScreen(navItemLoc)
         val navCenterX = navItemLoc[0] + navItem.width / 2f
-
         val parentLoc = IntArray(2)
         (navIndicator.parent as View).getLocationOnScreen(parentLoc)
-
         val targetX = navCenterX - parentLoc[0] - navIndicator.width / 2f
-
         if (animate) {
             MaterialAnimator.animateIndicator(navIndicator, targetX, navIndicator.width.toFloat())
         } else {
