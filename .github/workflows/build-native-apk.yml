@@ -27,17 +27,18 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK 35
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0' --sdk_root=$ANDROID_HOME
-
-      - name: Accept licenses
-        run: yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME || true
-
-      - name: Generate Gradle Wrapper
         run: |
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version=8.11.1
-          fi
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0' --sdk_root=$ANDROID_HOME
+          yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME || true
+
+      - name: Download Gradle wrapper
+        run: |
           chmod +x gradlew
+          mkdir -p gradle/wrapper
+          curl -sL "https://services.gradle.org/distributions/gradle-8.11.1-bin.zip" -o /tmp/gradle.zip
+          # Extract the wrapper jar from the distribution
+          unzip -p /tmp/gradle.zip "gradle-8.11.1/lib/gradle-wrapper-*.jar" > gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
+          curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
