@@ -32,11 +32,10 @@ jobs:
           sdkmanager 'platforms;android-35' 'build-tools;35.0.0' --sdk_root=$ANDROID_HOME
           yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME || true
 
-      - name: Generate Gradle wrapper
+      - name: Download Gradle wrapper JAR
         run: |
-          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-            gradle wrapper --gradle-version=8.11.1
-          fi
+          mkdir -p gradle/wrapper
+          curl -sL "https://github.com/gradle/gradle/raw/v8.11.1/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
 
       - name: Build debug APK
