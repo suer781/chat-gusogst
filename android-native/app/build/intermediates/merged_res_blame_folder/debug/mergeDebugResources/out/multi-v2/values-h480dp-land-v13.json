@@ -4,7 +4,7 @@
             "outputFile": "com.gusogst.chat.app-mergeDebugResources-51:/values-h480dp-land-v13/values-h480dp-land-v13.xml",
             "map": [
                 {
-                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/f0ce70d21143da9be200ce44721432c8/transformed/material-1.12.0/res/values-h480dp-land-v13/values-h480dp-land-v13.xml",
+                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/17ee71c8ffd2037bbc4cc6b057aad0bf/transformed/material-1.12.0/res/values-h480dp-land-v13/values-h480dp-land-v13.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
                         "startColumns": "4,4,4,4,4,4,4,4,4",

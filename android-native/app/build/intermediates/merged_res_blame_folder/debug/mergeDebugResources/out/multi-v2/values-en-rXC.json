@@ -4,7 +4,7 @@
             "outputFile": "com.gusogst.chat.app-mergeDebugResources-51:/values-en-rXC/values-en-rXC.xml",
             "map": [
                 {
-                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/14869c17f3b8fb3ee23e383dd901e553/transformed/appcompat-1.7.0/res/values-en-rXC/values-en-rXC.xml",
+                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/e5317df76a22a2b0d227c281548b0a3b/transformed/appcompat-1.7.0/res/values-en-rXC/values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/07d84e886b994e1d63e57984268764d1/transformed/core-1.15.0/res/values-en-rXC/values-en-rXC.xml",
+                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/res/values-en-rXC/values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

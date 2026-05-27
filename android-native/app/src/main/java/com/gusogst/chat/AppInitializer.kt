@@ -16,18 +16,17 @@ object AppInitializer {
         initSplashScreen(activity)
     }
 
+    @Suppress("DEPRECATION")
     private fun initStatusBar(activity: Activity) {
-        activity.window.apply {
-            statusBarColor = android.graphics.Color.parseColor("#0f0f23")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                insetsController?.setSystemBarsAppearance(
-                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            }
+        activity.window.statusBarColor = android.graphics.Color.parseColor("#0f0f23")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity.window.insetsController?.setSystemBarsAppearance(
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         }
     }
 
