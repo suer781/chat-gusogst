@@ -1,6 +1,5 @@
 package com.gusogst.chat.network
 
-import com.gusogst.chat.data.ChatStore
 import com.gusogst.chat.model.UIProvider
 
 /**
@@ -12,9 +11,7 @@ import com.gusogst.chat.model.UIProvider
  *   3. 自动用替代端点的 Key + 路径重试
  *   4. 成功者加分，失败者继续降权
  */
-class AutoRetryEngine(
-    private val store: ChatStore = ChatStore.getInstance()
-) {
+class AutoRetryEngine {
 
     /** 每个端点的独立评分器 */
     private val scorers = mutableMapOf<String, EndpointScorer>()
