@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
 import com.gusogst.chat.viewmodel.ChatViewModel
+import com.gusogst.chat.util.MaterialAnimator
 
 class ChatFragment : Fragment() {
 
@@ -43,6 +44,8 @@ class ChatFragment : Fragment() {
         rvMessages.adapter = adapter
 
         btnSend.setOnClickListener { sendMessage() }
+        // 发送按钮按压动画 + 涟漪
+        MaterialAnimator.applyButtonEffects(btnSend)
 
         viewModel.messages.observe(viewLifecycleOwner) { msgs ->
             adapter.submitList(msgs)
@@ -57,7 +60,12 @@ class ChatFragment : Fragment() {
 
         viewModel.settings.observe(viewLifecycleOwner) { s ->
             adapter.glassEnabled = s.glassEnabled
+            adapter.hdrEnabled = s.hdrEnabled
+            adapter.isDark = s.theme in listOf("dark", "pureBlack", "system")
         }
+
+        // 页面进入动画 — 对应 Web viewEnter
+        MaterialAnimator.viewEnter(view)
     }
 
     private fun sendMessage() {
