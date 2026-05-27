@@ -26,10 +26,13 @@ import com.gusogst.chat.ui.persona.PersonaFragment
 import com.gusogst.chat.ui.providers.ProvidersFragment
 import com.gusogst.chat.ui.settings.SettingsFragment
 import com.gusogst.chat.util.HdrHelper
+import com.gusogst.chat.util.MaterialAnimator
+import com.gusogst.chat.util.HapticsHelper
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: ChatViewModel by viewModels()
+    private lateinit var haptics: HapticsHelper
 
     private lateinit var tvHeaderTitle: TextView
 
@@ -59,9 +62,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
+        haptics = HapticsHelper(this)
         initNav()
         setupWindowInsets()
         if (savedInstanceState == null) selectNav(navItems[0])
+
+        // 环境光背景 — 比 Web CSS radial-gradient 更高效（单层 GPU drawable）
+        MaterialAnimator.setAmbientBackground(
+            findViewById(android.R.id.content),
+            R.drawable.bg_ambient
+        )
 
         viewModel.settings.observe(this) { s ->
             applyTheme(s.theme)
@@ -134,20 +144,38 @@ class MainActivity : AppCompatActivity() {
         }
         if (AppCompatDelegate.getDefaultNightMode() != mode) {
             AppCompatDelegate.setDefaultNightMode(mode)
+            // 主题切换交叉渐变 — 与 Web 0.6s ease 一致
+            MaterialAnimator.applyThemeTransition(findViewById(android.R.id.content))
         }
     }
 
+    /**
+     * 玻璃效果 — v2 使用更丰富的渐变层
+     * 比 Web 的 CSS blur(20px) + noise texture 更高效：
+     * - 使用 GPU 合成渐变层（无 per-element backdrop-filter 重绘）
+     * - 无噪声纹理（CSS fractalNoise 在 Web 上高开销）
+     */
     private fun applyGlassEffect(view: View?, enabled: Boolean) {
         if (view == null) return
         if (enabled) {
-            view.setBackgroundColor(0x331A1A2E)
+            // 模拟 Web [data-glass="on"] header/nav 的渐变层
+            val bg = android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                intArrayOf(
+                    0x23FFFFFF,  // rgba(255,255,255,0.14)
+                    0x14B4BEDC,  // rgba(180,190,220,0.08)
+                    0x6B0D0D2B   // rgba(13,13,43,0.42)
+                )
+            )
+            bg.cornerRadius = 0f
+            view.background = bg
         } else {
             view.setBackgroundResource(R.drawable.bg_header)
         }
     }
 
     /**
-     * Apply HDR glow to header and nav bar based on toggle + theme.
+     * Apply HDR glow to header, nav bar, and indicator based on toggle + theme.
      * Uses HdrHelper which mirrors the Web hdr_v3.css glow effect.
      */
     private fun applyHdrEffect(enabled: Boolean, theme: String) {
@@ -155,6 +183,7 @@ class MainActivity : AppCompatActivity() {
         val header = findViewById<View>(R.id.header)
         HdrHelper.applyHeaderGlow(header, enabled, isDark)
         HdrHelper.applyNavGlow(bottomNav, enabled, isDark)
+        HdrHelper.applyIndicatorGlow(navIndicator, enabled, isDark)
     }
 
     // ---------------------------------------------------------------
@@ -194,7 +223,7 @@ class MainActivity : AppCompatActivity() {
                 title
             )
             item.container.setOnClickListener {
-                it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                haptics.glassTap()
                 selectNav(item)
             }
             navItems.add(item)
@@ -307,15 +336,13 @@ class MainActivity : AppCompatActivity() {
      * tabs live in a deeply nested LinearLayout.
      *
      * @param index   The 0-based tab index.
-     * @param animate Whether to animate the transition (200 ms decelerate).
+     * @param animate Whether to animate the transition.
      */
     private fun moveIndicator(index: Int, animate: Boolean) {
-        // Guard: no tabs to position against.
         if (navItems.isEmpty()) return
 
         val navItem = navItems[index].container
 
-        // Guard: tab not yet laid out (width == 0). Wait and retry.
         if (navItem.width == 0) {
             navItem.viewTreeObserver.addOnGlobalLayoutListener(
                 object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
@@ -328,35 +355,21 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Guard: indicator itself not yet measured.
         if (navIndicator.width == 0) return
 
-        // --- Calculate target X within the FrameLayout ---
-        //
-        // Strategy: use screen coordinates to eliminate nesting.
-        //
-        // 1. Get the nav item's center X on screen.
         val navItemLoc = IntArray(2)
         navItem.getLocationOnScreen(navItemLoc)
         val navCenterX = navItemLoc[0] + navItem.width / 2f
 
-        // 2. Get the FrameLayout's left edge on screen
-        //    (the indicator's coordinate reference).
         val parentLoc = IntArray(2)
         (navIndicator.parent as View).getLocationOnScreen(parentLoc)
 
-        // 3. The indicator's X within FrameLayout = navCenter on screen
-        //    minus FrameLayout's left edge on screen.
         val targetX = navCenterX - parentLoc[0] - navIndicator.width / 2f
 
         if (animate) {
-            navIndicator.animate()
-                .x(targetX)              // View.setX() via animator
-                .setDuration(200)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
+            MaterialAnimator.animateIndicator(navIndicator, targetX, navIndicator.width.toFloat())
         } else {
-            navIndicator.x = targetX     // Absolute, non-cumulative
+            navIndicator.x = targetX
         }
     }
 }

@@ -3,6 +3,8 @@ package com.gusogst.chat.ui.chat
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +18,8 @@ import com.gusogst.chat.R
 import com.gusogst.chat.model.Message
 import com.gusogst.chat.model.MessageStatus
 import com.gusogst.chat.model.Role
+import com.gusogst.chat.util.HdrHelper
+import com.gusogst.chat.util.MaterialAnimator
 
 class MessageAdapter(
     private val onRegenerate: ((Message) -> Unit)? = null,
@@ -26,6 +30,12 @@ class MessageAdapter(
             field = value
             notifyDataSetChanged()
         }
+    var hdrEnabled = false
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+    var isDark = true
 
     companion object {
         private const val TYPE_USER = 0
@@ -43,6 +53,9 @@ class MessageAdapter(
         return when (viewType) {
             TYPE_USER -> UserViewHolder(inflater.inflate(R.layout.item_message_user, parent, false))
             else -> AssistantViewHolder(inflater.inflate(R.layout.item_message_assistant, parent, false))
+        }.also {
+            // 把 adapter 引用传给 ViewHolder，供 HDR 判断
+            it.itemView.tag = this
         }
     }
 
@@ -63,6 +76,13 @@ class MessageAdapter(
 
         fun bind(msg: Message, onDelete: ((Message) -> Unit)?, glass: Boolean = false) {
             MarkdownRenderer.render(msg.content, tvMessage)
+
+            // HDR 气泡辉光
+            val isHdr = (itemView.tag as? MessageAdapter)?.hdrEnabled ?: false
+            val isDark = (itemView.tag as? MessageAdapter)?.isDark ?: true
+            if (isHdr) {
+                HdrHelper.applyBubbleGlow(itemView, true, true, isDark)
+            }
 
             // 长按显示操作
             tvMessage.setOnLongClickListener {
@@ -86,6 +106,9 @@ class MessageAdapter(
                 onDelete?.invoke(msg)
                 actionBar.visibility = View.GONE
             }
+            // 按钮按压动画 + 涟漪
+            MaterialAnimator.applyButtonEffects(btnCopy, Color.argb(48, 233, 69, 96))
+            MaterialAnimator.applyButtonEffects(btnDelete, Color.argb(48, 255, 82, 82))
         }
 
         private fun copyToClipboard(context: Context, text: String) {
@@ -107,7 +130,6 @@ class MessageAdapter(
         private val btnDelete: TextView = view.findViewById(R.id.btnDelete)
 
         fun bind(msg: Message, onRegen: ((Message) -> Unit)?, onDelete: ((Message) -> Unit)?, glass: Boolean = false) {
-            // 正文 - Markdown 渲染
             if (msg.content.isEmpty() && msg.status == MessageStatus.streaming) {
                 tvMessage.text = "..."
             } else {
@@ -115,6 +137,13 @@ class MessageAdapter(
             }
             tvMessage.alpha = if (msg.status == MessageStatus.streaming) 0.8f else 1f
             tvMessage.background?.alpha = if (glass) 80 else 255
+
+            // HDR 气泡辉光
+            val isHdr = (itemView.tag as? MessageAdapter)?.hdrEnabled ?: false
+            val isDark = (itemView.tag as? MessageAdapter)?.isDark ?: true
+            if (isHdr) {
+                HdrHelper.applyBubbleGlow(itemView, true, false, isDark)
+            }
 
             // 思考折叠块
             if (!msg.thinking.isNullOrBlank()) {
@@ -181,6 +210,10 @@ class MessageAdapter(
                 onDelete?.invoke(msg)
                 actionBar.visibility = View.GONE
             }
+            // 按钮按压动画 + 涟漪
+            MaterialAnimator.applyButtonEffects(btnCopy, Color.argb(48, 233, 69, 96))
+            MaterialAnimator.applyButtonEffects(btnRegen, Color.argb(48, 108, 92, 231))
+            MaterialAnimator.applyButtonEffects(btnDelete, Color.argb(48, 255, 82, 82))
         }
 
         private fun copyToClipboard(context: Context, text: String) {
