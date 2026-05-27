@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.gusogst.chat.data.ChatStore
 import com.gusogst.chat.model.*
 import com.gusogst.chat.network.ApiClient
+import com.gusogst.chat.network.AutoRetryEngine
+import com.gusogst.chat.network.EndpointKB
 import com.gusogst.chat.network.StreamProcessor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,6 +19,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private val store = ChatStore.getInstance(app)
     private val streamProcessor = StreamProcessor()
+    private val retryEngine = AutoRetryEngine()
 
     private val _conversations = MutableLiveData<List<Conversation>>(emptyList())
     val conversations: LiveData<List<Conversation>> = _conversations
@@ -67,7 +70,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun selectConversation(id: String) {
-        // [Fix-2] 使用toList()创建快照副本，确保后续消息修改能触发LiveData通知
         val conv = _conversations.value?.find { it.id == id } ?: return
         _activeConversation.value = conv
         _messages.value = conv.messages.toList()
@@ -81,7 +83,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         if (_activeConversation.value?.id == id) {
             _activeConversation.value = null
             _messages.value = emptyList()
-            // [Fix-3] 同时清除存储的activeId，防止下次加载指向已删除的对话
             store.saveActiveConversationId("")
         }
         store.saveConversations(list)
@@ -97,13 +98,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     fun regenerate(msg: Message) {
         val conv = _activeConversation.value ?: return
-        // 找到最后一条 AI 消息并删除
         val idx = conv.messages.indexOfLast { it.id == msg.id }
         if (idx >= 0) {
             conv.messages.removeAt(idx)
             _messages.value = conv.messages.toList()
         }
-        // 重新调用
         callAiApi(conv)
         store.saveConversations(_conversations.value.orEmpty())
     }
@@ -123,17 +122,13 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             _conversations.value = _conversations.value
         }
         callAiApi(conv)
-        // [Fix-1] sendMessage后立即持久化，防止进程被杀导致对话丢失
-        // 之前saveConversations已经在末尾，但callAiApi是异步的，
-        // 这里需要在发起请求前就保存用户消息
         store.saveConversations(_conversations.value.orEmpty())
     }
 
     private fun callAiApi(conv: Conversation) {
-        val provider = _providers.value?.firstOrNull { it.enabled } ?: return
-        val apiKey = provider.apiKey
-        val baseUrl = provider.baseUrl
-        val model = conv.modelId ?: provider.models.firstOrNull()?.id ?: return
+        val providers = _providers.value.orEmpty().filter { it.enabled }
+        val primary = providers.firstOrNull() ?: return
+        val model = conv.modelId ?: primary.models.firstOrNull()?.id ?: return
 
         val systemMsg = conv.personaId?.let { pid ->
             _personas.value?.find { it.id == pid }?.prompt
@@ -152,61 +147,154 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             role = Role.assistant,
             content = "",
             status = MessageStatus.streaming,
-            providerId = provider.id,
+            providerId = primary.id,
             modelId = model
         )
         conv.messages.add(aiMsg)
         _messages.value = conv.messages.toList()
         _isStreaming.value = true
 
+        // 用 RAG 推断路径：如果用户只填了域名没填路径，自动补全
+        val resolvedUrl = resolveEndpointPath(primary.baseUrl)
+
         viewModelScope.launch {
-            try {
-                val service = ApiClient.getService(baseUrl)
-                val response = withContext(Dispatchers.IO) {
-                    service.chatCompletionsStream("Bearer $apiKey", request)
-                }
-                if (response.isSuccessful) {
-                    val body = response.body() ?: return@launch
-                    withContext(Dispatchers.IO) {
-                        streamProcessor.processStream(
-                            responseBody = body,
-                            onThinking = { chunk ->
-                                aiMsg.thinking = (aiMsg.thinking ?: "") + chunk
-                                _messages.postValue(conv.messages.toList())
-                            },
-                            onContent = { chunk ->
-                                aiMsg.content += chunk
-                                _messages.postValue(conv.messages.toList())
-                            },
-                            onComplete = {
-                                aiMsg.status = MessageStatus.ready
-                                conv.updatedAt = System.currentTimeMillis()
-                                _messages.postValue(conv.messages.toList())
-                                _isStreaming.postValue(false)
-                                store.saveConversations(_conversations.value.orEmpty())
-                            },
-                            onError = { err ->
-                                aiMsg.status = MessageStatus.error
-                                aiMsg.content = "Error: $err"
-                                _messages.postValue(conv.messages.toList())
-                                _isStreaming.postValue(false)
-                                // [Fix-5] 错误状态也需要持久化，否则重启后错误消息显示为streaming
-                                store.saveConversations(_conversations.value.orEmpty())
-                            }
-                        )
+            // 1) 尝试主端点
+            var success = tryEndpoint(
+                baseUrl = resolvedUrl,
+                apiKey = primary.apiKey,
+                request = request,
+                aiMsg = aiMsg,
+                conv = conv,
+                providerId = primary.id
+            )
+
+            // 2) 主端点失败 → 故障转移
+            if (!success) {
+                val failedUrl = primary.baseUrl
+                val candidates = retryEngine.findFallbacks(failedUrl, providers)
+
+                for (candidate in candidates) {
+                    if (_isStreaming.value == false) break
+
+                    val fallbackUrl = resolveEndpointPath(candidate.provider.baseUrl)
+
+                    aiMsg.content += "\n[自动切换: ${candidate.provider.name} → ${candidate.kbEntry.path}]"
+
+                    success = tryEndpoint(
+                        baseUrl = fallbackUrl,
+                        apiKey = candidate.provider.apiKey,
+                        request = request,
+                        aiMsg = aiMsg,
+                        conv = conv,
+                        providerId = candidate.provider.id
+                    )
+
+                    if (success) {
+                        aiMsg.providerId = candidate.provider.id
+                        break
                     }
-                } else {
-                    aiMsg.status = MessageStatus.error
-                    aiMsg.content = "HTTP \${response.code()}: \${response.message()}"
-                    _messages.value = conv.messages.toList()
-                    _isStreaming.value = false
                 }
-            } catch (e: Exception) {
+            }
+
+            // 3) 全部失败
+            if (!success) {
                 aiMsg.status = MessageStatus.error
-                aiMsg.content = "Error: \${e.message}"
+                if (aiMsg.content.isBlank()) {
+                    aiMsg.content = "所有可用端点均已失败，请检查网络或供应商配置"
+                }
                 _messages.value = conv.messages.toList()
                 _isStreaming.value = false
+                store.saveConversations(_conversations.value.orEmpty())
             }
+        }
+    }
+
+    private suspend fun tryEndpoint(
+        baseUrl: String,
+        apiKey: String,
+        request: ChatRequest,
+        aiMsg: Message,
+        conv: Conversation,
+        providerId: String
+    ): Boolean {
+        return try {
+            val service = ApiClient.getService(baseUrl)
+            val response = withContext(Dispatchers.IO) {
+                service.chatCompletionsStream("Bearer $apiKey", request)
+            }
+
+            if (response.isSuccessful) {
+                val body = response.body() ?: return false
+                var completed = false
+                withContext(Dispatchers.IO) {
+                    streamProcessor.processStream(
+                        responseBody = body,
+                        onThinking = { chunk ->
+                            aiMsg.thinking = (aiMsg.thinking ?: "") + chunk
+                            _messages.postValue(conv.messages.toList())
+                        },
+                        onContent = { chunk ->
+                            aiMsg.content += chunk
+                            _messages.postValue(conv.messages.toList())
+                        },
+                        onComplete = {
+                            aiMsg.status = MessageStatus.ready
+                            conv.updatedAt = System.currentTimeMillis()
+                            _messages.postValue(conv.messages.toList())
+                            _isStreaming.postValue(false)
+                            store.saveConversations(_conversations.value.orEmpty())
+                            completed = true
+                            retryEngine.recordSuccess(baseUrl, apiKey)
+                        },
+                        onError = { err ->
+                            aiMsg.content += "\n[流错误: $err]"
+                            _messages.postValue(conv.messages.toList())
+                            completed = false
+                            retryEngine.recordFailure(baseUrl, apiKey)
+                        }
+                    )
+                }
+                completed
+            } else {
+                retryEngine.recordFailure(baseUrl, apiKey)
+                aiMsg.content += "\n[HTTP ${response.code()}]"
+                _messages.postValue(conv.messages.toList())
+                false
+            }
+        } catch (e: Exception) {
+            retryEngine.recordFailure(baseUrl, apiKey)
+            aiMsg.content += "\n[连接失败: ${e.message?.take(60)}]"
+            _messages.postValue(conv.messages.toList())
+            false
+        }
+    }
+
+    /**
+     * 解析端点路径：如果 baseUrl 末尾没有路径段（如 /v1），
+     * 用 EndpointKB 推断路径并附加。
+     */
+    private fun resolveEndpointPath(baseUrl: String): String {
+        val trimmed = baseUrl.trimEnd('/')
+        if (trimmed.contains("//")) {
+            val pathStart = trimmed.indexOf('/', trimmed.indexOf("://") + 3)
+            if (pathStart > 0 && pathStart < trimmed.length - 1) {
+                return baseUrl
+            }
+        }
+
+        val domain = try {
+            val start = if (trimmed.startsWith("http://") || trimmed.startsWith("https://"))
+                trimmed.indexOf("://") + 3 else 0
+            val end = trimmed.indexOf('/', start).let { if (it == -1) trimmed.length else it }
+            trimmed.substring(start, end)
+        } catch (_: Exception) { trimmed }
+
+        val kbResult = EndpointKB.inferPath(domain)
+        return if (kbResult != null) {
+            val (path, _, _) = kbResult
+            trimmed + path
+        } else {
+            baseUrl
         }
     }
 
@@ -252,8 +340,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun setActivePersona(id: String?) {
-        // [Fix-4] 触发LiveData通知UI刷新 + 持久化对话列表
-        // 之前只存了activePersonaId，没存conversation.personaId
         _activeConversation.value?.personaId = id
         _activeConversation.value = _activeConversation.value
         store.saveActivePersonaId(id ?: "")
