@@ -32,8 +32,12 @@ jobs:
       - name: Accept licenses
         run: yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME || true
 
-      - name: Grant execute permission
-        run: chmod +x gradlew
+      - name: Generate Gradle Wrapper
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version=8.11.1
+          fi
+          chmod +x gradlew
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
