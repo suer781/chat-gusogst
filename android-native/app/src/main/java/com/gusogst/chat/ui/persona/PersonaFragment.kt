@@ -141,7 +141,7 @@ class PersonaFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginStart = dp(14) }
         }
         textCol.addView(TextView(requireContext()).apply {
-            text = preset.name; setTextColor(Color.WHITE); textSize = 16f; setTypeface(null, Typeface.BOLD)
+            text = preset.name; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 16f; setTypeface(null, Typeface.BOLD)
         })
         textCol.addView(TextView(requireContext()).apply {
             text = preset.description; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f; maxLines = 1
@@ -254,7 +254,7 @@ class PersonaFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginStart = dp(14) }
         }
         textLayout.addView(TextView(requireContext()).apply {
-            text = "创建角色"; setTextColor(Color.WHITE); textSize = 16f; setTypeface(null, Typeface.BOLD)
+            text = "创建角色"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 16f; setTypeface(null, Typeface.BOLD)
         })
         textLayout.addView(TextView(requireContext()).apply {
             text = "自定义你的AI伙伴"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f

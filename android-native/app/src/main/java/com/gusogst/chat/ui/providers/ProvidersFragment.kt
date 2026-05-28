@@ -241,7 +241,7 @@ class ProvidersFragment : Fragment() {
         }
         infoLayout.addView(TextView(requireContext()).apply {
             text = provider.name
-            setTextColor(Color.WHITE)
+            setTextColor(resources.getColor(R.color.text_primary, null))
             textSize = 15f
             setTypeface(null, Typeface.BOLD)
         })
@@ -289,7 +289,7 @@ class ProvidersFragment : Fragment() {
             // API Key input
             val apiKeyInput = EditText(requireContext()).apply {
                 hint = "API Key"
-                setTextColor(Color.WHITE)
+                setTextColor(resources.getColor(R.color.text_primary, null))
                 setHintTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 setPadding(dp(12), dp(10), dp(12), dp(10))
@@ -309,7 +309,7 @@ class ProvidersFragment : Fragment() {
             // Base URL input
             val baseUrlInput = EditText(requireContext()).apply {
                 hint = "Base URL（可选）"
-                setTextColor(Color.WHITE)
+                setTextColor(resources.getColor(R.color.text_primary, null))
                 setHintTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 setPadding(dp(12), dp(10), dp(12), dp(10))
@@ -399,7 +399,7 @@ class ProvidersFragment : Fragment() {
 
                     modelRow.addView(TextView(requireContext()).apply {
                         text = model.name ?: model.id
-                        setTextColor(Color.WHITE)
+                        setTextColor(resources.getColor(R.color.text_primary, null))
                         textSize = 13f
                         layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                     })

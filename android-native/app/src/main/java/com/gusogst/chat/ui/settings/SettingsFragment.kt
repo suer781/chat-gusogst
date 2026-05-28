@@ -91,7 +91,7 @@ class SettingsFragment : Fragment() {
         }
         textLayout.addView(TextView(requireContext()).apply {
             text = item.label
-            setTextColor(Color.WHITE)
+            setTextColor(resources.getColor(R.color.text_primary, null))
             textSize = 16f
             setTypeface(null, Typeface.BOLD)
         })
