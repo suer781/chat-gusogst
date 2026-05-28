@@ -72,22 +72,26 @@ class BasicSettingsFragment : Fragment() {
             return@addSection grid
         }
 
-        // Font size slider
-        val currentSizeInt = try { fontSize.toInt() } catch (_: Exception) { 14 }
-        addSection("\u5B57\u53F7\u5927\u5C0F", "A") {
-            val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-            row.addView(TextView(requireContext()).apply { text = "A"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
-            row.addView(SeekBar(requireContext()).apply {
-                max = fontSizes.size - 1; progress = fontSizes.indexOf(currentSizeInt).coerceAtLeast(0)
-                progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
-                thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
+        // Font size (navigate to subpage)
+        addSection("字号大小", "A") {
+            val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(16), dp(14), dp(16), dp(14)) }
+            row.addView(TextView(requireContext()).apply { text = "A"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 16f; setPadding(0, 0, dp(12), 0) })
+            row.addView(TextView(requireContext()).apply {
+                text = "${fontSize}px"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 15f
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                    override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) { if (fromUser) viewModel.updateSettings { it.copy(fontSize = fontSizes[progress].toString()) } }
-                    override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
-                })
             })
-            row.addView(TextView(requireContext()).apply { text = currentSizeInt.toString(); setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 20f; setTypeface(null, Typeface.BOLD); gravity = Gravity.END; minWidth = dp(30) })
+            row.addView(TextView(requireContext()).apply {
+                text = ">"; setTextColor(resources.getColor(R.color.gray_500, null)); textSize = 16f
+            })
+            row.background = GradientDrawable().apply { cornerRadius = dp(12).toFloat(); setColor(resources.getColor(R.color.bg_secondary, null)) }
+            row.isClickable = true; row.isFocusable = true
+            row.setOnClickListener {
+                parentFragmentManager.beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
+                    .replace(R.id.fragmentContainer, FontSizeFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
             return@addSection row
         }
 

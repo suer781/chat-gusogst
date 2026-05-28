@@ -56,7 +56,9 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:clipChildren="false"
-            android:background="@color/bg_primary">
+            android:background="@color/bg_primary"
+            android:elevation="4dp"
+            android:outlineProvider="bounds">
 
             <!-- Chat tab -->
             <LinearLayout
