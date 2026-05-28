@@ -125,7 +125,7 @@ data class UIProvider(
 
 // ===== 设置 =====
 data class UISettings(
-    val theme: String = "dark",
+    val theme: String = "system",
     val glassEnabled: Boolean = false,
     val glassOpacity: Int = 80,
     val enableThinking: Boolean = true,
