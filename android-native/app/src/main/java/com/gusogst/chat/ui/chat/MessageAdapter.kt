@@ -40,6 +40,11 @@ class MessageAdapter(
             field = value
             notifyDataSetChanged()
         }
+    var fontSize: Int = 14
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     companion object {
         private const val TYPE_USER = 0
@@ -80,6 +85,10 @@ class MessageAdapter(
 
         fun bind(msg: Message, onDelete: ((Message) -> Unit)?, glass: Boolean = false) {
             MarkdownRenderer.render(msg.content, tvMessage)
+
+            // 字号
+            val fs = (itemView.tag as? MessageAdapter)?.fontSize ?: 14
+            tvMessage.textSize = fs.toFloat()
 
             // HDR 气泡辉光
             val isHdr = (itemView.tag as? MessageAdapter)?.hdrEnabled ?: false
@@ -139,6 +148,9 @@ class MessageAdapter(
             } else {
                 MarkdownRenderer.render(msg.content, tvMessage)
             }
+            // 字号
+            val fs = (itemView.tag as? MessageAdapter)?.fontSize ?: 14
+            tvMessage.textSize = fs.toFloat()
             tvMessage.alpha = if (msg.status == MessageStatus.streaming) 0.8f else 1f
             tvMessage.background?.alpha = if (glass) 80 else 255
 

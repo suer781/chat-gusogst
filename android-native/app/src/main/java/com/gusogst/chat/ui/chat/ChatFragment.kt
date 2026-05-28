@@ -84,6 +84,7 @@ class ChatFragment : Fragment() {
                 "light", "pureWhite" -> false
                 else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
             }
+            adapter.fontSize = try { s.fontSize.toInt() } catch (_: Exception) { 14 }
         }
 
         MaterialAnimator.viewEnter(view)

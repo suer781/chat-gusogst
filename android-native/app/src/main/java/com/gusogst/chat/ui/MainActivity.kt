@@ -13,6 +13,8 @@ import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.animation.ValueAnimator
 import android.content.res.Configuration
+import android.graphics.Color
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -50,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNav: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
@@ -63,19 +66,19 @@ class MainActivity : AppCompatActivity() {
         viewModel.settings.observe(this) { s ->
             applyTheme(s.theme)
             val isDark = isDarkTheme(s.theme)
-            // 应用到 header
+            // HDR + 毛玻璃应用到 header 和根背景
             HdrHelper.applyGlassWithHdr(
                 findViewById(R.id.header),
                 s.hdrEnabled, s.glassEnabled, isDark
             )
-            // 应用到内容根背景（HDR 辉光覆盖全屏）
             HdrHelper.applyGlassWithHdr(
                 findViewById(android.R.id.content),
                 s.hdrEnabled, s.glassEnabled, isDark
             )
-            // 导航栏 + 指示器
             HdrHelper.applyNavGlow(bottomNav, s.hdrEnabled, isDark)
             HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark)
+            // 护眼模式暖色滤镜
+            applyEyeCare(s.eyeCareMode, s.eyeCareIntensity)
         }
 
         if (savedInstanceState == null) {
@@ -186,6 +189,19 @@ class MainActivity : AppCompatActivity() {
         "dark", "pureBlack" -> true
         "light", "pureWhite" -> false
         else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    /** 护眼模式暖色滤镜叠加到根布局 */
+    private fun applyEyeCare(enabled: Boolean, warmth: Int) {
+        val root = findViewById<View>(android.R.id.content)
+        if (!enabled || warmth <= 0) {
+            root.foreground = null
+            return
+        }
+        // 暖色半透明覆盖层，intensity 控制透明度
+        val alpha = (warmth * 0.7f).toInt().coerceIn(0, 80)
+        val overlayColor = Color.argb(alpha, 255, 180, 100)
+        root.foreground = android.graphics.drawable.ColorDrawable(overlayColor)
     }
 
     private fun initNav() {

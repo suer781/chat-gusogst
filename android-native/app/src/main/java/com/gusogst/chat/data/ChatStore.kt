@@ -53,11 +53,26 @@ class ChatStore(context: Context) {
     }
 
     fun loadProviders(): List<UIProvider> {
-        val json = prefs.getString("providers", null) ?: return emptyList()
+        val json = prefs.getString("providers", null) ?: return seedDefaultProviders()
         return try {
             val type = object : TypeToken<List<UIProvider>>() {}.type
             gson.fromJson(json, type)
-        } catch (_: Exception) { emptyList() }
+        } catch (_: Exception) { seedDefaultProviders() }
+    }
+
+    /** 首次加载时播种默认供应商（同步 Web 主分支） */
+    private fun seedDefaultProviders(): List<UIProvider> {
+        val defaults = ProviderRegistry.PROVIDERS.map { def ->
+            UIProvider(
+                name = def.name,
+                baseUrl = def.baseUrl,
+                apiKey = "",
+                models = def.models.map { ModelInfo(it, def.name) }.toMutableList(),
+                enabled = true
+            )
+        }
+        saveProviders(defaults)
+        return defaults
     }
 
     // ===== 设置 =====
