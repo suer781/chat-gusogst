@@ -79,51 +79,72 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            val header = findViewById<View>(R.id.header)
-            val fragmentContainer = findViewById<View>(R.id.fragmentContainer)
-            val bNav = findViewById<View>(R.id.bottomNav)
-            val navInd = findViewById<View>(R.id.navIndicator)
-
-            // 初始态（用 dp 偏移避免布局未测量问题）
-            val offsetY = resources.getDimensionPixelSize(R.dimen.header_height)
-            header.translationY = -offsetY.toFloat()
-            header.alpha = 0f
-            fragmentContainer.alpha = 0f
-            fragmentContainer.scaleX = 0.95f
-            fragmentContainer.scaleY = 0.95f
-            bNav.translationY = resources.getDimensionPixelSize(R.dimen.nav_height).toFloat()
-            bNav.alpha = 0f
-            navInd.alpha = 0f
-
-            // 交错了序贯入场：header → 内容 → nav
-            header.post {
-                header.animate()
-                    .translationY(0f).alpha(1f)
-                    .setDuration(400)
-                    .setInterpolator(DecelerateInterpolator())
-                    .withEndAction {
-                        fragmentContainer.animate()
-                            .alpha(1f).scaleX(1f).scaleY(1f)
-                            .setDuration(500)
-                            .setInterpolator(DecelerateInterpolator())
-                            .withEndAction {
-                                bNav.animate()
-                                    .translationY(0f).alpha(1f)
-                                    .setDuration(400)
-                                    .setInterpolator(DecelerateInterpolator())
-                                    .withEndAction {
-                                        navInd.animate()
-                                            .alpha(1f)
-                                            .setDuration(200)
-                                            .start()
-                                    }
-                                    .start()
-                            }
-                            .start()
-                    }
-                    .start()
-            }
+            playEntryAnimation()
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        playResumeAnimation()
+    }
+
+    /** 冷启动交错序贯动画 */
+    private fun playEntryAnimation() {
+        val header = findViewById<View>(R.id.header)
+        val fragmentContainer = findViewById<View>(R.id.fragmentContainer)
+        val bNav = findViewById<View>(R.id.bottomNav)
+        val navInd = findViewById<View>(R.id.navIndicator)
+
+        // 初始态（用 dp 偏移避免布局未测量问题）
+        val offsetY = resources.getDimensionPixelSize(R.dimen.header_height)
+        header.translationY = -offsetY.toFloat()
+        header.alpha = 0f
+        fragmentContainer.alpha = 0f
+        fragmentContainer.scaleX = 0.95f
+        fragmentContainer.scaleY = 0.95f
+        bNav.translationY = resources.getDimensionPixelSize(R.dimen.nav_height).toFloat()
+        bNav.alpha = 0f
+        navInd.alpha = 0f
+
+        // 交错了序贯入场：header → 内容 → nav
+        header.post {
+            header.animate()
+                .translationY(0f).alpha(1f)
+                .setDuration(400)
+                .setInterpolator(DecelerateInterpolator())
+                .withEndAction {
+                    fragmentContainer.animate()
+                        .alpha(1f).scaleX(1f).scaleY(1f)
+                        .setDuration(500)
+                        .setInterpolator(DecelerateInterpolator())
+                        .withEndAction {
+                            bNav.animate()
+                                .translationY(0f).alpha(1f)
+                                .setDuration(400)
+                                .setInterpolator(DecelerateInterpolator())
+                                .withEndAction {
+                                    navInd.animate()
+                                        .alpha(1f)
+                                        .setDuration(200)
+                                        .start()
+                                }
+                                .start()
+                        }
+                        .start()
+                }
+                .start()
+        }
+    }
+
+    /** 从最近任务/后台切回时的快速入场动画 */
+    private fun playResumeAnimation() {
+        val root = findViewById<View>(android.R.id.content)
+        root.alpha = 0.85f
+        root.animate()
+            .alpha(1f)
+            .setDuration(250)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
     }
 
     private fun setupWindowInsets() {
