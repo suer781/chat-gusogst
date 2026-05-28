@@ -1,5 +1,6 @@
 package com.gusogst.chat.ui.persona
 
+import android.app.Dialog
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
@@ -290,23 +291,23 @@ class PersonaSettingsDialog : DialogFragment() {
             text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 13f
             layoutParams = LinearLayout.LayoutParams((50 * d).toInt(), LinearLayout.LayoutParams.WRAP_CONTENT)
         })
+        val pctTv = TextView(requireContext()).apply {
+            text = "${(value * 100).toInt()}%"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 12f
+            layoutParams = LinearLayout.LayoutParams((36 * d).toInt(), LinearLayout.LayoutParams.WRAP_CONTENT)
+            setTypeface(null, Typeface.BOLD)
+        }
         val seek = SeekBar(requireContext()).apply {
             max = 100; progress = (value * 100).toInt()
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = (4 * d).toInt(); marginEnd = (4 * d).toInt() }
+            progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
+            thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) { if (fromUser) { onChange(progress / 100f); pctTv.text = "${progress}%" } }
                 override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
             })
         }
         row.addView(seek)
-        val pctTv = TextView(requireContext()).apply {
-            text = "${(value * 100).toInt()}%"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 12f
-            layoutParams = LinearLayout.LayoutParams((36 * d).toInt(), LinearLayout.LayoutParams.WRAP_CONTENT)
-            setTypeface(null, Typeface.BOLD)
-        }
         row.addView(pctTv)
-        seek.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = (4 * d).toInt(); marginEnd = (4 * d).toInt() }
-        seek.progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
-        seek.thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
         return row
     }
 
