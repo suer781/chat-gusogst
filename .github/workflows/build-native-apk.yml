@@ -44,5 +44,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chat-gusogst-native-debug
-          path: app/build/outputs/apk/debug/*.apk
+          path: android-native/app/build/outputs/apk/debug/*.apk
           retention-days: 30
