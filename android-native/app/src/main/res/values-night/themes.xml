@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- === Splash screen (dark mode) === -->
+    <style name="Theme.ChatGusogst.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_primary_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.ChatGusogst</item>
+    </style>
+
     <!-- === Dark Theme (auto-selected via values-night) === -->
     <style name="Theme.ChatGusogst" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/accent</item>
