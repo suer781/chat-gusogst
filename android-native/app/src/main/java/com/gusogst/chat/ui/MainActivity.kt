@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         if (AppCompatDelegate.getDefaultNightMode() != mode) {
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            overridePendingTransition(R.anim.theme_enter, R.anim.theme_exit)
             AppCompatDelegate.setDefaultNightMode(mode)
         }
     }
