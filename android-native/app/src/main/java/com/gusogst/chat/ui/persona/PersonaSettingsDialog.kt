@@ -33,32 +33,53 @@ class PersonaSettingsDialog : DialogFragment() {
     private var temperature = 0.7f
     private var topP = 0.9f
     private var maxTokens = 2048
-    private var overrideGlobal = false
-    private var autoMode = "off"
+    private var autoMode = "off" // off / rule / llm
     private var personaId = ""
+    private var personaName = ""
+    private var personaAvatar = ""
+    private var overrideGlobal = false
     private var traits = PersonalityTraits()
 
-    companion object {
-        private const val ARG_PERSONA = "persona"
-        fun newInstance(p: Persona) = PersonaSettingsDialog().apply {
-            arguments = Bundle().apply { putSerializable(ARG_PERSONA, p) }
+    private fun createEmptyDialog(): Dialog {
+        return Dialog(requireContext()).apply {
+            setContentView(TextView(requireContext()).apply {
+                text = "Error loading persona"; setPadding(40, 40, 40, 40)
+            })
         }
     }
 
-    @Suppress("DEPRECATION")
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val personaArg = arguments?.getSerializable(ARG_PERSONA) as? Persona
-        personaId = personaArg?.id ?: ""
-        personaArg?.let {
-            prompt = it.prompt
-            traits = it.personality
-            it.modelParamsConfig?.let { cfg ->
-                temperature = cfg.temperature; topP = cfg.topP
-                maxTokens = cfg.maxTokens; overrideGlobal = cfg.overrideGlobal
-                autoMode = cfg.autoMode
+    companion object {
+        private const val ARG_ID = "pid"; private const val ARG_NAME = "pname"
+        private const val ARG_AVATAR = "pavatar"; private const val ARG_PROMPT = "pprompt"
+        private const val ARG_CALM = "pcalm"; private const val ARG_WARM = "pwarm"
+        private const val ARG_ANALYTICAL = "panaly"; private const val ARG_CREATIVE = "pcreative"
+        private const val ARG_CURIOUS = "pcurious"; private const val ARG_PRECISE = "pprecise"
+        private const val ARG_PLAYFUL = "pplayful"; private const val ARG_ENERGETIC = "penergetic"
+
+        fun newInstance(p: Persona) = PersonaSettingsDialog().apply {
+            arguments = Bundle().apply {
+                putString(ARG_ID, p.id); putString(ARG_NAME, p.name)
+                putString(ARG_AVATAR, p.avatar); putString(ARG_PROMPT, p.prompt)
+                putFloat(ARG_CALM, p.personality.calm); putFloat(ARG_WARM, p.personality.warm)
+                putFloat(ARG_ANALYTICAL, p.personality.analytical); putFloat(ARG_CREATIVE, p.personality.creative)
+                putFloat(ARG_CURIOUS, p.personality.curious); putFloat(ARG_PRECISE, p.personality.precise)
+                putFloat(ARG_PLAYFUL, p.personality.playful); putFloat(ARG_ENERGETIC, p.personality.energetic)
             }
         }
+    }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val b = arguments ?: return createEmptyDialog()
+        personaId = b.getString("pid") ?: ""
+        personaName = b.getString("pname") ?: ""
+        personaAvatar = b.getString("pavatar") ?: ""
+        prompt = b.getString("pprompt") ?: ""
+        traits = PersonalityTraits(
+            calm = b.getFloat("pcalm", 0.5f), warm = b.getFloat("pwarm", 0.5f),
+            analytical = b.getFloat("panaly", 0.5f), creative = b.getFloat("pcreative", 0.5f),
+            curious = b.getFloat("pcurious", 0.5f), precise = b.getFloat("pprecise", 0.5f),
+            playful = b.getFloat("pplayful", 0.5f), energetic = b.getFloat("penergetic", 0.5f)
+        )
         val density = resources.displayMetrics.density
         fun dp(v: Int): Int = (v * density).toInt()
 
@@ -216,8 +237,16 @@ class PersonaSettingsDialog : DialogFragment() {
     }
 
     private fun showSettingsAgain() {
-        val p = viewModel.personas.value.orEmpty().find { it.id == personaId } ?: return
-        PersonaSettingsDialog.newInstance(p).show(parentFragmentManager, "settings2")
+        PersonaSettingsDialog().apply {
+            arguments = Bundle().apply {
+                putString("pid", personaId); putString("pname", personaName)
+                putString("pavatar", personaAvatar); putString("pprompt", prompt)
+                putFloat("pcalm", traits.calm); putFloat("pwarm", traits.warm)
+                putFloat("panaly", traits.analytical); putFloat("pcreative", traits.creative)
+                putFloat("pcurious", traits.curious); putFloat("pprecise", traits.precise)
+                putFloat("pplayful", traits.playful); putFloat("penergetic", traits.energetic)
+            }
+        }.show(parentFragmentManager, "settings2")
     }
 
     private fun sectionLabel(text: String): TextView {

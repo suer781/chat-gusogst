@@ -48,7 +48,7 @@ data class ModelParamsConfig(
     val maxTokens: Int = 2048,
     val overrideGlobal: Boolean = false,
     val autoMode: String = "off"
-) : java.io.Serializable
+)
 
 data class Conversation(
     val id: String = java.util.UUID.randomUUID().toString(),
@@ -94,7 +94,7 @@ data class Persona(
     val tags: List<String> = emptyList(),
     val personality: PersonalityTraits = PersonalityTraits(),
     val modelParamsConfig: ModelParamsConfig? = null
-) : java.io.Serializable
+)
 
 // [NOTE] 同上
 enum class AvatarType { url, blob, base64, emoji }
