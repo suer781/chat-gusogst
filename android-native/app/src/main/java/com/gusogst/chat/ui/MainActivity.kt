@@ -16,6 +16,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
+import java.util.concurrent.atomic.AtomicBoolean
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -50,11 +51,15 @@ class MainActivity : AppCompatActivity() {
     private var currentNavItem: NavItem? = null
     private lateinit var navIndicator: View
     private lateinit var bottomNav: View
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
+        val splashDone = AtomicBoolean(true)
+        splashScreen.setKeepOnScreenCondition { splashDone.get() }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        splashDone.set(false) // splash dismissed right after content is set
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
         haptics = HapticsHelper(this)
         initNav()
@@ -179,8 +184,11 @@ class MainActivity : AppCompatActivity() {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         if (AppCompatDelegate.getDefaultNightMode() != mode) {
+            // 平滑主题过渡：先淡出，recreate 后自动淡入
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             AppCompatDelegate.setDefaultNightMode(mode)
-            MaterialAnimator.applyThemeTransition(findViewById(android.R.id.content))
+            // recreate 后才生效的过渡
+            handler.postDelayed({ overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out) }, 100)
         }
     }
 
