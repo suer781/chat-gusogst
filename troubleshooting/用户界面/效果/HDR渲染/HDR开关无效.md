@@ -2,73 +2,100 @@
 
 ## 症状
 
-在「基本设置 → HDR 渲染」中打开开关后，header 和底部导航栏没有任何视觉变化。
+在「基本设置 → HDR 渲染」中打开开关后，header 和底部导航栏没有任何视觉变化。即使 HDR 开启，界面看起来和关闭时一模一样。
 
-## 原因
+## 原因（三个叠加 Bug）
 
-`HdrHelper` 工具类虽已实现（含 `applyHeaderGlow`/`applyNavGlow`/`applyCardGlow`/`applyBubbleGlow` 等方法），但在 `MainActivity.kt` 的 `settings.observe` 回调中完全没有调用它。
+### Bug 1：isDark 对 system 主题永远返回 true（主因）
 
 ```kotlin
-// 修改前：只处理了 theme 和 glass
-viewModel.settings.observe(this) { s ->
-    applyTheme(s.theme)
-    applyGlassEffect(findViewById(R.id.header), s.glassEnabled)
-    // s.hdrEnabled 被忽略了！
-}
+// 修改前
+val isDark = theme in listOf("dark", "pureBlack", "system")
 ```
 
-UI 可以正确保存 `hdrEnabled` 状态到 `UISettings`，但 MainActivity 从不读取它，导致 HDR 效果永远不生效。
+当用户选择「跟随系统」主题且设备处于浅色模式时，`isDark` 被错误地设为 `true`，使用 `DARK` 色系（如 `reflectionHighlight = argb(60, 255, 255, 255)` 的白色半透明反射层渲染在白色背景上完全不可见）。只有设备本身是暗色模式的用户才能看到效果。
+
+### Bug 2：HDR 辉光仅应用到 header，未覆盖全屏
+
+`s.observe` 回调只调用了 `applyGlassWithHdr(header, …)`，`android.R.id.content` 根背景没有得到 HDR 辉光层。主内容区、卡片、气泡的 HDR 渲染由 `MessageAdapter` 独立控制，但切换 HDR 时 adapter 的 `isDark` 也不刷新。
+
+### Bug 3：MessageAdapter.isDark 没有触发重绘
+
+```kotlin
+var isDark = true  // 普通 var，修改后现有 ViewHolder 不更新
+```
+
+`ChatFragment` 给 `adapter.isDark` 赋值后，`notifyDataSetChanged()` 不会被调用，已有气泡依然使用旧的 `isDark` 值。
 
 ## 修复方案
 
-### 1. 添加 HdrHelper 的 import
+### 1. isDark 检测修正
 
 ```kotlin
-import com.gusogst.chat.util.HdrHelper
-```
-
-### 2. 在 settings.observe 中添加 HDR 调用
-
-```kotlin
-viewModel.settings.observe(this) { s ->
-    applyTheme(s.theme)
-    applyGlassEffect(findViewById(R.id.header), s.glassEnabled)
-    applyHdrEffect(s.hdrEnabled, s.theme)  // 新增
+/** 正确判断当前是否暗色主题（"system" 按实际系统模式） */
+private fun isDarkTheme(theme: String): Boolean = when (theme) {
+    "dark", "pureBlack" -> true
+    "light", "pureWhite" -> false
+    else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 }
 ```
 
-### 3. 新增 applyHdrEffect 方法
+`ChatFragment` 中也做同样的修正：
 
 ```kotlin
-/**
- * Apply HDR glow to header and nav bar based on toggle + theme.
- * Uses HdrHelper which mirrors the Web hdr_v3.css glow effect.
- */
-private fun applyHdrEffect(enabled: Boolean, theme: String) {
-    val isDark = theme in listOf("dark", "pureBlack", "system")
-    val header = findViewById<View>(R.id.header)
-    HdrHelper.applyHeaderGlow(header, enabled, isDark)
-    HdrHelper.applyNavGlow(bottomNav, enabled, isDark)
+adapter.isDark = when (s.theme) {
+    "dark", "pureBlack" -> true
+    "light", "pureWhite" -> false
+    else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 }
+```
+
+### 2. HDR 覆盖全屏
+
+在 settings observer 中对 `android.R.id.content` 也应用 `HdrHelper.applyGlassWithHdr()`：
+
+```kotlin
+HdrHelper.applyGlassWithHdr(
+    findViewById(R.id.header),
+    s.hdrEnabled, s.glassEnabled, isDark
+)
+HdrHelper.applyGlassWithHdr(
+    findViewById(android.R.id.content),
+    s.hdrEnabled, s.glassEnabled, isDark
+)
+HdrHelper.applyNavGlow(bottomNav, s.hdrEnabled, isDark)
+HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark)
+```
+
+### 3. MessageAdapter.isDark 加 setter 触发重绘
+
+```kotlin
+var isDark = true
+    set(value) {
+        field = value
+        notifyDataSetChanged()
+    }
 ```
 
 ## 验证步骤
 
-1. 打开设置 → 基本设置 → HDR 渲染开关
-2. 观察 header 区域是否出现微弱的紫色发光底色（`DARK.headerBg = argb(20, 180, 120, 200)`）
-3. 导航栏底部也应出现相同色调的微弱 glow
-4. 关闭开关后，header 和导航栏恢复透明底色
-5. 切换到浅色主题，重复验证 LIGHT 色系是否正确
+1. 切换到「浅色模式」主题，打开 HDR 开关
+2. header 区域出现微弱的暗色辉光（LIGHT 色系）
+3. 切到「暗色模式」，HDR 反射层在深色背景上清晰可见
+4. 关闭 HDR，header 和内容区恢复原始背景
+5. 选「跟随系统」，分别在系统浅色/暗色下验证 HDR 效果都正确
 
 ## 相关文件
 
 - `android-native/app/src/main/java/com/gusogst/chat/ui/MainActivity.kt`
+- `android-native/app/src/main/java/com/gusogst/chat/ui/chat/ChatFragment.kt`
+- `android-native/app/src/main/java/com/gusogst/chat/ui/chat/MessageAdapter.kt`
 - `android-native/app/src/main/java/com/gusogst/chat/util/HdrHelper.kt`
 - `android-native/app/src/main/java/com/gusogst/chat/model/Models.kt`（UISettings.hdrEnabled 字段）
 - `android-native/app/src/main/java/com/gusogst/chat/ui/settings/BasicSettingsFragment.kt`（HDR 开关 UI）
 
 ## 后续注意事项
 
-- HdrHelper 目前仅对 header 和 nav 生效。气泡（applyBubbleGlow）和卡片（applyCardGlow）尚未接入，如需全量 HDR 效果需在 MessageAdapter 和 Fragment 中额外调用。
-- `applyGlassEffect` 和 `applyHdrEffect` 互不冲突——glass 控制毛玻璃模糊，HDR 控制发光底色。二者可以同时开启。
-- 主题切换时 `applyHdrEffect` 的 `isDark` 判断会影响使用哪套 HDR 色值（DARK vs LIGHT）。
+- `isDark`/`hdrEnabled`/`glassEnabled` 三者都需要触发 `notifyDataSetChanged()`，以确保 ListAdapter 中已绑定的 ViewHolder 重新 bind
+- 未来如果 `glassEnabled` 也需要「跟随系统」主题判断，同样要注意 `isDark` 检测的正确性
+- `applyGlassWithHdr` 内部逻辑：`enabled`（HDR）控制反射辉光层，`glassEnabled` 控制底层的透光渐变，两个参数独立
