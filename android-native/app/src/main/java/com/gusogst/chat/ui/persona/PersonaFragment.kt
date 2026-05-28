@@ -108,8 +108,8 @@ class PersonaFragment : Fragment() {
             setPadding(dp(16), dp(14), dp(16), dp(14))
             val bg = GradientDrawable().apply {
                 cornerRadius = dp(16).toFloat()
-                setColor(Color.parseColor("#1A1A3A"))
-                setStroke(1, Color.parseColor("#2A2A4A"))
+                setColor(resources.getColor(R.color.bg_secondary, null))
+                setStroke(1, resources.getColor(R.color.bg_tertiary, null))
             }
             background = bg
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(8) }
@@ -144,12 +144,12 @@ class PersonaFragment : Fragment() {
             text = preset.name; setTextColor(Color.WHITE); textSize = 16f; setTypeface(null, Typeface.BOLD)
         })
         textCol.addView(TextView(requireContext()).apply {
-            text = preset.description; setTextColor(Color.parseColor("#A0A0B8")); textSize = 13f; maxLines = 1
+            text = preset.description; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f; maxLines = 1
         })
         topRow.addView(textCol)
         // 箭头 >
         topRow.addView(TextView(requireContext()).apply {
-            text = ">"; setTextColor(Color.parseColor("#8888A0")); textSize = 18f
+            text = ">"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 18f
         })
         card.addView(topRow)
 
@@ -167,9 +167,9 @@ class PersonaFragment : Fragment() {
         }
         for (tag in preset.tags.take(2)) {
             tagRow.addView(TextView(requireContext()).apply {
-                text = tag; setTextColor(Color.parseColor("#8888A0")); textSize = 11f
+                text = tag; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 11f
                 setPadding(dp(8), dp(2), dp(8), dp(2))
-                background = GradientDrawable().apply { cornerRadius = dp(100).toFloat(); setColor(Color.parseColor("#22224A")) }
+                background = GradientDrawable().apply { cornerRadius = dp(100).toFloat(); setColor(resources.getColor(R.color.bg_tertiary, null)) }
                 layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginEnd = dp(4) }
             })
         }
@@ -184,7 +184,7 @@ class PersonaFragment : Fragment() {
                 layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginStart = dp(6) }
             }
             traitChip.addView(TextView(requireContext()).apply {
-                text = traitName; setTextColor(Color.parseColor("#A0A0B8")); textSize = 10f
+                text = traitName; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 10f
             })
             // 迷你进度条
             val barW = dp(40); val barH = dp(4)
@@ -193,7 +193,7 @@ class PersonaFragment : Fragment() {
                 layoutParams = LinearLayout.LayoutParams(barW, barH).apply { marginStart = dp(3) }
                 progressDrawable = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE; cornerRadius = barH / 2f
-                    setColor(Color.parseColor("#22224A"))
+                    setColor(resources.getColor(R.color.bg_tertiary, null))
                 }
                 // 使用层叠进度条
                 isIndeterminate = false
@@ -240,7 +240,7 @@ class PersonaFragment : Fragment() {
             setPadding(dp(16), dp(14), dp(16), dp(14))
             background = GradientDrawable().apply {
                 cornerRadius = dp(16).toFloat(); setColor(Color.TRANSPARENT)
-                setStroke(1, Color.parseColor("#404060"))
+                setStroke(1, resources.getColor(R.color.text_tertiary, null))
             }
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { topMargin = dp(4) }
         }
@@ -257,11 +257,11 @@ class PersonaFragment : Fragment() {
             text = "创建角色"; setTextColor(Color.WHITE); textSize = 16f; setTypeface(null, Typeface.BOLD)
         })
         textLayout.addView(TextView(requireContext()).apply {
-            text = "自定义你的AI伙伴"; setTextColor(Color.parseColor("#A0A0B8")); textSize = 13f
+            text = "自定义你的AI伙伴"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
         })
         card.addView(textLayout)
         card.addView(TextView(requireContext()).apply {
-            text = ">"; setTextColor(Color.parseColor("#8888A0")); textSize = 18f
+            text = ">"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 18f
         })
         card.setOnClickListener {
             // 打开创建页面

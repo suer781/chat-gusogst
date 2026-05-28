@@ -51,8 +51,8 @@ class SettingsFragment : Fragment() {
             setPadding(dp(16), dp(16), dp(16), dp(16))
             val bg = GradientDrawable().apply {
                 cornerRadius = dp(16).toFloat()
-                setColor(Color.parseColor("#1A1A3A"))
-                setStroke(1, Color.parseColor("#2A2A4A"))
+                setColor(resources.getColor(R.color.bg_secondary, null))
+                setStroke(1, resources.getColor(R.color.bg_tertiary, null))
             }
             background = bg
             layoutParams = LinearLayout.LayoutParams(
@@ -66,7 +66,7 @@ class SettingsFragment : Fragment() {
         // Icon container
         val iconBg = GradientDrawable().apply {
             cornerRadius = dp(12).toFloat()
-            setColor(Color.parseColor("#22224A"))
+            setColor(resources.getColor(R.color.bg_tertiary, null))
         }
         val iconTv = TextView(requireContext()).apply {
             text = item.icon
@@ -97,7 +97,7 @@ class SettingsFragment : Fragment() {
         })
         textLayout.addView(TextView(requireContext()).apply {
             text = item.desc
-            setTextColor(Color.parseColor("#8888A0"))
+            setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 13f
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -108,7 +108,7 @@ class SettingsFragment : Fragment() {
         // Arrow
         val arrowTv = TextView(requireContext()).apply {
             text = "›"
-            setTextColor(Color.parseColor("#8888A0"))
+            setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 22f
         }
 

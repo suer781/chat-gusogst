@@ -112,7 +112,7 @@ class PersonaProfileFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(dp(36), dp(36)).apply { marginStart = dp(8) }
             background = GradientDrawable().apply {
                 setColor(resources.getColor(R.color.bg_secondary, null))
-                setStroke(1, Color.parseColor("#333355")); cornerRadius = dp(10).toFloat()
+                setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat()
             }
             setOnClickListener { showSettingsDialog(persona) }
         })
@@ -135,7 +135,7 @@ class PersonaProfileFragment : Fragment() {
                 layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(6) }
             }
             trow.addView(TextView(requireContext()).apply {
-                text = tname; setTextColor(Color.parseColor("#A0A0B8")); textSize = 13f
+                text = tname; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
                 layoutParams = LinearLayout.LayoutParams(dp(50), ViewGroup.LayoutParams.WRAP_CONTENT)
             })
             val barH = dp(10)

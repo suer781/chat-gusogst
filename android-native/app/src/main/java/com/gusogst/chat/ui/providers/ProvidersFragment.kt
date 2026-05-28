@@ -124,11 +124,11 @@ class ProvidersFragment : Fragment() {
                         setColor(Color.parseColor("#E94560"))
                     } else {
                         setColor(Color.TRANSPARENT)
-                        setStroke(1, Color.parseColor("#2A2A4A"))
+                        setStroke(1, resources.getColor(R.color.bg_tertiary, null))
                     }
                 }
                 background = bg
-                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#A0A0B8"))
+                setTextColor(if (isSelected) Color.WHITE else resources.getColor(R.color.text_secondary, null))
                 setTypeface(null, if (isSelected) Typeface.BOLD else Typeface.NORMAL)
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -167,7 +167,7 @@ class ProvidersFragment : Fragment() {
         if (filtered.isEmpty()) {
             val emptyTv = TextView(requireContext()).apply {
                 text = "没有匹配的供应商"
-                setTextColor(Color.parseColor("#8888A0"))
+                setTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 gravity = Gravity.CENTER
                 setPadding(0, dp(32), 0, dp(32))
@@ -202,8 +202,8 @@ class ProvidersFragment : Fragment() {
             setPadding(dp(16), dp(14), dp(16), dp(14))
             val bg = GradientDrawable().apply {
                 cornerRadius = dp(16).toFloat()
-                setColor(Color.parseColor("#1A1A3A"))
-                setStroke(1, if (isExpanded) Color.parseColor("#E94560") else Color.parseColor("#2A2A4A"))
+                setColor(resources.getColor(R.color.bg_secondary, null))
+                setStroke(1, if (isExpanded) Color.parseColor("#E94560") else resources.getColor(R.color.bg_tertiary, null))
             }
             background = bg
             isClickable = true
@@ -214,7 +214,7 @@ class ProvidersFragment : Fragment() {
         val iconBg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = dp(10).toFloat()
-            setColor(Color.parseColor("#22224A"))
+            setColor(resources.getColor(R.color.bg_tertiary, null))
         }
         val iconTv = TextView(requireContext()).apply {
             text = provider.name.firstOrNull()?.uppercase() ?: "?"
@@ -247,7 +247,7 @@ class ProvidersFragment : Fragment() {
         })
         infoLayout.addView(TextView(requireContext()).apply {
             text = "${provider.models.size} models"
-            setTextColor(Color.parseColor("#8888A0"))
+            setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 12f
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -258,7 +258,7 @@ class ProvidersFragment : Fragment() {
         // Expand arrow
         val arrowTv = TextView(requireContext()).apply {
             text = if (isExpanded) "▲" else "▼"
-            setTextColor(Color.parseColor("#8888A0"))
+            setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 12f
         }
 
@@ -280,8 +280,8 @@ class ProvidersFragment : Fragment() {
                 setPadding(dp(16), dp(12), dp(16), dp(16))
                 val bg = GradientDrawable().apply {
                     cornerRadii = floatArrayOf(0f, 0f, 0f, 0f, dp(16).toFloat(), dp(16).toFloat(), dp(16).toFloat(), dp(16).toFloat())
-                    setColor(Color.parseColor("#151538"))
-                    setStroke(1, Color.parseColor("#2A2A4A"))
+                    setColor(resources.getColor(R.color.bg_tertiary, null))
+                    setStroke(1, resources.getColor(R.color.bg_tertiary, null))
                 }
                 background = bg
             }
@@ -290,12 +290,12 @@ class ProvidersFragment : Fragment() {
             val apiKeyInput = EditText(requireContext()).apply {
                 hint = "API Key"
                 setTextColor(Color.WHITE)
-                setHintTextColor(Color.parseColor("#8888A0"))
+                setHintTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 setPadding(dp(12), dp(10), dp(12), dp(10))
                 val inputBg = GradientDrawable().apply {
                     cornerRadius = dp(10).toFloat()
-                    setColor(Color.parseColor("#22224A"))
+                    setColor(resources.getColor(R.color.bg_tertiary, null))
                 }
                 background = inputBg
                 inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -310,12 +310,12 @@ class ProvidersFragment : Fragment() {
             val baseUrlInput = EditText(requireContext()).apply {
                 hint = "Base URL（可选）"
                 setTextColor(Color.WHITE)
-                setHintTextColor(Color.parseColor("#8888A0"))
+                setHintTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 setPadding(dp(12), dp(10), dp(12), dp(10))
                 val inputBg = GradientDrawable().apply {
                     cornerRadius = dp(10).toFloat()
-                    setColor(Color.parseColor("#22224A"))
+                    setColor(resources.getColor(R.color.bg_tertiary, null))
                 }
                 background = inputBg
                 inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
@@ -373,7 +373,7 @@ class ProvidersFragment : Fragment() {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     dp(1)
                 ).apply { topMargin = dp(12); bottomMargin = dp(8) }
-                setBackgroundColor(Color.parseColor("#2A2A4A"))
+                setBackgroundColor(resources.getColor(R.color.bg_tertiary, null))
             })
 
             // Model list
@@ -412,7 +412,7 @@ class ProvidersFragment : Fragment() {
                         }
                         modelRow.addView(TextView(requireContext()).apply {
                             text = ctxText
-                            setTextColor(Color.parseColor("#8888A0"))
+                            setTextColor(resources.getColor(R.color.text_tertiary, null))
                             textSize = 11f
                         })
                     }
@@ -429,7 +429,7 @@ class ProvidersFragment : Fragment() {
             } else {
                 expandedContent.addView(TextView(requireContext()).apply {
                     text = "暂无模型，请先配置 API Key"
-                    setTextColor(Color.parseColor("#8888A0"))
+                    setTextColor(resources.getColor(R.color.text_tertiary, null))
                     textSize = 13f
                     gravity = Gravity.CENTER
                     setPadding(0, dp(16), 0, dp(8))

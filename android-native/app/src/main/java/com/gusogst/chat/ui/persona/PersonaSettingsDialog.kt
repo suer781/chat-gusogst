@@ -116,7 +116,7 @@ class PersonaSettingsDialog : DialogFragment() {
             setHintTextColor(resources.getColor(R.color.gray_500, null)); hint = "描述角色的性格、风格、行为准则..."
             textSize = 14f; setPadding(dp(14), dp(12), dp(14), dp(12)); minLines = 4; maxLines = 8
             background = GradientDrawable().apply {
-                setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, Color.parseColor("#2A2A5A")); cornerRadius = dp(8).toFloat()
+                setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(8).toFloat()
             }
             addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -198,7 +198,7 @@ class PersonaSettingsDialog : DialogFragment() {
         btnRow.addView(TextView(requireContext()).apply {
             text = "取消"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 14f; gravity = Gravity.CENTER
             setPadding(dp(12), dp(12), dp(12), dp(12))
-            background = GradientDrawable().apply { setColor(Color.TRANSPARENT); setStroke(1, Color.parseColor("#2A2A5A")); cornerRadius = dp(10).toFloat() }
+            background = GradientDrawable().apply { setColor(Color.TRANSPARENT); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat() }
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(10) }
             setOnClickListener { dismiss() }
         })
@@ -262,7 +262,7 @@ class PersonaSettingsDialog : DialogFragment() {
         return TextView(requireContext()).apply {
             text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 13f
             gravity = Gravity.CENTER; setPadding((8 * d).toInt(), (10 * d).toInt(), (8 * d).toInt(), (10 * d).toInt())
-            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, Color.parseColor("#2A2A5A")); cornerRadius = (8 * d).toFloat() }
+            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = (8 * d).toFloat() }
             setOnClickListener { onClick() }
         }
     }
