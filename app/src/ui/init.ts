@@ -26,7 +26,7 @@ export async function initApp() {
 
   // Hide splash AFTER app is painted — seamless handoff
   try {
-    await SplashScreen.hide({ fadeOutDuration: 300 })
+    await SplashScreen.hide({ fadeOutDuration: 0 })
   } catch (e) {
     console.warn('SplashScreen hide failed:', e)
   }
