@@ -36,19 +36,26 @@ class PersonaSettingsDialog : DialogFragment() {
     private var overrideGlobal = false
     private var autoMode = "off" // off / rule / llm
     private var personaId = ""
+    private var personaName = ""
+    private var personaAvatar = ""
+    private var traits = PersonalityTraits()
 
     companion object {
-        private const val ARG_PERSONA_ID = "persona_id"
-        fun newInstance(personaId: String) = PersonaSettingsDialog().apply {
-            arguments = Bundle().apply { putString(ARG_PERSONA_ID, personaId) }
+        private const val ARG_PERSONA = "persona"
+        fun newInstance(p: Persona) = PersonaSettingsDialog().apply {
+            arguments = Bundle().apply { putSerializable(ARG_PERSONA, p) }
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        personaId = arguments?.getString(ARG_PERSONA_ID) ?: ""
-        val persona = viewModel.personas.value.orEmpty().find { it.id == personaId }
-        persona?.let {
+        val personaArg = arguments?.getSerializable(ARG_PERSONA) as? Persona
+        personaId = personaArg?.id ?: ""
+        personaName = personaArg?.name ?: ""
+        personaAvatar = personaArg?.avatar ?: ""
+        personaArg?.let {
             prompt = it.prompt
+            traits = it.personality
             it.modelParamsConfig?.let { cfg ->
                 temperature = cfg.temperature
                 topP = cfg.topP
@@ -159,6 +166,21 @@ class PersonaSettingsDialog : DialogFragment() {
         }
         content.addView(modeRow)
 
+        // ===== 人格特质编辑 =====
+        content.addView(sectionLabel("🎭 人格特质"))
+        val traitKeys = listOf(
+            "冷静" to traits.calm, "温暖" to traits.warm, "分析" to traits.analytical,
+            "创造" to traits.creative, "好奇" to traits.curious, "精准" to traits.precise,
+            "风趣" to traits.playful, "活力" to traits.energetic
+        )
+        val traitFields = mutableListOf<Float>()
+        traitFields.addAll(traitKeys.map { it.second })
+        for ((i, pair) in traitKeys.withIndex()) {
+            val (label, initial) = pair
+            val idx = i
+            content.addView(createTraitSlider(label, initial) { v -> traitFields[idx] = v })
+        }
+
         sv.addView(content)
         root.addView(sv)
 
@@ -257,12 +279,7 @@ class PersonaSettingsDialog : DialogFragment() {
             }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { marginEnd = (6 * dp).toInt() }
             setOnClickListener { onClick() }
-        }
-    }
-
-    private fun buildOverrideUI(content: LinearLayout) { /* Rebuild toggle state on change */ }
-
-    // Rule engine: keyword -> slider adjustments
+        }\n    }\n\n    private fun createTraitSlider(label: String, value: Float, onChange: (Float) -> Unit): LinearLayout {\n        val dp = resources.displayMetrics.density\n        fun dp(v: Int): Int = (v * dp).toInt()\n        val row = LinearLayout(requireContext()).apply {\n            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL\n            setPadding(0, dp(6), 0, dp(6))\n        }\n        row.addView(TextView(requireContext()).apply {\n            text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 13f\n            layoutParams = LinearLayout.LayoutParams(dp(50), WRAP_CONTENT)\n        })\n        val seek = SeekBar(requireContext()).apply {\n            max = 100; progress = (value * 100).toInt()\n            progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))\n            thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))\n            layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginStart = dp(4); marginEnd = dp(4) }\n            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {\n                override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) { if (fromUser) onChange(progress / 100f) }\n                override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}\n            })\n        }\n        row.addView(seek)\n        val pctTv = TextView(requireContext()).apply {\n            text = "${(value * 100).toInt()}%"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 12f\n            layoutParams = LinearLayout.LayoutParams(dp(36), WRAP_CONTENT)\n            setTypeface(null, Typeface.BOLD)\n        }\n        seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {\n            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) { if (fromUser) { onChange(progress / 100f); pctTv.text = \"${progress}%\" } }\n            override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}\n        })\n        row.addView(pctTv)\n        return row\n    }\n\n    // Rule engine: keyword -> slider adjustments
     private fun analyzeWithRules(prompt: String): FloatArray {
         val lower = prompt.lowercase()
         var tAdj = 0f; var pAdj = 0f; var tokAdj = 0f

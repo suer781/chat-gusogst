@@ -72,6 +72,17 @@ data class ConversationSettings(
 )
 
 // ===== 角色 =====
+data class PersonalityTraits(
+    val calm: Float = 0.5f,
+    val warm: Float = 0.5f,
+    val analytical: Float = 0.5f,
+    val creative: Float = 0.5f,
+    val curious: Float = 0.5f,
+    val precise: Float = 0.5f,
+    val playful: Float = 0.5f,
+    val energetic: Float = 0.5f
+)
+
 data class Persona(
     val id: String = java.util.UUID.randomUUID().toString(),
     val name: String = "",
@@ -81,6 +92,7 @@ data class Persona(
     var bgColor: String = "",
     var textColor: String = "",
     val tags: List<String> = emptyList(),
+    val personality: PersonalityTraits = PersonalityTraits(),
     val modelParamsConfig: ModelParamsConfig? = null
 )
 
