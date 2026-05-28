@@ -105,7 +105,7 @@ class FontSizeFragment : Fragment() {
                     cornerRadius = dp(100).toFloat()
                     setColor(resources.getColor(R.color.bg_tertiary, null))
                 }
-                layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginHorizontal = dp(3) }
+                layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginStart = dp(3); marginEnd = dp(3) }
                 setOnClickListener {
                     seekBar.progress = idx
                     updatePreview(previewTv, sizeDisplay, fontSizes[idx])
