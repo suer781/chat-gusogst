@@ -58,6 +58,8 @@ class MainActivity : AppCompatActivity() {
         val splashDone = AtomicBoolean(true)
         splashScreen.setKeepOnScreenCondition { splashDone.get() }
         super.onCreate(savedInstanceState)
+        // 平滑主题过渡（每次 recreate 都有淡入）
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         setContentView(R.layout.activity_main)
         splashDone.set(false) // splash dismissed right after content is set
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
@@ -96,14 +98,13 @@ class MainActivity : AppCompatActivity() {
         playResumeAnimation()
     }
 
-    /** 冷启动交错序贯动画 */
+    /** 冷启动交错序贯动画（~600ms 总时长） */
     private fun playEntryAnimation() {
         val header = findViewById<View>(R.id.header)
         val fragmentContainer = findViewById<View>(R.id.fragmentContainer)
         val bNav = findViewById<View>(R.id.bottomNav)
         val navInd = findViewById<View>(R.id.navIndicator)
 
-        // 初始态（用 dp 偏移避免布局未测量问题）
         val offsetY = resources.getDimensionPixelSize(R.dimen.header_height)
         header.translationY = -offsetY.toFloat()
         header.alpha = 0f
@@ -114,33 +115,18 @@ class MainActivity : AppCompatActivity() {
         bNav.alpha = 0f
         navInd.alpha = 0f
 
-        // 交错了序贯入场：header → 内容 → nav
         header.post {
-            header.animate()
-                .translationY(0f).alpha(1f)
-                .setDuration(400)
-                .setInterpolator(DecelerateInterpolator())
-                .withEndAction {
-                    fragmentContainer.animate()
-                        .alpha(1f).scaleX(1f).scaleY(1f)
-                        .setDuration(500)
-                        .setInterpolator(DecelerateInterpolator())
-                        .withEndAction {
-                            bNav.animate()
-                                .translationY(0f).alpha(1f)
-                                .setDuration(400)
-                                .setInterpolator(DecelerateInterpolator())
-                                .withEndAction {
-                                    navInd.animate()
-                                        .alpha(1f)
-                                        .setDuration(200)
-                                        .start()
-                                }
-                                .start()
-                        }
-                        .start()
-                }
-                .start()
+            // 并行触发，交错 50ms，600ms 内完成
+            header.animate().translationY(0f).alpha(1f).setDuration(350).setInterpolator(DecelerateInterpolator()).start()
+            fragmentContainer.postDelayed({
+                fragmentContainer.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(400).setInterpolator(DecelerateInterpolator()).start()
+            }, 50)
+            bNav.postDelayed({
+                bNav.animate().translationY(0f).alpha(1f).setDuration(350).setInterpolator(DecelerateInterpolator()).start()
+            }, 100)
+            navInd.postDelayed({
+                navInd.animate().alpha(1f).setDuration(200).start()
+            }, 250)
         }
     }
 
@@ -184,11 +170,7 @@ class MainActivity : AppCompatActivity() {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         if (AppCompatDelegate.getDefaultNightMode() != mode) {
-            // 平滑主题过渡：先淡出，recreate 后自动淡入
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             AppCompatDelegate.setDefaultNightMode(mode)
-            // recreate 后才生效的过渡
-            handler.postDelayed({ overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out) }, 100)
         }
     }
 
