@@ -66,12 +66,12 @@ class PersonaProfileFragment : Fragment() {
             addView(TextView(requireContext()).apply {
                 text = p.avatar.ifEmpty { p.name.first().toString() }; textSize = 28f
                 gravity = Gravity.CENTER; setTextColor(Color.WHITE)
-                layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             })
         })
         val textCol = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
         textCol.addView(TextView(requireContext()).apply {
             text = p.name; setTextColor(resources.getColor(R.color.text_primary, null))
@@ -98,7 +98,7 @@ class PersonaProfileFragment : Fragment() {
         root.addView(TextView(requireContext()).apply {
             text = "人格特质"; setTextColor(resources.getColor(R.color.text_primary, null))
             textSize = 15f; setTypeface(null, Typeface.BOLD)
-            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(8) }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) }
         })
         val traits = listOf(
             "冷静" to p.personality.calm, "温暖" to p.personality.warm,
@@ -109,12 +109,12 @@ class PersonaProfileFragment : Fragment() {
         for ((name, value) in traits) {
             val traitRow = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(6) }
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(6) }
             }
             // 标签
             traitRow.addView(TextView(requireContext()).apply {
                 text = name; setTextColor(Color.parseColor("#A0A0B8")); textSize = 13f
-                layoutParams = LinearLayout.LayoutParams(dp(50), WRAP_CONTENT)
+                layoutParams = LinearLayout.LayoutParams(dp(50), ViewGroup.LayoutParams.WRAP_CONTENT)
             })
             // 进度条（用 FrameLayout 模拟原生条）
             val barH = dp(10)
@@ -145,7 +145,7 @@ class PersonaProfileFragment : Fragment() {
             traitRow.addView(TextView(requireContext()).apply {
                 text = "${(value * 100).toInt()}%"
                 setTextColor(resources.getColor(R.color.accent, null)); textSize = 12f; setTypeface(null, Typeface.BOLD)
-                layoutParams = LinearLayout.LayoutParams(dp(40), WRAP_CONTENT, Gravity.END.toFloat())
+                layoutParams = LinearLayout.LayoutParams(dp(40), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.END.toFloat())
             })
             root.addView(traitRow)
         }
@@ -154,7 +154,7 @@ class PersonaProfileFragment : Fragment() {
         root.addView(TextView(requireContext()).apply {
             text = "系统提示词"; setTextColor(resources.getColor(R.color.text_primary, null))
             textSize = 15f; setTypeface(null, Typeface.BOLD)
-            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { topMargin = dp(16); bottomMargin = dp(8) }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16); bottomMargin = dp(8) }
         })
         root.addView(TextView(requireContext()).apply {
             text = p.prompt.ifEmpty { "No system prompt set" }
@@ -163,7 +163,7 @@ class PersonaProfileFragment : Fragment() {
             background = GradientDrawable().apply {
                 setColor(resources.getColor(R.color.bg_secondary, null)); cornerRadius = dp(10).toFloat()
             }
-            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(150))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(150))
         })
 
         // ========== 底部按钮 ==========
@@ -177,7 +177,7 @@ class PersonaProfileFragment : Fragment() {
             background = GradientDrawable().apply {
                 setColor(Color.TRANSPARENT); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat()
             }
-            layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginEnd = dp(10) }
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(10) }
             setOnClickListener { parentFragmentManager.popBackStack() }
         })
         // 开始对话
@@ -187,7 +187,7 @@ class PersonaProfileFragment : Fragment() {
             background = GradientDrawable().apply {
                 setColor(resources.getColor(R.color.accent, null)); cornerRadius = dp(10).toFloat()
             }
-            layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 2f)
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 2f)
             setOnClickListener {
                 viewModel.setActivePersona(p.id)
                 parentFragmentManager.popBackStack()
@@ -203,8 +203,4 @@ class PersonaProfileFragment : Fragment() {
     }
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
-    companion object {
-        const val MATCH_PARENT = ViewGroup.LayoutParams.MATCH_PARENT
-        const val WRAP_CONTENT = ViewGroup.LayoutParams.WRAP_CONTENT
-    }
 }
