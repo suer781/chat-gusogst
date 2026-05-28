@@ -8,6 +8,7 @@ import android.widget.EditText
 import com.google.android.material.textview.MaterialTextView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.content.res.Configuration
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -78,7 +79,11 @@ class ChatFragment : Fragment() {
         viewModel.settings.observe(viewLifecycleOwner) { s ->
             adapter.glassEnabled = s.glassEnabled
             adapter.hdrEnabled = s.hdrEnabled
-            adapter.isDark = s.theme in listOf("dark", "pureBlack", "system")
+            adapter.isDark = when (s.theme) {
+                "dark", "pureBlack" -> true
+                "light", "pureWhite" -> false
+                else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            }
         }
 
         MaterialAnimator.viewEnter(view)

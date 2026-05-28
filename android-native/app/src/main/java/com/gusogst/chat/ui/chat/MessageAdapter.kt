@@ -36,6 +36,10 @@ class MessageAdapter(
             notifyDataSetChanged()
         }
     var isDark = true
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     companion object {
         private const val TYPE_USER = 0

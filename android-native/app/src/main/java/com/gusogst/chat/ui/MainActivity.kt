@@ -12,6 +12,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.animation.ValueAnimator
+import android.content.res.Configuration
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -61,21 +62,65 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.settings.observe(this) { s ->
             applyTheme(s.theme)
-            applyGlassAndHdr(
+            val isDark = isDarkTheme(s.theme)
+            // 应用到 header
+            HdrHelper.applyGlassWithHdr(
                 findViewById(R.id.header),
-                s.glassEnabled, s.hdrEnabled,
-                s.theme
+                s.hdrEnabled, s.glassEnabled, isDark
             )
+            // 应用到内容根背景（HDR 辉光覆盖全屏）
+            HdrHelper.applyGlassWithHdr(
+                findViewById(android.R.id.content),
+                s.hdrEnabled, s.glassEnabled, isDark
+            )
+            // 导航栏 + 指示器
+            HdrHelper.applyNavGlow(bottomNav, s.hdrEnabled, isDark)
+            HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark)
         }
 
         if (savedInstanceState == null) {
-            val contentRoot = findViewById<View>(android.R.id.content)
-            contentRoot.alpha = 0f
-            contentRoot.post {
-                contentRoot.animate()
-                    .alpha(1f)
-                    .setDuration(600)
+            val header = findViewById<View>(R.id.header)
+            val fragmentContainer = findViewById<View>(R.id.fragmentContainer)
+            val bNav = findViewById<View>(R.id.bottomNav)
+            val navInd = findViewById<View>(R.id.navIndicator)
+
+            // 初始态（用 dp 偏移避免布局未测量问题）
+            val offsetY = resources.getDimensionPixelSize(R.dimen.header_height)
+            header.translationY = -offsetY.toFloat()
+            header.alpha = 0f
+            fragmentContainer.alpha = 0f
+            fragmentContainer.scaleX = 0.95f
+            fragmentContainer.scaleY = 0.95f
+            bNav.translationY = resources.getDimensionPixelSize(R.dimen.nav_height).toFloat()
+            bNav.alpha = 0f
+            navInd.alpha = 0f
+
+            // 交错了序贯入场：header → 内容 → nav
+            header.post {
+                header.animate()
+                    .translationY(0f).alpha(1f)
+                    .setDuration(400)
                     .setInterpolator(DecelerateInterpolator())
+                    .withEndAction {
+                        fragmentContainer.animate()
+                            .alpha(1f).scaleX(1f).scaleY(1f)
+                            .setDuration(500)
+                            .setInterpolator(DecelerateInterpolator())
+                            .withEndAction {
+                                bNav.animate()
+                                    .translationY(0f).alpha(1f)
+                                    .setDuration(400)
+                                    .setInterpolator(DecelerateInterpolator())
+                                    .withEndAction {
+                                        navInd.animate()
+                                            .alpha(1f)
+                                            .setDuration(200)
+                                            .start()
+                                    }
+                                    .start()
+                            }
+                            .start()
+                    }
                     .start()
             }
         }
@@ -115,16 +160,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 综合玻璃 + HDR 效果
-     * glass 控制透光模糊感，HDR 控制辉光反光层
-     */
-    private fun applyGlassAndHdr(view: View?, glassEnabled: Boolean, hdrEnabled: Boolean, theme: String) {
-        if (view == null) return
-        val isDark = theme in listOf("dark", "pureBlack", "system")
-        HdrHelper.applyGlassWithHdr(view, hdrEnabled, glassEnabled, isDark)
-        HdrHelper.applyNavGlow(bottomNav, hdrEnabled, isDark)
-        HdrHelper.applyIndicatorGlow(navIndicator, hdrEnabled, isDark)
+    /** 正确判断当前是否暗色主题（"system" 按实际系统模式） */
+    private fun isDarkTheme(theme: String): Boolean = when (theme) {
+        "dark", "pureBlack" -> true
+        "light", "pureWhite" -> false
+        else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
     }
 
     private fun initNav() {
