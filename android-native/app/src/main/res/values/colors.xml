@@ -110,11 +110,11 @@
     <!-- === UI Component Colors === -->
     <color name="thinking_border">#262650</color>
     <color name="bubble_user">@color/accent</color>
-    <color name="bubble_assistant">@color/bg_tertiary_dark</color>
+    <color name="bubble_assistant">@color/bg_tertiary_light</color>
     <color name="bubble_user_text">#FFFFFF</color>
-    <color name="bubble_assistant_text">@color/text_primary_dark</color>
-    <color name="input_bg">@color/bg_secondary_dark</color>
-    <color name="nav_bg">@color/bg_primary_dark</color>
+    <color name="bubble_assistant_text">@color/text_primary_light</color>
+    <color name="input_bg">@color/bg_secondary_light</color>
+    <color name="nav_bg">@color/bg_primary_light</color>
     <color name="nav_active">@color/accent</color>
     <color name="nav_inactive">@color/gray_400</color>
 
@@ -124,9 +124,9 @@
     <color name="transparent">#00000000</color>
     <color name="ic_launcher_background">#0D0D2B</color>
 
-    <!-- === Short aliases (backward compat, default = dark) === -->
-    <color name="bg_tertiary">@color/bg_tertiary_dark</color>
-    <color name="bg_elevated">@color/bg_elevated_dark</color>
+    <!-- === Short aliases (backward compat) === -->
+    <color name="bg_tertiary">@color/bg_tertiary_light</color>
+    <color name="bg_elevated">@color/bg_elevated_light</color>
     <color name="bg_overlay">@color/bg_overlay_light</color>
     <color name="bg_card">@color/bg_card_light</color>
     <color name="bg_ambient_top">@color/bg_ambient_top_light</color>

@@ -53,6 +53,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
+        // 纯黑/Amoled 主题在 super.onCreate 前替换
+        val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
+        val settingsJson = prefs.getString("settings", null)
+        if (settingsJson != null) {
+            try {
+                val json = org.json.JSONObject(settingsJson)
+                if (json.optString("theme", "") == "pureBlack")
+                    setTheme(R.style.Theme_ChatGusogst_Amoled)
+            } catch (_: Exception) {}
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
