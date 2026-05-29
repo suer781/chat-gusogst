@@ -133,11 +133,11 @@ object MaterialAnimator {
             .withEndAction { onEnd?.invoke() }.start()
     }
 
-    // ── 导航指示器动画（匹配主分支：cubic-bezier(0.4, 0, 0.2, 1) 450ms）──
+    // ── 导航指示器动画（匹配主分支：cubic-bezier(0.4, 0, 0.2, 1) 350ms）──
     fun animateIndicator(indicator: View, targetX: Float, targetWidth: Float) {
         indicator.animate()
             .x(targetX)
-            .setDuration(450)
+            .setDuration(350)
             .setInterpolator(PathInterpolator(0.4f, 0f, 0.2f, 1f))
             .start()
     }
