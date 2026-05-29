@@ -37,6 +37,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var haptics: HapticsHelper
 
     private lateinit var tvHeaderTitle: TextView
+    private var currentTheme: String = "system"
+
+    /** 从 SharedPreferences 读取当前保存的主题名 */
+    private fun readCurrentTheme(): String {
+        val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
+        val json = prefs.getString("settings", null) ?: return "system"
+        return try {
+            org.json.JSONObject(json).optString("theme", "system")
+        } catch (_: Exception) { "system" }
+    }
 
     private data class NavItem(
         val container: LinearLayout,
@@ -71,9 +81,12 @@ class MainActivity : AppCompatActivity() {
         setupWindowInsets()
         if (savedInstanceState == null) selectNav(navItems[0])
 
-        MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content))
+        currentTheme = readCurrentTheme()
+        MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content), currentTheme)
 
         viewModel.settings.observe(this) { s ->
+            val themeChanged = s.theme != currentTheme
+            currentTheme = s.theme
             applyTheme(s.theme)
             val isDark = isDarkTheme(s.theme)
             // HDR + 毛玻璃应用到 header 和根背景
@@ -87,6 +100,12 @@ class MainActivity : AppCompatActivity() {
             )
             HdrHelper.applyNavGlow(bottomNav, s.hdrEnabled, isDark)
             HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark)
+            // 环境光跟随主题色切换（带动画）
+            MaterialAnimator.setAmbientBackground(
+                findViewById(android.R.id.content),
+                s.theme,
+                animate = themeChanged
+            )
             // 护眼模式暖色滤镜
             applyEyeCare(s.eyeCareMode, s.eyeCareIntensity)
         }

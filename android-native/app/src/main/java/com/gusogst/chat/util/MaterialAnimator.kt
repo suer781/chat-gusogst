@@ -8,8 +8,11 @@ import android.animation.TimeInterpolator
 import android.content.res.ColorStateList
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.graphics.Paint
+import android.graphics.RadialGradient
 import android.graphics.Rect
+import android.graphics.Shader
 import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.ShapeDrawable
@@ -173,46 +176,169 @@ object MaterialAnimator {
     }
 
     // ── 环境光背景设置 ──
-    // Web: body::after radial-gradient (独立合成层)
-    // Android: 用 View 叠加层放在内容上方
-    fun setAmbientBackground(rootView: View) {
-        val density = rootView.resources.displayMetrics.density
-        val w = rootView.resources.displayMetrics.widthPixels
-        val h = rootView.resources.displayMetrics.heightPixels
-        val radius = Math.sqrt((w * w + h * h).toDouble()).toFloat() * 1.2f
+    // 匹配 Web 主分支 tailwind.css body::after 的三椭圆径向渐变
+    // Web: radial-gradient(ellipse 80% 50% at 50% 0%, ...) +
+    //      radial-gradient(ellipse 60% 40% at 20% 100%, ...) +
+    //      radial-gradient(ellipse 50% 35% at 80% 90%, ...)
 
-        // 检查当前是否是暗色主题
-        val isDark = (rootView.resources.configuration.uiMode and
-            android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
-            android.content.res.Configuration.UI_MODE_NIGHT_YES
+    data class AmbientConfig(
+        val topColor: Int,    // 顶部居中渐变颜色
+        val leftColor: Int,   // 左下渐变颜色
+        val rightColor: Int   // 右下渐变颜色
+    )
 
-        val topColor = if (isDark) 0x99B0A0FF.toInt() else 0x66C8B8FF.toInt()
-        val midColor = if (isDark) 0x337080FF.toInt() else 0x22A098FF.toInt()
-        val endColor = Color.TRANSPARENT
-
-        val bg = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            intArrayOf(topColor, midColor, endColor)
+    /** 根据主题获取环境光颜色（预乘 CSS opacity: 0.6） */
+    fun getAmbientConfig(themeName: String): AmbientConfig = when (themeName) {
+        // dark: bg=#0f0f23, opacity 0.6
+        // top: rgba(22,22,60,0.6) → A92          left: rgba(40,10,60,0.4)→A61
+        // right: rgba(10,25,60,0.3)→A46
+        "dark", "pureBlack" -> AmbientConfig(
+            topColor = Color.argb(92, 22, 22, 60),
+            leftColor = Color.argb(61, 40, 10, 60),
+            rightColor = Color.argb(46, 10, 25, 60)
         )
-        bg.gradientType = GradientDrawable.RADIAL_GRADIENT
-        bg.gradientRadius = radius
-        // 光源位置：右上角（75% 宽度, 10% 高度）
-        bg.setGradientCenter((w * 0.75f).toFloat(), (h * 0.1f).toFloat())
+        // light: bg=#f5f5f5, opacity 0.6
+        // top: rgba(230,230,245,0.5)→A77          left: rgba(245,225,230,0.3)→A46
+        // right: rgba(225,235,250,0.3)→A46
+        "light" -> AmbientConfig(
+            topColor = Color.argb(77, 230, 230, 245),
+            leftColor = Color.argb(46, 245, 225, 230),
+            rightColor = Color.argb(46, 225, 235, 250)
+        )
+        // pureWhite: bg=#ffffff, opacity 0.6
+        // top: rgba(250,248,255,0.4)→A61          left: rgba(255,245,248,0.2)→A31
+        // right: rgba(245,250,255,0.2)→A31
+        "pureWhite" -> AmbientConfig(
+            topColor = Color.argb(61, 250, 248, 255),
+            leftColor = Color.argb(31, 255, 245, 248),
+            rightColor = Color.argb(31, 245, 250, 255)
+        )
+        else -> AmbientConfig(
+            topColor = Color.argb(77, 230, 230, 245),
+            leftColor = Color.argb(46, 245, 225, 230),
+            rightColor = Color.argb(46, 225, 235, 250)
+        )
+    }
 
-        // 用覆盖层而非替换背景，保留 bg_primary
-        val overlay = rootView.findViewWithTag<View>("ambient_overlay")
-        if (overlay != null) {
-            overlay.background = bg
-        } else {
-            // 创建覆盖层
-            val cover = View(rootView.context)
-            cover.tag = "ambient_overlay"
-            cover.background = bg
-            cover.layoutParams = ViewGroup.LayoutParams(
+    /**
+     * 自定义 Drawable：绘制三椭圆径向渐变，匹配 Web body::after
+     * 透明底色让 bg_primary 透出来
+     */
+    class AmbientDrawable(
+        private val w: Float,
+        private val h: Float,
+        private val config: AmbientConfig
+    ) : android.graphics.drawable.Drawable() {
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        override fun draw(canvas: Canvas) {
+            // 背景完全透明，让 bg_primary 透出
+            // 1) 顶部居中渐变：ellipse 80% 50% at 50% 0%
+            paint.shader = RadialGradient(
+                w * 0.5f, 0f,
+                Math.max(w * 0.4f, h * 0.25f),
+                intArrayOf(config.topColor, Color.TRANSPARENT),
+                floatArrayOf(0f, 0.6f),
+                Shader.TileMode.CLAMP
+            )
+            canvas.drawRect(0f, 0f, w, h, paint)
+
+            // 2) 左下渐变：ellipse 60% 40% at 20% 100%
+            paint.shader = RadialGradient(
+                w * 0.2f, h,
+                Math.max(w * 0.3f, h * 0.2f),
+                intArrayOf(config.leftColor, Color.TRANSPARENT),
+                floatArrayOf(0f, 0.5f),
+                Shader.TileMode.CLAMP
+            )
+            canvas.drawRect(0f, 0f, w, h, paint)
+
+            // 3) 右下渐变：ellipse 50% 35% at 80% 90%
+            paint.shader = RadialGradient(
+                w * 0.8f, h * 0.9f,
+                Math.max(w * 0.25f, h * 0.175f),
+                intArrayOf(config.rightColor, Color.TRANSPARENT),
+                floatArrayOf(0f, 0.5f),
+                Shader.TileMode.CLAMP
+            )
+            canvas.drawRect(0f, 0f, w, h, paint)
+        }
+
+        override fun setAlpha(alpha: Int) { paint.alpha = alpha }
+        override fun setColorFilter(cf: ColorFilter?) { paint.colorFilter = cf }
+        @Suppress("Deprecation")
+        override fun getOpacity() = android.graphics.PixelFormat.TRANSLUCENT
+    }
+
+    /**
+     * 设置/更新环境光叠加层
+     * @param animate 是否启用 600ms 交叉淡入淡出（主题切换时用）
+     */
+    fun setAmbientBackground(rootView: View, themeName: String, animate: Boolean = false) {
+        val w = rootView.width.coerceAtLeast(1).toFloat()
+        val h = rootView.height.coerceAtLeast(1).toFloat()
+        val config = getAmbientConfig(themeName)
+
+        // 纯黑模式不需要环境光
+        if (themeName == "pureBlack") {
+            val existing = rootView.findViewWithTag<View>("ambient_overlay")
+            if (existing != null) {
+                existing.animate().alpha(0f).setDuration(300).withEndAction {
+                    (existing.parent as? ViewGroup)?.removeView(existing)
+                }.start()
+            }
+            return
+        }
+
+        val drawable = AmbientDrawable(w, h, config)
+        val existing = rootView.findViewWithTag<View>("ambient_overlay")
+
+        if (existing != null && !animate) {
+            // 无动画直接替换
+            existing.background = drawable
+            return
+        }
+
+        if (existing != null && animate) {
+            // 交叉淡入淡出：新层 alpha=0 渐入，旧层渐出后移除
+            val newOverlay = View(rootView.context).apply {
+                tag = "ambient_overlay_new"
+                background = drawable
+                alpha = 0f
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            }
+            (rootView as? ViewGroup)?.addView(newOverlay, 0)
+
+            newOverlay.animate()
+                .alpha(1f)
+                .setDuration(600)
+                .setInterpolator(PathInterpolator(0.4f, 0f, 0.2f, 1f))
+                .withEndAction {
+                    newOverlay.tag = "ambient_overlay"
+                }.start()
+
+            existing.animate()
+                .alpha(0f)
+                .setDuration(600)
+                .setInterpolator(android.view.animation.AccelerateInterpolator())
+                .withEndAction {
+                    (existing.parent as? ViewGroup)?.removeView(existing)
+                }.start()
+            return
+        }
+
+        // 首次创建
+        val cover = View(rootView.context).apply {
+            tag = "ambient_overlay"
+            background = drawable
+            layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            (rootView as? ViewGroup)?.addView(cover, 0)
         }
+        (rootView as? ViewGroup)?.addView(cover, 0)
     }
 }

@@ -20,6 +20,10 @@ import com.gusogst.chat.model.Persona
 import com.gusogst.chat.model.PersonalityTraits
 import com.gusogst.chat.viewmodel.ChatViewModel
 
+/**
+ * 角色详情页 — 对齐 Web PersonaProfileView
+ * 布局：glass 背景 / 头像+名称+特质行 / 标签 / 系统提示词卡片 / 按钮
+ */
 class PersonaProfileFragment : Fragment() {
     private val viewModel: ChatViewModel by activityViewModels()
 
@@ -46,8 +50,11 @@ class PersonaProfileFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val sv = ScrollView(requireContext()).apply { setBackgroundColor(resources.getColor(R.color.bg_primary, null)) }
-        val root = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(16), dp(16), dp(100)) }
+        val sv = ScrollView(requireContext())
+        val root = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(16), dp(16), dp(100))
+        }
         sv.addView(root)
         return sv
     }
@@ -76,10 +83,13 @@ class PersonaProfileFragment : Fragment() {
         val persona = Persona(id = id, name = name, avatar = avatar, prompt = prompt,
             tags = tags, personality = traits)
 
-        // Header
+        // ═══ Header: 头像 + 名称 + 人格特质行（匹配 Web）═══
         val header = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, 0, dp(16))
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
+
+        // 头像 64dp 渐变圆角
         val avatarBg = GradientDrawable().apply {
             cornerRadius = dp(16).toFloat()
             colors = intArrayOf(resources.getColor(R.color.accent, null), resources.getColor(R.color.accent_hover, null))
@@ -94,6 +104,8 @@ class PersonaProfileFragment : Fragment() {
                 layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             })
         })
+
+        // 名称 + 人格特质行（Web 风格：inline）
         val textCol = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
@@ -102,11 +114,29 @@ class PersonaProfileFragment : Fragment() {
             text = name; setTextColor(resources.getColor(R.color.text_primary, null))
             textSize = 20f; setTypeface(null, Typeface.BOLD)
         })
-        textCol.addView(TextView(requireContext()).apply {
-            text = tags.joinToString(" · "); setTextColor(resources.getColor(R.color.text_secondary, null))
-            textSize = 12f; setPadding(0, dp(4), 0, 0)
-        })
+
+        // 人格特质行（Web: 一行显示 top 特质）
+        val traitNames = mapOf(
+            "冷静" to traits.calm, "温暖" to traits.warm, "分析" to traits.analytical,
+            "创造" to traits.creative, "好奇" to traits.curious, "精准" to traits.precise,
+            "风趣" to traits.playful, "活力" to traits.energetic
+        ).toList().sortedByDescending { it.second }.take(4)
+
+        if (traitNames.isNotEmpty()) {
+            val traitLine = StringBuilder()
+            for ((idx, pair) in traitNames.withIndex()) {
+                if (idx > 0) traitLine.append(" · ")
+                traitLine.append("${pair.first} ${(pair.second * 100).toInt()}%")
+            }
+            textCol.addView(TextView(requireContext()).apply {
+                text = traitLine.toString()
+                setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            })
+        }
         header.addView(textCol)
+
+        // ⚙️ 齿轮按钮
         header.addView(TextView(requireContext()).apply {
             text = "\u2699"; textSize = 18f; gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(dp(36), dp(36)).apply { marginStart = dp(8) }
@@ -118,81 +148,59 @@ class PersonaProfileFragment : Fragment() {
         })
         root.addView(header)
 
-        // Personality traits
-        root.addView(TextView(requireContext()).apply {
-            text = "人格特质"; setTextColor(resources.getColor(R.color.text_primary, null))
-            textSize = 15f; setTypeface(null, Typeface.BOLD)
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) }
-        })
-        val traitDefs = listOf(
-            "冷静" to traits.calm, "温暖" to traits.warm, "分析" to traits.analytical,
-            "创造" to traits.creative, "好奇" to traits.curious, "精准" to traits.precise,
-            "风趣" to traits.playful, "活力" to traits.energetic
-        )
-        for ((tname, value) in traitDefs) {
-            val trow = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(6) }
-            }
-            trow.addView(TextView(requireContext()).apply {
-                text = tname; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
-                layoutParams = LinearLayout.LayoutParams(dp(50), ViewGroup.LayoutParams.WRAP_CONTENT)
-            })
-            val barH = dp(10)
-            val barContainer = FrameLayout(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(0, barH, 1f).apply { marginStart = dp(4); marginEnd = dp(4) }
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE; cornerRadius = barH / 2f
-                    setColor(resources.getColor(R.color.bg_tertiary, null))
-                }
-            }
-            val fill = View(requireContext())
-            fill.background = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE; cornerRadius = barH / 2f
-                setColor(resources.getColor(R.color.accent, null))
-            }
-            barContainer.addView(fill)
-            fill.post {
-                val w = (barContainer.width * value).toInt().coerceAtLeast(0)
-                fill.layoutParams = FrameLayout.LayoutParams(w, barH)
-                fill.requestLayout()
-            }
-            trow.addView(barContainer)
-            trow.addView(TextView(requireContext()).apply {
-                text = "${(value * 100).toInt()}%"
-                setTextColor(resources.getColor(R.color.accent, null)); textSize = 12f; setTypeface(null, Typeface.BOLD)
-                layoutParams = LinearLayout.LayoutParams(dp(40), ViewGroup.LayoutParams.WRAP_CONTENT)
-            })
-            root.addView(trow)
+        // ═══ 标签（Web: 横排 flex-wrap）═══
+        val tagRow = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12) }
         }
+        for (tag in tags) {
+            val chip = TextView(requireContext()).apply {
+                text = tag; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f
+                setPadding(dp(8), dp(4), dp(8), dp(4))
+                background = GradientDrawable().apply {
+                    cornerRadius = dp(8).toFloat()
+                    setColor(resources.getColor(R.color.bg_secondary, null))
+                }
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginEnd = dp(6) }
+            }
+            tagRow.addView(chip)
+        }
+        if (tags.isNotEmpty()) root.addView(tagRow)
 
-        // System prompt
-        root.addView(TextView(requireContext()).apply {
-            text = "系统提示词"; setTextColor(resources.getColor(R.color.text_primary, null))
-            textSize = 15f; setTypeface(null, Typeface.BOLD)
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16); bottomMargin = dp(8) }
-        })
-        root.addView(TextView(requireContext()).apply {
-            text = prompt.ifEmpty { "\u672A\u8BBE\u7F6E\u7CFB\u7EDF\u63D0\u793A\u8BCD" }
-            setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f; setLineSpacing(0f, 1.6f)
+        // ═══ 系统提示词卡片（Web: flex:1 bg-secondary card）═══
+        val promptCard = TextView(requireContext()).apply {
+            text = prompt.ifEmpty { "未设置系统提示词" }
+            setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f
+            setLineSpacing(0f, 1.6f)
             setPadding(dp(16), dp(16), dp(16), dp(16))
-            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); cornerRadius = dp(10).toFloat() }
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(150))
-        })
+            background = GradientDrawable().apply {
+                setColor(resources.getColor(R.color.bg_secondary, null)); cornerRadius = dp(10).toFloat()
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0).apply {
+                topMargin = dp(16); bottomMargin = dp(16); weight = 1f
+            }
+            minHeight = dp(80)
+        }
+        root.addView(promptCard)
 
-        // Buttons
-        val btnRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(20), 0, 0) }
+        // ═══ 底部按钮（Web: Back + Start Chat）═══
+        val btnRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
         btnRow.addView(TextView(requireContext()).apply {
             text = "返回"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 14f
             gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
-            background = GradientDrawable().apply { setColor(Color.TRANSPARENT); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat() }
+            background = GradientDrawable().apply {
+                setColor(Color.TRANSPARENT)
+                setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat()
+            }
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(10) }
             setOnClickListener { parentFragmentManager.popBackStack() }
         })
         btnRow.addView(TextView(requireContext()).apply {
             text = "开始对话"; setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD)
             gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
-            background = GradientDrawable().apply { setColor(resources.getColor(R.color.accent, null)); cornerRadius = dp(10).toFloat() }
+            background = GradientDrawable().apply {
+                setColor(resources.getColor(R.color.accent, null)); cornerRadius = dp(10).toFloat()
+            }
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 2f)
             setOnClickListener {
                 viewModel.setActivePersona(id)
