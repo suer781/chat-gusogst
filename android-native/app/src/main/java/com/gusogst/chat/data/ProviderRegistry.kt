@@ -3,7 +3,7 @@ package com.gusogst.chat.data
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.io.InputStreamReader
+import com.google.gson.JsonParser
 
 /**
  * Provider definitions - loaded from Web main branch's providers-registry.json
@@ -38,23 +38,33 @@ object ProviderRegistry {
         return try {
             val stream = context.assets.open("providers-registry.json")
             val text = stream.bufferedReader().use { it.readText() }
-            // 修复 env_key 字段：字符串 → 数组（JSON 中混用了两种格式）
-            val fixed = text.replace(Regex("\"env_key\"\\s*:\\s*\"([^\"]*)\""), "\"env_key\": [\"$1\"]")
-            val providers: List<ProviderDef> = Gson().fromJson(fixed, 
-                object : TypeToken<List<ProviderDef>>() {}.type)
+
+            // Normalize env_key: JSON has both string and array formats
+            // Parse as tree, fix env_key, then convert to typed objects
+            val root = JsonParser.parseString(text).asJsonArray
+            for (i in 0 until root.size()) {
+                val obj = root[i].asJsonObject
+                val ek = obj.get("env_key")
+                if (ek != null && ek.isJsonPrimitive) {
+                    val arr = com.google.gson.JsonArray()
+                    arr.add(ek.asString)
+                    obj.add("env_key", arr)
+                }
+            }
+            val gson = Gson()
+            val type = object : TypeToken<List<ProviderDef>>() {}.type
+            val providers: List<ProviderDef> = gson.fromJson(root, type)
             if (providers.isEmpty()) throw RuntimeException("Empty provider list from JSON")
             cached = providers
             providers
         } catch (e: Exception) {
             android.util.Log.e("ProviderRegistry", "Failed to load providers-registry.json", e)
-            // 回退到默认硬编码列表
             val fallback = getFallbackProviders()
             cached = fallback
             fallback
         }
     }
 
-    /** 回退：JSON 加载失败时的硬编码供应商列表 */
     private fun getFallbackProviders(): List<ProviderDef> {
         return listOf(
             ProviderDef("openai", "OpenAI", base_url = "https://api.openai.com/v1",
@@ -83,7 +93,7 @@ object ProviderRegistry {
                 models = listOf(ProviderModel("gemini-pro"))),
             ProviderDef("lmstudio", "LM Studio", base_url = "http://localhost:1234/v1", isLocal = true,
                 models = listOf(ProviderModel("local-model"))),
-            ProviderDef("custom", "自定义", base_url = "")
+            ProviderDef("custom", "\u81EA\u5B9A\u4E49", base_url = "")
         )
     }
 
@@ -92,27 +102,15 @@ object ProviderRegistry {
 
     fun getById(id: String): ProviderDef? = cached?.find { it.id == id }
 
-    /**
-     * 获取推荐供应商 ID 列表（对齐 Web 主分支）
-     */
     val RECOMMENDED_IDS = setOf("nano-gpt", "openai", "anthropic", "zhipu", "deepseek")
 
-    /**
-     * 国产关键词（用于模糊匹配分类）
-     */
     val DOMESTIC_KEYWORDS = listOf(
         "zhipu","glm","qwen","wenxin","ernie","tongyi","doubao",
         "deepseek","tencent","kuae","step","hunyuan","minimax","moonshot","kimi"
     )
 
-    /**
-     * 聚合关键词（用于模糊匹配分类）
-     */
     val AGGREGATOR_KEYWORDS = listOf("nano","wafer","router","proxy","relay","openrouter")
 
-    /**
-     * 精确分类映射（覆盖关键词匹配）
-     */
     val EXACT_CATEGORY_MAP = mapOf(
         "nano-gpt" to "aggregator",
         "wafer" to "aggregator",
@@ -125,9 +123,6 @@ object ProviderRegistry {
         "firepass" to "overseas"
     )
 
-    /**
-     * 分类函数（对齐 Web 主分支）
-     */
     fun classify(id: String): String {
         EXACT_CATEGORY_MAP[id]?.let { return it }
         val lower = id.lowercase()
