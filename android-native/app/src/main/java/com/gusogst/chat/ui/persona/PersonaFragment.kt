@@ -69,8 +69,10 @@ class PersonaFragment : Fragment() {
         personaList = view.findViewById(R.id.personaList)
         etSearch = view.findViewById(R.id.etSearch)
 
-        view.findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
-            parentFragmentManager.popBackStack()
+        view.findViewById<ImageButton>(R.id.btnBack).apply {
+            // 有返回栈时才显示返回按钮（从其他页面进来时），底部导航 Tab 时隐藏
+            visibility = if (parentFragmentManager.backStackEntryCount > 0) View.VISIBLE else View.GONE
+            setOnClickListener { parentFragmentManager.popBackStack() }
         }
 
         etSearch.addTextChangedListener(object : TextWatcher {
