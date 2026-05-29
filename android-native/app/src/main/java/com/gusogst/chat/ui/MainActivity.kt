@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var tvHeaderTitle: TextView
     private var currentTheme: String = "system"
+    private var settingsFirstFire = true
 
     /** 从 SharedPreferences 读取当前保存的主题名 */
     private fun readCurrentTheme(): String {
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        // 读取保存的主题，在 super.onCreate 前应用（仅当与当前不同，避免重建闪烁）
+        // 读取保存的主题（Application.onCreate 已设好默认深色，这里只读取记录）
         val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
         val settingsJson = prefs.getString("settings", null)
         val themeName = if (settingsJson != null) {
@@ -72,14 +73,9 @@ class MainActivity : AppCompatActivity() {
             } catch (_: Exception) { "dark" }
         } else "dark"
         currentTheme = themeName
-        val targetMode = when (themeName) {
-            "pureBlack" -> { setTheme(R.style.Theme_ChatGusogst_Amoled); AppCompatDelegate.MODE_NIGHT_YES }
-            "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-            "light", "pureWhite" -> AppCompatDelegate.MODE_NIGHT_NO
-            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        }
-        if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
-            AppCompatDelegate.setDefaultNightMode(targetMode)
+        // pureBlack 需要额外的 Amoled 主题覆盖
+        if (themeName == "pureBlack") {
+            setTheme(R.style.Theme_ChatGusogst_Amoled)
         }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -95,8 +91,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.settings.observe(this) { s ->
             val themeChanged = s.theme != currentTheme
             currentTheme = s.theme
-            // 仅当主题真正变化时才调用 applyTheme（避免首次注册时重建闪烁）
-            if (themeChanged) {
+            // 首次触发跳过 applyTheme（onCreate 已正确设好），避免 ViewModel 默认值和 prefs 不一致导致无限重建
+            if (settingsFirstFire) {
+                settingsFirstFire = false
+            } else if (themeChanged) {
                 applyTheme(s.theme)
             }
             val isDark = isDarkTheme(s.theme)

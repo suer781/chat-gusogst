@@ -230,11 +230,6 @@ object HdrHelper {
         if (glassEnabled) {
             // 内散射辉光
             layers.add(InsetScatterGlow(c.shadowGlow))
-            // 顶部 1px 白色高光线
-            layers.add(TopEdgeHighlight(c.glowWhite, density))
-            // 上边缘彩色边线 + 左边缘白色微光
-            layers.add(TopEdgeHighlight(c.cardBorder, density))
-            layers.add(LeftEdgeHighlight(Color.argb(15, 255, 255, 255), density))
         }
 
         // ── HDR 层（锦上添花）──
