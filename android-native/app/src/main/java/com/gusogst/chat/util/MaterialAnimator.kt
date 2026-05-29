@@ -119,6 +119,7 @@ object MaterialAnimator {
 
     // ── M12: Page enter transition ──
     fun viewEnter(view: View, duration: Long = 400) {
+        view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         view.alpha = 0f
         view.translationY = 8 * view.resources.displayMetrics.density
         view.scaleX = 0.98f
@@ -130,6 +131,7 @@ object MaterialAnimator {
 
     // ── M12: Page exit transition ──
     fun viewExit(view: View, duration: Long = 200, onEnd: (() -> Unit)? = null) {
+        view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         view.animate()
             .alpha(0f).scaleX(0.98f).scaleY(0.98f)
             .setDuration(duration).setInterpolator(ACCELERATE)
@@ -230,37 +232,36 @@ object MaterialAnimator {
         private val config: AmbientConfig
     ) : android.graphics.drawable.Drawable() {
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        // 缓存 Shader，避免每帧重新创建（GPU 内存分配开销大）
+        private val topShader: Shader = RadialGradient(
+            w * 0.5f, 0f,
+            Math.max(w * 0.4f, h * 0.25f),
+            intArrayOf(config.topColor, Color.TRANSPARENT),
+            floatArrayOf(0f, 0.6f),
+            Shader.TileMode.CLAMP
+        )
+        private val leftShader: Shader = RadialGradient(
+            w * 0.2f, h,
+            Math.max(w * 0.3f, h * 0.2f),
+            intArrayOf(config.leftColor, Color.TRANSPARENT),
+            floatArrayOf(0f, 0.5f),
+            Shader.TileMode.CLAMP
+        )
+        private val rightShader: Shader = RadialGradient(
+            w * 0.8f, h * 0.9f,
+            Math.max(w * 0.25f, h * 0.175f),
+            intArrayOf(config.rightColor, Color.TRANSPARENT),
+            floatArrayOf(0f, 0.5f),
+            Shader.TileMode.CLAMP
+        )
 
         override fun draw(canvas: Canvas) {
             // 背景完全透明，让 bg_primary 透出
-            // 1) 顶部居中渐变：ellipse 80% 50% at 50% 0%
-            paint.shader = RadialGradient(
-                w * 0.5f, 0f,
-                Math.max(w * 0.4f, h * 0.25f),
-                intArrayOf(config.topColor, Color.TRANSPARENT),
-                floatArrayOf(0f, 0.6f),
-                Shader.TileMode.CLAMP
-            )
+            paint.shader = topShader
             canvas.drawRect(0f, 0f, w, h, paint)
-
-            // 2) 左下渐变：ellipse 60% 40% at 20% 100%
-            paint.shader = RadialGradient(
-                w * 0.2f, h,
-                Math.max(w * 0.3f, h * 0.2f),
-                intArrayOf(config.leftColor, Color.TRANSPARENT),
-                floatArrayOf(0f, 0.5f),
-                Shader.TileMode.CLAMP
-            )
+            paint.shader = leftShader
             canvas.drawRect(0f, 0f, w, h, paint)
-
-            // 3) 右下渐变：ellipse 50% 35% at 80% 90%
-            paint.shader = RadialGradient(
-                w * 0.8f, h * 0.9f,
-                Math.max(w * 0.25f, h * 0.175f),
-                intArrayOf(config.rightColor, Color.TRANSPARENT),
-                floatArrayOf(0f, 0.5f),
-                Shader.TileMode.CLAMP
-            )
+            paint.shader = rightShader
             canvas.drawRect(0f, 0f, w, h, paint)
         }
 
@@ -305,6 +306,7 @@ object MaterialAnimator {
                 tag = "ambient_overlay_new"
                 background = drawable
                 alpha = 0f
+                setLayerType(View.LAYER_TYPE_HARDWARE, null)
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
@@ -334,6 +336,8 @@ object MaterialAnimator {
         val cover = View(rootView.context).apply {
             tag = "ambient_overlay"
             background = drawable
+            // GPU 合成层，避免每帧回调到 draw()
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT

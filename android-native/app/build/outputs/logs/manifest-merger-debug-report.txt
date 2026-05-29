@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-26:12
-INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-26:12
-INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-26:12
-INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-26:12
+ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-27:12
+INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-27:12
+INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-27:12
+INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:2:1-27:12
 MERGED from [androidx.navigation:navigation-common:2.8.5] /opt/data/.gradle/caches/8.11.1/transforms/5bd7d42f6d6718f7f882b6aacad057a6/transformed/navigation-common-2.8.5/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-common-ktx:2.8.5] /opt/data/.gradle/caches/8.11.1/transforms/831287101b01ce6e6c4746e20ac68a27/transformed/navigation-common-ktx-2.8.5/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-runtime:2.8.5] /opt/data/.gradle/caches/8.11.1/transforms/970d5a0c873b2de5dc87e646d4d746d0/transformed/navigation-runtime-2.8.5/AndroidManifest.xml:17:1-22:12
@@ -89,8 +89,8 @@ ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidMa
 	android:name
 		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:5:22-63
 application
-ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:7:5-25:19
-INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:7:5-25:19
+ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:7:5-26:19
+INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:7:5-26:19
 MERGED from [com.google.android.material:material:1.12.0] /opt/data/.gradle/caches/8.11.1/transforms/17ee71c8ffd2037bbc4cc6b057aad0bf/transformed/material-1.12.0/AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.12.0] /opt/data/.gradle/caches/8.11.1/transforms/17ee71c8ffd2037bbc4cc6b057aad0bf/transformed/material-1.12.0/AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.2.1] /opt/data/.gradle/caches/8.11.1/transforms/e631930fc7e56997a4763c446e615078/transformed/constraintlayout-2.2.1/AndroidManifest.xml:7:5-20
@@ -114,39 +114,41 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /opt/data/.
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.15.0] /opt/data/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:13:9-35
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:14:9-35
 	android:label
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:12:9-41
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:13:9-41
+	android:hardwareAccelerated
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:9:9-43
 	android:roundIcon
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:11:9-54
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:12:9-54
 	android:icon
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:10:9-43
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:11:9-43
 	android:allowBackup
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:9:9-35
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:10:9-35
 	android:theme
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:14:9-56
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:15:9-49
 	android:usesCleartextTraffic
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:15:9-44
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:16:9-44
 	android:name
 		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:8:9-40
 activity#com.gusogst.chat.ui.MainActivity
-ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:16:9-24:20
+ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:17:9-25:20
 	android:windowSoftInputMode
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:19:13-55
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:20:13-55
 	android:exported
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:18:13-36
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:19:13-36
 	android:name
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:17:13-44
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:18:13-44
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:20:13-23:29
+ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:21:13-24:29
 action#android.intent.action.MAIN
-ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:21:17-69
+ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:22:17-69
 	android:name
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:21:25-66
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:22:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:22:17-77
+ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:23:17-77
 	android:name
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:22:27-74
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:23:27-74
 uses-sdk
 INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml

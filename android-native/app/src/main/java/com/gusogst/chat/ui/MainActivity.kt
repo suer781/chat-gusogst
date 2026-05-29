@@ -14,7 +14,6 @@ import android.view.animation.DecelerateInterpolator
 import android.animation.ValueAnimator
 import android.content.res.Configuration
 import android.graphics.Color
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -58,7 +57,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNav: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
         // 使用 Application 缓存的主题（避免重复读 SharedPreferences）
         val themeName = ChatApplication.cachedTheme
         currentTheme = themeName
@@ -70,46 +68,44 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
         haptics = HapticsHelper(this)
-        initNav()
-        setupWindowInsets()
-        if (savedInstanceState == null) selectNav(navItems[0])
 
-        currentTheme = readCurrentTheme()
-        MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content), currentTheme)
-
-        viewModel.settings.observe(this) { s ->
-            val themeChanged = s.theme != currentTheme
-            currentTheme = s.theme
-            // 首次触发跳过 applyTheme（onCreate 已正确设好），避免 ViewModel 默认值和 prefs 不一致导致无限重建
-            if (settingsFirstFire) {
-                settingsFirstFire = false
-            } else if (themeChanged) {
-                applyTheme(s.theme)
+        // 延迟到首帧之后初始化导航/装饰性效果，不影响冷启动时间
+        findViewById<View>(android.R.id.content).post {
+            currentTheme = readCurrentTheme()
+            initNav()
+            setupWindowInsets()
+            if (savedInstanceState == null) selectNav(navItems[0])
+            MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content), currentTheme)
+            if (savedInstanceState == null) {
+                playEntryAnimation()
             }
-            val isDark = isDarkTheme(s.theme)
-            // HDR + 毛玻璃应用到 header 和根背景
-            HdrHelper.applyGlassWithHdr(
-                findViewById(R.id.header),
-                s.hdrEnabled, s.glassEnabled, isDark
-            )
-            HdrHelper.applyGlassWithHdr(
-                findViewById(android.R.id.content),
-                s.hdrEnabled, s.glassEnabled, isDark
-            )
-            HdrHelper.applyNavGlow(bottomNav, s.hdrEnabled, isDark)
-            HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark)
-            // 环境光跟随主题色切换（带动画）
-            MaterialAnimator.setAmbientBackground(
-                findViewById(android.R.id.content),
-                s.theme,
-                animate = themeChanged
-            )
-            // 护眼模式暖色滤镜
-            applyEyeCare(s.eyeCareMode, s.eyeCareIntensity)
-        }
 
-        if (savedInstanceState == null) {
-            playEntryAnimation()
+            viewModel.settings.observe(this) { s ->
+                val themeChanged = s.theme != currentTheme
+                currentTheme = s.theme
+                if (settingsFirstFire) {
+                    settingsFirstFire = false
+                } else if (themeChanged) {
+                    applyTheme(s.theme)
+                }
+                val isDark = isDarkTheme(s.theme)
+                HdrHelper.applyGlassWithHdr(
+                    findViewById(R.id.header),
+                    s.hdrEnabled, s.glassEnabled, isDark
+                )
+                HdrHelper.applyGlassWithHdr(
+                    findViewById(android.R.id.content),
+                    s.hdrEnabled, s.glassEnabled, isDark
+                )
+                HdrHelper.applyNavGlow(bottomNav, s.hdrEnabled, isDark)
+                HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark)
+                MaterialAnimator.setAmbientBackground(
+                    findViewById(android.R.id.content),
+                    s.theme,
+                    animate = themeChanged
+                )
+                applyEyeCare(s.eyeCareMode, s.eyeCareIntensity)
+            }
         }
     }
 

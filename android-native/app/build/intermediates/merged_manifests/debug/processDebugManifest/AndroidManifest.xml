@@ -24,11 +24,12 @@
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:debuggable="true"
         android:extractNativeLibs="false"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ChatGusogst.Splash"
+        android:theme="@style/Theme.ChatGusogst"
         android:usesCleartextTraffic="true" >
         <activity
             android:name="com.gusogst.chat.ui.MainActivity"

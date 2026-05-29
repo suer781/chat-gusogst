@@ -124,16 +124,27 @@ object HdrHelper {
     private class InsetScatterGlow(private val glowColor: Int, cornerRadius: Float = 0f) : Drawable() {
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val cr = cornerRadius
+        // 缓存 Shader（大小在 draw 时计算）— 用惰性初始化
+        private var cachedShader: Shader? = null
+        private var lastW = 0
+        private var lastH = 0
         override fun draw(canvas: Canvas) {
-            val cx = bounds.exactCenterX()
-            val cy = bounds.exactCenterY()
-            val r = Math.max(bounds.width(), bounds.height()) * 0.7f
-            paint.shader = RadialGradient(
-                cx, cy, r,
-                intArrayOf(glowColor, Color.TRANSPARENT),
-                floatArrayOf(0f, 1f),
-                Shader.TileMode.CLAMP
-            )
+            val w = bounds.width()
+            val h = bounds.height()
+            // 尺寸变了才重建 Shader（窗口横竖屏切换）
+            if (cachedShader == null || w != lastW || h != lastH) {
+                val cx = bounds.exactCenterX()
+                val cy = bounds.exactCenterY()
+                val r = Math.max(w, h) * 0.7f
+                cachedShader = RadialGradient(
+                    cx, cy, r,
+                    intArrayOf(glowColor, Color.TRANSPARENT),
+                    floatArrayOf(0f, 1f),
+                    Shader.TileMode.CLAMP
+                )
+                lastW = w; lastH = h
+            }
+            paint.shader = cachedShader
             canvas.drawRoundRect(
                 bounds.left.toFloat(), bounds.top.toFloat(),
                 bounds.right.toFloat(), bounds.bottom.toFloat(),
