@@ -1,4 +1,5 @@
 export interface MemoryEntry {
+import { vectorStore } from './vectorStore'
   id: string
   content: string
   type: 'fact' | 'preference' | 'event' | 'emotion' | 'context'
@@ -11,6 +12,7 @@ export interface MemoryEntry {
 
 const DB_NAME = 'chat-gusogst-memory'
 const DB_VERSION = 1
+const MAX_MEMORIES = 500  // max memory entries to prevent unbounded growth
 const STORE_NAME = 'memories'
 
 function openDB(): Promise<IDBDatabase> {
@@ -79,18 +81,38 @@ export class MemoryManager {
       try { this.cache = await dbGetAll() }
       catch { this.cache = [] }
       this.loaded = true
+    // Sync vector store on first load
+    try {
+      const stats = await vectorStore.getStats()
+      if (stats.count === 0 && this.cache.length > 0) {
+        console.log('[Memory] Rebuilding vector index for', this.cache.length, 'entries')
+        await vectorStore.rebuild(this.cache.map(e => ({ id: e.id, text: e.content })))
+      }
+    } catch (e) { console.warn('[Memory] Vector sync failed:', e) }
     }
   }
 
   async search(query: string, limit = 5): Promise<MemoryEntry[]> {
     await this.ensureLoaded()
+    if (this.cache.length === 0) return []
+
+    // Phase 1: Vector similarity search (RAG)
+    const vectorResults = await vectorStore.search(query, limit * 2)
+    const vectorScores = new Map(vectorResults.map(r => [r.id, r.score]))
+
+    // Phase 2: Keyword + hybrid scoring
     const queryLower = query.toLowerCase()
     const queryWords = queryLower.split(/\s+/).filter(w => w.length > 1)
 
     const scored = this.cache.map(m => {
       let score = 0
-      const contentLower = m.content.toLowerCase()
+
+      // Vector score (0~1, weight: 50)
+      const vScore = vectorScores.get(m.id) || 0
+      score += vScore * 50
+
       // keyword match
+      const contentLower = m.content.toLowerCase()
       for (const w of queryWords) {
         if (contentLower.includes(w)) score += 10
       }
@@ -100,9 +122,9 @@ export class MemoryManager {
       }
       // importance boost
       score *= (0.5 + m.importance * 0.5)
-      // time decay (24h half-life)
+      // time decay (1-week half-life, was 24h too aggressive)
       const hoursAgo = (Date.now() - m.timestamp) / 3600000
-      score *= Math.pow(0.5, hoursAgo / 24)
+      score *= Math.pow(0.5, hoursAgo / 168)
       // access frequency
       score *= (1 + Math.min(m.accessCount, 10) * 0.05)
       return { entry: m, score }
@@ -134,6 +156,18 @@ export class MemoryManager {
     }
     this.cache.push(entry)
     await dbPut(entry)
+    // Index in vector store for RAG
+    await vectorStore.add(entry.id, entry.content)
+    // Auto-evict oldest when exceeding limit
+    if (this.cache.length > MAX_MEMORIES) {
+      const toRemove = this.cache.sort((a, b) => a.timestamp - b.timestamp).slice(0, this.cache.length - MAX_MEMORIES)
+      for (const old of toRemove) {
+        await dbDelete(old.id)
+        await vectorStore.remove(old.id)
+        const idx = this.cache.findIndex(e => e.id === old.id)
+        if (idx !== -1) this.cache.splice(idx, 1)
+      }
+    }
     return entry
   }
 
@@ -175,6 +209,7 @@ export class MemoryManager {
   async clear(): Promise<void> {
     this.cache = []
     await dbClear()
+    await vectorStore.clear()
   }
 
   getMemoryCount(): number {

@@ -50,33 +50,6 @@ export default function App() {
   const activeIdx = NAV_ITEMS.findIndex((item) =>
     view === item.id || (view === 'personaProfile' && item.id === 'persona')
   )
-  const navRef = useRef<HTMLElement>(null)
-  const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 0 })
-  const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
-
-  const updateIndicatorPos = useCallback(() => {
-    const btn = btnRefs.current.get(view)
-    const nav = navRef.current
-    if (btn && nav) {
-      const btnRect = btn.getBoundingClientRect()
-      const navRect = nav.getBoundingClientRect()
-      const left = btnRect.left - navRect.left
-      console.log('[INDICATOR]', { view, btnLeft: btnRect.left, navLeft: navRect.left, left, width: btnRect.width, navWidth: navRect.width })
-      setIndicatorPos({ left, width: btnRect.width })
-    }
-  }, [view])
-
-  useEffect(() => {
-    const t = setTimeout(updateIndicatorPos, 50)
-    const ro = new ResizeObserver(updateIndicatorPos)
-    if (navRef.current) ro.observe(navRef.current)
-    return () => { clearTimeout(t); ro.disconnect() }
-  }, [updateIndicatorPos])
-
-  const btnRef = useCallback((id: string) => (el: HTMLButtonElement | null) => {
-    if (el) btnRefs.current.set(id, el)
-    else btnRefs.current.delete(id)
-  }, [])
 
   // Resolve 'system' theme to actual light/dark
   const resolveTheme = (mode: string) => {
@@ -114,7 +87,7 @@ export default function App() {
       root.removeAttribute('data-eyecare')
     }
     root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
-    root.style.setProperty('--glass-opacity', String(0.2 + (glassOpacity / 100) * 0.8))
+    root.style.setProperty('--glass-opacity', String(glassOpacity / 100))
     setHapticEnabled(hapticEnabled)
     root.setAttribute('data-hdr', hdrEnabled ? 'on' : 'off')
   }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled, hdrEnabled])
@@ -170,11 +143,11 @@ export default function App() {
   }
 
   return (
-    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e8e8ee)', overflow: 'hidden', opacity: appReady ? 1 : 0, transition: 'opacity 0.6s cubic-bezier(0.4,0,0.2,1), background-color 0.6s cubic-bezier(0.4,0,0.2,1), color 0.6s cubic-bezier(0.4,0,0.2,1)' }}>
+    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e0e0e0)', overflow: 'hidden', opacity: appReady ? 1 : 0, transition: 'opacity 0.6s cubic-bezier(0.4,0,0.2,1), background-color 0.6s cubic-bezier(0.4,0,0.2,1), color 0.6s cubic-bezier(0.4,0,0.2,1)' }}>
       {/* ── Page transition wrapper (header + content) ── */}
       <div className={pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {/* ── Header ── */}
-      <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'var(--header-total)', padding: 'var(--safe-top) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
+      <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
         {view === 'personaProfile' ? (
           <button onClick={() => { glassTap(); setView('persona') }} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
@@ -185,7 +158,7 @@ export default function App() {
       </header>
 
       {/* ── Content Area ── with page transitions */}
-      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', paddingBottom: 'var(--nav-total)' }}>
+      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {displayedView === 'chat' && <ChatView onNavigate={setView} />}
         {displayedView === 'settings' && <SettingsView onDone={() => setView('chat')} />}
         {displayedView === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}
@@ -196,19 +169,15 @@ export default function App() {
       </div> {/* end page transition wrapper */}
 
       {/* ── Bottom Nav ──  重做：渐变底 + 透镜指示器 + 毛玻璃一体 */}
-      <nav ref={navRef} className="app-nav" style={{
+      <nav className="app-nav" style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-evenly',
+        justifyContent: 'space-around',
         flexShrink: 0,
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        height: 'var(--nav-total)',
-        paddingBottom: 'var(--safe-bottom)',
-        background: 'var(--bg-primary)',
+        position: 'relative',
+        height: 56,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        background: 'transparent',
         borderTop: '1px solid var(--border-color)',
         transition: 'background 0.4s ease',
       }}>
@@ -218,13 +187,14 @@ export default function App() {
           style={{
             position: 'absolute',
             top: 0,
-            left: indicatorPos.left,
-            width: indicatorPos.width,
+            left: `${activeIdx * 25}%`,
+            width: '25%',
             height: '100%',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             pointerEvents: 'none',
+            transition: 'left 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
             zIndex: 0,
           }}
         >
@@ -237,7 +207,6 @@ export default function App() {
             <button
               key={item.id}
               onClick={() => { glassTap(); setView(item.id) }}
-              ref={btnRef(item.id)}
               className="nav-btn"
               style={{
                 display: 'flex',

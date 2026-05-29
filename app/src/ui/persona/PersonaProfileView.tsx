@@ -42,7 +42,7 @@ export default function PersonaProfileView({ persona, onBack, onStartChat, onUpd
           {/* ⚙️ Gear Button */}
           <div
             onClick={() => setShowSettings(true)}
-            style={{ width: 36, height: 36, borderRadius: "var(--radius-md)", background: 'var(--bg-secondary)', border: '1px solid #222240', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: "var(--text-xl)", transition: 'all 0.2s' }}
+            style={{ width: 36, height: 36, borderRadius: "var(--radius-md)", background: 'var(--bg-secondary)', border: '1px solid #333355', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: "var(--text-xl)", transition: 'all 0.2s' }}
             title={t('persona.settings.title')}
           >
             ⚙️

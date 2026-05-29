@@ -1,8 +1,8 @@
 import { Info, Github, MessageSquare, Heart, ExternalLink, Shield, Code } from 'lucide-react'
 import { light as hapticLight, glassTap } from '../haptics'
 
-const VERSION = '1.0'
-
+const VERSION = '0.1.0-dev'
+const BUILD = '2026.05.17'
 
 export function AboutSettings({ onBack }: { onBack: () => void }) {
   return (
@@ -38,7 +38,7 @@ export function AboutSettings({ onBack }: { onBack: () => void }) {
           Chat Gusogst
         </div>
         <div style={{ color: 'var(--gray-400)', fontSize: "var(--text-base)" }}>
-          v{VERSION} · Android
+          v{VERSION} · {BUILD}
         </div>
         <div style={{ color: 'var(--gray-400)', fontSize: "var(--text-sm)", marginTop: 8 }}>
           AI 虚拟恋人 · 融合 Agent 能力
@@ -51,17 +51,13 @@ export function AboutSettings({ onBack }: { onBack: () => void }) {
         padding: '8px 0', border: '1px solid rgba(255,255,255,0.05)',
       }}>
         <LinkItem icon={<Github size={18} />} label="GitHub 仓库"
-          desc="查看源码、提交 Issue" color="var(--gray-400)"
-          href="https://github.com/suer781/chat-gusogst" />
+          desc="查看源码、提交 Issue" color="var(--gray-400)" />
         <LinkItem icon={<MessageSquare size={18} />} label="反馈与建议"
-          desc="帮助我们做得更好" color="var(--warning)"
-          href="https://github.com/suer781/chat-gusogst/issues" />
+          desc="帮助我们做得更好" color="var(--warning)" />
         <LinkItem icon={<Code size={18} />} label="开源许可"
-          desc="Apache License 2.0" color="var(--purple)"
-          href="https://www.apache.org/licenses/LICENSE-2.0" />
+          desc="MIT License" color="var(--purple)" />
         <LinkItem icon={<Shield size={18} />} label="隐私政策"
-          desc="我们如何保护你的数据" color="var(--teal)"
- />
+          desc="我们如何保护你的数据" color="var(--teal)" />
       </div>
 
       {/* Tech Stack */}
@@ -73,7 +69,7 @@ export function AboutSettings({ onBack }: { onBack: () => void }) {
           技术栈
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {['React', 'TypeScript', 'Android', 'Python', 'Hermes Agent', 'Zustand'].map((t) => (
+          {['React', 'TypeScript', 'Capacitor', 'Python', 'Hermes Agent', 'Zustand'].map((t) => (
             <span key={t} style={{
               padding: '4px 10px', borderRadius: 6, fontSize: "var(--text-xs)",
               background: 'rgba(255,255,255,0.05)', color: 'var(--gray-400)',
@@ -94,13 +90,11 @@ export function AboutSettings({ onBack }: { onBack: () => void }) {
   )
 }
 
-function LinkItem({ icon, label, desc, color, href }: {
-  icon: React.ReactNode; label: string; desc: string; color: string; href?: string
+function LinkItem({ icon, label, desc, color }: {
+  icon: React.ReactNode; label: string; desc: string; color: string
 }) {
   return (
-    <div onClick={() => href && window.open(href, '_system')}
-      onMouseDown={() => hapticLight()}
-      style={{
+    <div style={{
       display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
       cursor: 'pointer', transition: 'background 0.15s',
     }}>

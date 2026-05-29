@@ -137,7 +137,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
         <button onClick={() => setExpandedId(open ? null : p.id)} style={{
           display: 'flex', alignItems: 'center', gap: 12, width: '100%',
           padding: '13px 14px', border: 'none', background: 'transparent',
-          cursor: 'pointer', color: 'var(--text-primary, #0e0e1a)',
+          cursor: 'pointer', color: 'var(--text-primary, #1a1a2e)',
         }}>
           <img
             src={`https://cdn.models.dev/icons/${p.id}.svg`} alt=""
@@ -176,14 +176,14 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
             <div style={{ fontSize: 11, color: 'var(--text-muted, #999)', marginBottom: 3 }}>{t('apiKey')} ({p.env_key})</div>
             <input type="password" placeholder="sk-..." value={apiKeys[p.id]||''}
               onChange={e => setApiKeys(prev => ({...prev, [p.id]: e.target.value}))}
-              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-light, rgba(0,0,0,0.1))', background: 'var(--bg-input, #f8f9fa)', color: 'var(--text-primary, #0e0e1a)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-light, rgba(0,0,0,0.1))', background: 'var(--bg-input, #f8f9fa)', color: 'var(--text-primary, #1a1a2e)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
           </div>
           {/* Base URL */}
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted, #999)', marginBottom: 3 }}>{t('baseUrl')} ({t('optional')})</div>
             <input type="text" placeholder={p.base_url} value={baseUrls[p.id]||''}
               onChange={e => setBaseUrls(prev => ({...prev, [p.id]: e.target.value}))}
-              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-light, rgba(0,0,0,0.1))', background: 'var(--bg-input, #f8f9fa)', color: 'var(--text-primary, #0e0e1a)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-light, rgba(0,0,0,0.1))', background: 'var(--bg-input, #f8f9fa)', color: 'var(--text-primary, #1a1a2e)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
           </div>
           {/* 操作按钮行 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -209,7 +209,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
             <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted, #999)' }} />
             <input type="text" placeholder={t('searchModel')} value={modelSearch}
               onChange={e => setModelSearch(e.target.value)}
-              style={{ width: '100%', padding: '7px 10px 7px 30px', borderRadius: 8, border: '1px solid var(--border-light, rgba(0,0,0,0.1))', background: 'var(--bg-input, #f8f9fa)', color: 'var(--text-primary, #0e0e1a)', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '7px 10px 7px 30px', borderRadius: 8, border: '1px solid var(--border-light, rgba(0,0,0,0.1))', background: 'var(--bg-input, #f8f9fa)', color: 'var(--text-primary, #1a1a2e)', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
           </div>
           {/* 模型列表 */}
           <div style={{ maxHeight: 250, overflowY: 'auto', borderRadius: 8 }}>
@@ -222,7 +222,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
                     display: 'flex', alignItems: 'center', gap: 8,
                     width: '100%', padding: '8px 10px', border: 'none',
                     background: sel ? 'var(--accent-light, rgba(108,92,231,0.1))' : 'transparent',
-                    color: sel ? 'var(--accent, #6C5CE7)' : 'var(--text-primary, #0e0e1a)',
+                    color: sel ? 'var(--accent, #6C5CE7)' : 'var(--text-primary, #1a1a2e)',
                     cursor: 'pointer', fontSize: 13, textAlign: 'left', borderRadius: 6,
                   }}>
                   <span style={{ flex: 1 }}>{m.name || m.id}</span>
@@ -246,14 +246,14 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
       {/* ── 头部 ── */}
       <div style={{ padding: '16px 16px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #0e0e1a)' }}>{t('providers')}</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #1a1a2e)' }}>{t('providers')}</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted, #999)', marginTop: 1 }}>
             {providers.length} {t('providersCount')} · {totalModels} {t('modelsCount')}
           </div>
         </div>
         <button onClick={onDone} style={{
           padding: '6px 14px', borderRadius: 8, border: 'none',
-          background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0e0e1a)',
+          background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #1a1a2e)',
           fontSize: 13, fontWeight: 500, cursor: 'pointer',
         }}>{t('done')}</button>
       </div>
@@ -278,7 +278,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <Sparkles size={16} style={{ color: 'var(--accent, #6C5CE7)' }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #0e0e1a)' }}>快速开始</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #1a1a2e)' }}>快速开始</span>
         </div>
         <div style={{ fontSize: 13, color: 'var(--text-secondary, #555)', lineHeight: 1.7, marginBottom: 10 }}>
           ① 选一个供应商（推荐 NanoGPT，模型最多）<br />
@@ -320,7 +320,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
           style={{
             width: '100%', padding: '9px 12px 9px 36px', borderRadius: 10,
             border: '1px solid var(--border-light, rgba(0,0,0,0.08))',
-            background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0e0e1a)',
+            background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #1a1a2e)',
             fontSize: 14, outline: 'none', boxSizing: 'border-box',
           }} />
       </div>

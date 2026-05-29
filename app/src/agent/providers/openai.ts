@@ -34,14 +34,24 @@ export class OpenAIProvider implements ProviderAdapter {
   }
 
   async chat(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): Promise<Message> {
-    const resp = await fetch(this.getEndpoint(config), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + config.apiKey,
-      },
-      body: JSON.stringify(this.buildBody(messages, config, tools, false)),
-    })
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 60000)
+    try {
+      const resp = await fetch(this.getEndpoint(config), {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + config.apiKey,
+        },
+        body: JSON.stringify(this.buildBody(messages, config, tools, false)),
+      })
+    } catch (e) {
+      if (controller.signal.aborted) throw new Error('Request timeout after 60000ms')
+      throw e
+    } finally {
+      clearTimeout(timeoutId)
+    }
     if (!resp.ok) {
       const err = await resp.text().catch(() => '')
       throw new Error('OpenAI error ' + resp.status + ': ' + err)
@@ -72,14 +82,24 @@ export class OpenAIProvider implements ProviderAdapter {
   }
 
   async *chatStream(messages: Message[], config: ModelConfig, tools?: ToolDefinition[]): AsyncGenerator<string> {
-    const resp = await fetch(this.getEndpoint(config), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + config.apiKey,
-      },
-      body: JSON.stringify(this.buildBody(messages, config, tools, true)),
-    })
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 120000)
+    try {
+      const resp = await fetch(this.getEndpoint(config), {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + config.apiKey,
+        },
+        body: JSON.stringify(this.buildBody(messages, config, tools, true)),
+      })
+    } catch (e) {
+      if (controller.signal.aborted) throw new Error('Request timeout after 120000ms')
+      throw e
+    } finally {
+      clearTimeout(timeoutId)
+    }
     if (!resp.ok) throw new Error('OpenAI stream error: ' + resp.status)
 
     const reader = resp.body?.getReader()

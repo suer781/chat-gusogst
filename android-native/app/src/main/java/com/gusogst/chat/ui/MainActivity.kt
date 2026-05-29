@@ -239,8 +239,8 @@ class MainActivity : AppCompatActivity() {
         if (item == currentNavItem) return
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(
-                android.R.anim.fade_in, android.R.anim.fade_out,
-                android.R.anim.fade_in, android.R.anim.fade_out
+                R.anim.page_enter, R.anim.page_exit,
+                R.anim.page_enter, R.anim.page_exit
             )
             .replace(R.id.fragmentContainer, item.fragment)
             .commit()

@@ -133,12 +133,12 @@ object MaterialAnimator {
             .withEndAction { onEnd?.invoke() }.start()
     }
 
-    // ── 导航指示器 spring 动画 ──
+    // ── 导航指示器动画（匹配主分支：cubic-bezier(0.4, 0, 0.2, 1) 450ms）──
     fun animateIndicator(indicator: View, targetX: Float, targetWidth: Float) {
         indicator.animate()
             .x(targetX)
-            .setDuration(400)
-            .setInterpolator(SPRING_BOUNCE)
+            .setDuration(450)
+            .setInterpolator(PathInterpolator(0.4f, 0f, 0.2f, 1f))
             .start()
     }
 
