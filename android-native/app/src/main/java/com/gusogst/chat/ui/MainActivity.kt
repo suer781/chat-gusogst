@@ -237,11 +237,26 @@ class MainActivity : AppCompatActivity() {
 
     private fun selectNav(item: NavItem) {
         if (item == currentNavItem) return
+
+        // 先退出当前页面（120ms），再替换，再进入新页面（200ms）
+        val container = findViewById<View>(R.id.fragmentContainer)
+
+        // 获取当前 fragment 的视图做退出动画
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+        val exitView = currentFragment?.view
+
+        if (exitView != null) {
+            MaterialAnimator.viewExit(exitView, 120) {
+                doFragmentReplace(item, container)
+            }
+        } else {
+            doFragmentReplace(item, container)
+        }
+    }
+
+    private fun doFragmentReplace(item: NavItem, container: View) {
         supportFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.page_enter, R.anim.page_exit,
-                R.anim.page_enter, R.anim.page_exit
-            )
+            .setCustomAnimations(R.anim.page_enter, 0)
             .replace(R.id.fragmentContainer, item.fragment)
             .commit()
         val activeColor = ContextCompat.getColor(this, R.color.nav_active)
