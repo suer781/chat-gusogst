@@ -126,7 +126,7 @@ class FontSizeFragment : Fragment() {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(8), dp(4), dp(8), dp(4))
                 background = if (size == currentSize) GradientDrawable().apply {
-                    cornerRadius = dp(6).toFloat(); setColor(Color.parseColor("#1AE94560"))
+                    cornerRadius = dp(6).toFloat(); setColor(resources.getColor(R.color.accent_soft, null))
                 } else null
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(2) }
                 setOnClickListener {

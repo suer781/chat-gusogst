@@ -40,8 +40,8 @@ class AboutSettingsFragment : Fragment() {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
             setPadding(dp(24), dp(32), dp(24), dp(32))
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#03FFFFFF"))
-                setStroke(1, Color.parseColor("#05FFFFFF"))
+                setColor(resources.getColor(R.color.bg_secondary, null))
+                setStroke(1, resources.getColor(R.color.border_color, null))
                 cornerRadius = dp(16).toFloat()
             }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(12), dp(16), dp(0)) }
@@ -95,7 +95,7 @@ class AboutSettingsFragment : Fragment() {
     private fun addInfoCard(title: String, items: List<Pair<String, String>>) {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(16), dp(16), dp(16))
-            background = GradientDrawable().apply { setColor(Color.parseColor("#03FFFFFF")); setStroke(1, Color.parseColor("#05FFFFFF")); cornerRadius = dp(16).toFloat() }
+            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(16).toFloat() }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
         card.addView(TextView(requireContext()).apply {

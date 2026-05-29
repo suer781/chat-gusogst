@@ -61,8 +61,8 @@ class BasicSettingsFragment : Fragment() {
                     orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
                     setPadding(dp(4), dp(14), dp(4), dp(14))
                     background = GradientDrawable().apply {
-                        setColor(if (isActive) Color.parseColor("#26E94560") else Color.parseColor("#0AFFFFFF"))
-                        setStroke(if (isActive) 2 else 1, if (isActive) Color.parseColor("#80E94560") else Color.TRANSPARENT)
+                        setColor(if (isActive) resources.getColor(R.color.accent_soft, null) else resources.getColor(R.color.bg_tertiary, null))
+                        setStroke(if (isActive) 2 else 1, if (isActive) Color.argb(128, 233, 69, 96) else Color.TRANSPARENT)
                         cornerRadius = dp(14).toFloat()
                     }
                     addView(TextView(requireContext()).apply { text = icon; textSize = 22f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_300, null)); gravity = Gravity.CENTER })
@@ -168,7 +168,7 @@ class BasicSettingsFragment : Fragment() {
     private fun addSection(title: String, icon: String, content: () -> View) {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
-            background = GradientDrawable().apply { setColor(Color.parseColor("#03FFFFFF")); setStroke(1, Color.parseColor("#05FFFFFF")); cornerRadius = dp(16).toFloat() }
+            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(16).toFloat() }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
         val header = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, 0, dp(14)) }
@@ -186,7 +186,7 @@ class BasicSettingsFragment : Fragment() {
         row.addView(textCol)
         val toggle = FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(dp(46), dp(26)).apply { marginStart = dp(12) }
-            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.accent, null) else Color.parseColor("#1AFFFFFF")) }
+            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null)) }
         }
         toggle.addView(View(requireContext()).apply {
             val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (checked) 22 else 2), dp(2), 0, 0); layoutParams = lp

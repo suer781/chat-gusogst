@@ -66,7 +66,7 @@ class MemorySettingsFragment : Fragment() {
             return@addSection TextView(requireContext()).apply {
                 text = "\u6E05\u9664\u6240\u6709\u8BB0\u5FC6"; setTextColor(resources.getColor(R.color.danger, null)); textSize = 14f
                 setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
-                background = GradientDrawable().apply { setColor(Color.parseColor("#1AFF5252")); setStroke(1, resources.getColor(R.color.danger, null)); cornerRadius = dp(10).toFloat() }
+                background = GradientDrawable().apply { setColor(resources.getColor(R.color.danger_soft, null)); setStroke(1, resources.getColor(R.color.danger, null)); cornerRadius = dp(10).toFloat() }
                 setOnClickListener { showClearConfirm() }
             }
         }
@@ -114,7 +114,7 @@ class MemorySettingsFragment : Fragment() {
     private fun addSection(title: String, icon: String, content: () -> View) {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
-            background = GradientDrawable().apply { setColor(Color.parseColor("#03FFFFFF")); setStroke(1, Color.parseColor("#05FFFFFF")); cornerRadius = dp(16).toFloat() }
+            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(16).toFloat() }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
         val header = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, 0, dp(14)) }
@@ -131,7 +131,7 @@ class MemorySettingsFragment : Fragment() {
         row.addView(textCol)
         val toggle = FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(dp(46), dp(26)).apply { marginStart = dp(12) }
-            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.yellow, null) else Color.parseColor("#1AFFFFFF")) }
+            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.yellow, null) else resources.getColor(R.color.bg_tertiary, null)) }
         }
         toggle.addView(View(requireContext()).apply {
             val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (checked) 22 else 2), dp(2), 0, 0); layoutParams = lp

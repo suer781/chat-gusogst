@@ -57,11 +57,11 @@ class ModelSettingsFragment : Fragment() {
                 val isActive = id == currentProvider
                 grid.addView(TextView(requireContext()).apply {
                     text = label; textSize = 14f; gravity = Gravity.CENTER; setPadding(dp(4), dp(12), dp(4), dp(12))
-                    setTextColor(if (isActive) Color.parseColor("#6C5CE7") else resources.getColor(R.color.gray_300, null))
+                    setTextColor(if (isActive) resources.getColor(R.color.purple, null) else resources.getColor(R.color.gray_300, null))
                     setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
                     background = GradientDrawable().apply {
-                        setColor(if (isActive) Color.parseColor("#1A6C5CE7") else Color.parseColor("#0AFFFFFF"))
-                        setStroke(if (isActive) 2 else 1, if (isActive) Color.parseColor("#806C5CE7") else Color.TRANSPARENT)
+                        setColor(if (isActive) resources.getColor(R.color.purple_soft, null) else resources.getColor(R.color.bg_tertiary, null))
+                        setStroke(if (isActive) 2 else 1, if (isActive) Color.argb(128, 108, 92, 231) else Color.TRANSPARENT)
                         cornerRadius = dp(10).toFloat()
                     }
                 }, lp)
@@ -90,8 +90,8 @@ class ModelSettingsFragment : Fragment() {
             row.addView(TextView(requireContext()).apply { text = "\u7CBE\u786E"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32) })
             row.addView(SeekBar(requireContext()).apply {
                 max = 100; progress = 70
-                progressTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#6C5CE7"))
-                thumbTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#6C5CE7"))
+                progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.purple, null))
+                thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.purple, null))
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             })
             row.addView(TextView(requireContext()).apply { text = "\u968F\u673A"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32); gravity = Gravity.END })
@@ -108,11 +108,11 @@ class ModelSettingsFragment : Fragment() {
                 row.addView(TextView(requireContext()).apply {
                     text = if (t >= 1024) "${t / 1024}K" else t.toString()
                     textSize = 12f; gravity = Gravity.CENTER; setPadding(dp(8), dp(8), dp(8), dp(8))
-                    setTextColor(if (isActive) Color.parseColor("#6C5CE7") else resources.getColor(R.color.gray_400, null))
+                    setTextColor(if (isActive) resources.getColor(R.color.purple, null) else resources.getColor(R.color.gray_400, null))
                     setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
                     background = GradientDrawable().apply {
-                        setColor(if (isActive) Color.parseColor("#1A6C5CE7") else Color.parseColor("#0AFFFFFF"))
-                        setStroke(if (isActive) 1 else 0, if (isActive) Color.parseColor("#666C5CE7") else Color.TRANSPARENT)
+                        setColor(if (isActive) resources.getColor(R.color.purple_soft, null) else resources.getColor(R.color.bg_tertiary, null))
+                        setStroke(if (isActive) 1 else 0, if (isActive) Color.argb(102, 108, 92, 231) else Color.TRANSPARENT)
                         cornerRadius = dp(10).toFloat()
                     }
                 }, lp)
@@ -128,9 +128,9 @@ class ModelSettingsFragment : Fragment() {
                 setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, 0, 0, dp(12))
             })
             col.addView(TextView(requireContext()).apply {
-                text = "\u5F00\u59CB\u5206\u6790"; setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD)
+                text = "开始分析"; setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD)
                 gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
-                background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(Color.parseColor("#6C5CE7")) }
+                background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(resources.getColor(R.color.purple, null)) }
             })
             return@addSection col
         }
@@ -148,7 +148,7 @@ class ModelSettingsFragment : Fragment() {
     private fun addSection(title: String, icon: String, content: () -> View) {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
-            background = GradientDrawable().apply { setColor(Color.parseColor("#03FFFFFF")); setStroke(1, Color.parseColor("#05FFFFFF")); cornerRadius = dp(16).toFloat() }
+            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(16).toFloat() }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
         if (title.isNotEmpty()) {

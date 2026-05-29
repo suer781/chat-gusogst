@@ -121,14 +121,14 @@ class ProvidersFragment : Fragment() {
                 val bg = GradientDrawable().apply {
                     cornerRadius = dp(100).toFloat()
                     if (isSelected) {
-                        setColor(Color.parseColor("#E94560"))
+                        setColor(resources.getColor(R.color.accent, null))
                     } else {
                         setColor(Color.TRANSPARENT)
                         setStroke(1, resources.getColor(R.color.bg_tertiary, null))
                     }
                 }
                 background = bg
-                setTextColor(if (isSelected) Color.WHITE else resources.getColor(R.color.text_secondary, null))
+                setTextColor(if (isSelected) resources.getColor(R.color.white, null) else resources.getColor(R.color.text_secondary, null))
                 setTypeface(null, if (isSelected) Typeface.BOLD else Typeface.NORMAL)
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -203,7 +203,7 @@ class ProvidersFragment : Fragment() {
             val bg = GradientDrawable().apply {
                 cornerRadius = dp(16).toFloat()
                 setColor(resources.getColor(R.color.bg_secondary, null))
-                setStroke(1, if (isExpanded) Color.parseColor("#E94560") else resources.getColor(R.color.bg_tertiary, null))
+                setStroke(1, if (isExpanded) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null))
             }
             background = bg
             isClickable = true
@@ -218,7 +218,7 @@ class ProvidersFragment : Fragment() {
         }
         val iconTv = TextView(requireContext()).apply {
             text = provider.name.firstOrNull()?.uppercase() ?: "?"
-            setTextColor(Color.parseColor("#E94560"))
+            setTextColor(resources.getColor(R.color.accent, null))
             textSize = 18f
             gravity = Gravity.CENTER
             setTypeface(null, Typeface.BOLD)
@@ -342,13 +342,13 @@ class ProvidersFragment : Fragment() {
 
             val fetchBtn = TextView(requireContext()).apply {
                 text = "获取实时模型"
-                setTextColor(Color.parseColor("#E94560"))
+                setTextColor(resources.getColor(R.color.accent, null))
                 textSize = 13f
                 setTypeface(null, Typeface.BOLD)
                 setPadding(dp(12), dp(6), dp(12), dp(6))
                 val btnBg = GradientDrawable().apply {
                     cornerRadius = dp(8).toFloat()
-                    setColor(Color.parseColor("#1AE94560"))
+                    setColor(resources.getColor(R.color.accent_soft, null))
                 }
                 background = btnBg
             }
