@@ -14,6 +14,7 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
+import com.gusogst.chat.data.ProviderClassifier
 import com.gusogst.chat.data.ProviderRegistry
 import com.gusogst.chat.model.UIProvider
 import com.gusogst.chat.util.MaterialAnimator
@@ -53,11 +54,14 @@ class ProvidersFragment : Fragment() {
         Category("all", "📋 全部")
     )
 
-    private val recommendedIds = ProviderRegistry.RECOMMENDED_IDS
-    private val domesticKeywords = ProviderRegistry.DOMESTIC_KEYWORDS
-    private val aggregatorKeywords = ProviderRegistry.AGGREGATOR_KEYWORDS
+    private val recommendedIds = ProviderClassifier.RECOMMENDED
 
-    private val exactCategoryMap = ProviderRegistry.EXACT_CATEGORY_MAP
+    private val exactCategoryMap = mapOf(
+        "nano-gpt" to "aggregator", "openrouter" to "aggregator",
+        "kuae-cloud-coding-plan" to "domestic", "tencent-tokenhub" to "domestic",
+        "xpersona" to "overseas", "abliteration-ai" to "overseas",
+        "claudinio" to "overseas", "firepass" to "overseas"
+    )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_providers, container, false)
@@ -112,11 +116,7 @@ class ProvidersFragment : Fragment() {
     }
 
     private fun classify(id: String): String {
-        exactCategoryMap[id]?.let { return it }
-        val lower = id.lowercase()
-        if (domesticKeywords.any { lower.contains(it) }) return "domestic"
-        if (aggregatorKeywords.any { lower.contains(it) }) return "aggregator"
-        return "overseas"
+        return ProviderClassifier.classify(id)
     }
 
     private fun buildCategoryTabs() {

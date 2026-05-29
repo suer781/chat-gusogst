@@ -82,10 +82,10 @@ class ChatStore(context: Context) {
             UIProvider(
                 id = def.id,
                 name = def.name,
-                baseUrl = def.base_url,
+                baseUrl = def.baseUrl,
                 apiKey = "",
-                models = def.models.map { m ->
-                    ModelInfo(id = m.id, name = m.name, contextLength = m.context_length)
+                models = def.models.map { mid ->
+                    ModelInfo(id = mid)
                 }.toMutableList(),
                 enabled = true
             )
