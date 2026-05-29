@@ -52,31 +52,24 @@ class ChatStore(context: Context) {
     }
 
     // ===== 服务商 =====
+    // ===== 服务商 =====
     fun saveProviders(list: List<UIProvider>) {
         prefs.edit().putString("providers", gson.toJson(list)).apply()
     }
 
     fun loadProviders(): List<UIProvider> {
         val json = prefs.getString("providers", null) ?: return seedDefaultProviders()
+        // 检查是否需要重新播种（版本升级或 ID 不合法时）
+        val version = prefs.getInt("providers_version", 0)
+        if (version < 1 || json.contains("UUID")) return seedDefaultProviders()
         return try {
             val type = object : TypeToken<List<UIProvider>>() {}.type
             val list: List<UIProvider> = gson.fromJson(json, type)
-            // 迁移旧数据：修正缺少 id 或 id 为 UUID 的供应商
-            val migrated = list.map { p ->
-                val def = ProviderRegistry.getById(p.id)
-                if (def != null) p else {
-                    // id 不匹配任一已知供应商 → 尝试用 name 匹配
-                    val match = ProviderRegistry.PROVIDERS.find {
-                        it.name == p.name || p.id.startsWith(it.id) || it.id.startsWith(p.id.lowercase())
-                    }
-                    if (match != null) p.copy(id = match.id) else p
-                }
-            }
-            migrated
+            list
         } catch (_: Exception) { seedDefaultProviders() }
     }
 
-    /** 首次加载时播种默认供应商（同步 Web 主分支 providers-registry.json） */
+    /** 播种默认供应商（同步 Web 主分支 providers-registry.json） */
     private fun seedDefaultProviders(): List<UIProvider> {
         val defaults = ProviderRegistry.PROVIDERS.map { def ->
             UIProvider(
@@ -91,6 +84,7 @@ class ChatStore(context: Context) {
             )
         }
         saveProviders(defaults)
+        prefs.edit().putInt("providers_version", 1).apply()
         return defaults
     }
 
