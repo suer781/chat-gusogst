@@ -16,7 +16,8 @@ data class ProviderDef(
     val base_url: String = "",
     val doc: String = "",
     val api: String = "",
-    val models: List<ProviderModel> = emptyList()
+    val models: List<ProviderModel> = emptyList(),
+    val isLocal: Boolean = false
 )
 
 data class ProviderModel(
@@ -40,12 +41,49 @@ object ProviderRegistry {
             val type = object : TypeToken<List<ProviderDef>>() {}.type
             val providers: List<ProviderDef> = Gson().fromJson(reader, type)
             reader.close()
+            if (providers.isEmpty()) throw RuntimeException("Empty provider list from JSON")
             cached = providers
             providers
         } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
+            android.util.Log.e("ProviderRegistry", "Failed to load providers-registry.json", e)
+            // 回退到默认硬编码列表
+            val fallback = getFallbackProviders()
+            cached = fallback
+            fallback
         }
+    }
+
+    /** 回退：JSON 加载失败时的硬编码供应商列表 */
+    private fun getFallbackProviders(): List<ProviderDef> {
+        return listOf(
+            ProviderDef("openai", "OpenAI", base_url = "https://api.openai.com/v1",
+                models = listOf(ProviderModel("gpt-4o"), ProviderModel("gpt-4o-mini"), ProviderModel("gpt-4-turbo"))),
+            ProviderDef("anthropic", "Anthropic", base_url = "https://api.anthropic.com/v1",
+                models = listOf(ProviderModel("claude-3-opus"), ProviderModel("claude-3-sonnet"), ProviderModel("claude-3-haiku"))),
+            ProviderDef("deepseek", "DeepSeek", base_url = "https://api.deepseek.com/v1",
+                models = listOf(ProviderModel("deepseek-chat"), ProviderModel("deepseek-coder"))),
+            ProviderDef("zhipu", "ZhiPu", base_url = "https://open.bigmodel.cn/api/paas/v4",
+                models = listOf(ProviderModel("glm-4"), ProviderModel("glm-3-turbo"))),
+            ProviderDef("qwen", "Qwen", base_url = "https://dashscope.aliyuncs.com/api/v1",
+                models = listOf(ProviderModel("qwen-max"), ProviderModel("qwen-plus"))),
+            ProviderDef("nano-gpt", "NanoGPT", base_url = "https://api.nano-gpt.com/v1",
+                models = listOf(ProviderModel("gpt-4o"), ProviderModel("claude-3-opus"))),
+            ProviderDef("openrouter", "OpenRouter", base_url = "https://openrouter.ai/api/v1",
+                models = listOf(ProviderModel("gpt-4o"), ProviderModel("claude-3-sonnet"))),
+            ProviderDef("together", "Together", base_url = "https://api.together.xyz/v1",
+                models = listOf(ProviderModel("llama-3-70b"), ProviderModel("mixtral-8x7b"))),
+            ProviderDef("moonshot", "Moonshot", base_url = "https://api.moonshot.cn/v1",
+                models = listOf(ProviderModel("moonshot-v1-128k"), ProviderModel("moonshot-v1-32k"))),
+            ProviderDef("groq", "Groq", base_url = "https://api.groq.com/openai/v1",
+                models = listOf(ProviderModel("llama3-70b"), ProviderModel("mixtral-8x7b"))),
+            ProviderDef("ollama", "Ollama", base_url = "http://localhost:11434/v1", isLocal = true,
+                models = listOf(ProviderModel("llama3"), ProviderModel("mistral"))),
+            ProviderDef("google", "Google", base_url = "https://generativelanguage.googleapis.com/v1",
+                models = listOf(ProviderModel("gemini-pro"))),
+            ProviderDef("lmstudio", "LM Studio", base_url = "http://localhost:1234/v1", isLocal = true,
+                models = listOf(ProviderModel("local-model"))),
+            ProviderDef("custom", "自定义", base_url = "")
+        )
     }
 
     val PROVIDERS: List<ProviderDef>

@@ -1,286 +1,282 @@
 [
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_card_light.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_card_light.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/anim_page_exit.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/anim/page_exit.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tab_selected_light.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tab_selected_light.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_search.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_search.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_item_provider_card.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/item_provider_card.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_fragment_chat.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/fragment_chat.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_server.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_server.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_item_provider_card.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/item_provider_card.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_item_settings_card.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/item_settings_card.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_input_field.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_input_field.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_arrow_back.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_arrow_back.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_item_settings_card.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/item_settings_card.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_expand_more.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_expand_more.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable-night_bg_tab_unselected.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable-night/bg_tab_unselected.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/anim_page_exit.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/anim/page_exit.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xxxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_bubble_user.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_bubble_user.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xxxhdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/anim_theme_enter.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/anim/theme_enter.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-mdpi/ic_launcher.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_thinking_block.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_thinking_block.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-hdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_send.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_send.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tab_selected_light.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tab_selected_light.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_bubble_ai.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_bubble_ai.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_send.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_send.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable-night_bg_card.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable-night/bg_card.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tool_card.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tool_card.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_card.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_card.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_send_button.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_send_button.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-mdpi_ic_launcher_foreground.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-mdpi/ic_launcher_foreground.png"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tab_unselected_dark.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tab_unselected_dark.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_item_message_assistant.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/item_message_assistant.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-mdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_nav_active.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_nav_active.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_search_bar.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_search_bar.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xxxhdpi/ic_launcher_foreground.png"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xxxhdpi/ic_launcher_round.png"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_item_tool_call.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/item_tool_call.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-mdpi_ic_launcher_round.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-mdpi/ic_launcher_round.png"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-mdpi_ic_launcher_foreground.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-mdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_ambient.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_ambient.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_ambient.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_ambient.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/anim_theme_exit.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/anim/theme_exit.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xhdpi/ic_launcher.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_header.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_header.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_fragment_persona.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/fragment_persona.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_settings.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_settings.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/anim_theme_enter.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/anim/theme_enter.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/anim_page_enter.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/anim/page_enter.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_search_bar_light.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_search_bar_light.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xhdpi_ic_launcher.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xhdpi/ic_launcher.png"
-    },
-    {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable-night_bg_tab_unselected.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable-night/bg_tab_unselected.xml"
-    },
-    {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xxhdpi_ic_launcher_foreground.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xxhdpi/ic_launcher_foreground.png"
-    },
-    {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_input.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_input.xml"
-    },
-    {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-anydpi-v26/ic_launcher_round.xml"
-    },
-    {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xxhdpi_ic_launcher.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xxhdpi/ic_launcher.png"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_glass_divider.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_glass_divider.xml"
     },
     {
         "merged": "com.gusogst.chat.app-debug-54:/layout_fragment_providers.xml.flat",
         "source": "com.gusogst.chat.app-main-56:/layout/fragment_providers.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-mdpi_ic_launcher.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-mdpi/ic_launcher.png"
+        "merged": "com.gusogst.chat.app-debug-54:/anim_page_enter.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/anim/page_enter.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_search_bar_dark.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_search_bar_dark.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xxhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xxhdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tab_unselected_light.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tab_unselected_light.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_bubble_user.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_bubble_user.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_item_tool_call.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/item_tool_call.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_item_message_user.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/item_message_user.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_item_message_user.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/item_message_user.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_input.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_input.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tab_unselected_dark.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tab_unselected_dark.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xhdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_arrow_back.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_arrow_back.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_fragment_chat.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/fragment_chat.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_server.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_server.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tag_chip_light.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tag_chip_light.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xxxhdpi/ic_launcher.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_avatar_circle.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_avatar_circle.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_card_light.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_card_light.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_search_bar_light.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_search_bar_light.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tag_chip_dark.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tag_chip_dark.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tab_unselected.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tab_unselected.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_bubble_ai.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_bubble_ai.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xhdpi_ic_launcher_foreground.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xhdpi/ic_launcher_foreground.png"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_settings.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_settings.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_send_button.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_send_button.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-hdpi/ic_launcher.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xhdpi_ic_launcher_round.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xhdpi/ic_launcher_round.png"
+        "merged": "com.gusogst.chat.app-debug-54:/anim_theme_exit.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/anim/theme_exit.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_fragment_persona.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/fragment_persona.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-hdpi_ic_launcher_round.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-hdpi/ic_launcher_round.png"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_search_bar_dark.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_search_bar_dark.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-hdpi_ic_launcher_foreground.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-hdpi/ic_launcher_foreground.png"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tab_selected_dark.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tab_selected_dark.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable-night_bg_card.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable-night/bg_card.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tag_chip_dark.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tag_chip_dark.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_nav_active.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_nav_active.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_tool_card.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_tool_card.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_chat.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_chat.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_ambient_light.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_ambient_light.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tag_chip_light.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tag_chip_light.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_chat.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_chat.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tab_unselected_light.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tab_unselected_light.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_nav_indicator.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_nav_indicator.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_header.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_header.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_search_bar.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_search_bar.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_nav_indicator.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_nav_indicator.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable-night_bg_search_bar.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable-night/bg_search_bar.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_expand_more.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_expand_more.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_fragment_providers.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/fragment_providers.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_card_dark.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_card_dark.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_input_field.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_input_field.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_ic_persona.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/ic_persona.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_bubble_assistant.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_bubble_assistant.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable-night_bg_search_bar.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable-night/bg_search_bar.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_fragment_settings.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/fragment_settings.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_card.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_card.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/layout_activity_main.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/layout/activity_main.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_ambient_light.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_ambient_light.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_glass_divider.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_glass_divider.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-xxhdpi/ic_launcher.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_persona.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_persona.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_fragment_settings.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/fragment_settings.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-hdpi_ic_launcher.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-hdpi/ic_launcher.png"
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-hdpi_ic_launcher_foreground.png.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-hdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xxhdpi_ic_launcher_round.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xxhdpi/ic_launcher_round.png"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_item_message_assistant.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/item_message_assistant.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/mipmap-xxxhdpi_ic_launcher.png.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xxxhdpi/ic_launcher.png"
+        "merged": "com.gusogst.chat.app-debug-54:/layout_activity_main.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/layout/activity_main.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_ic_search.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/ic_search.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tab_selected_dark.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tab_selected_dark.xml"
     },
     {
-        "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_card_dark.xml.flat",
-        "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_card_dark.xml"
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_thinking_block.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_thinking_block.xml"
+    },
+    {
+        "merged": "com.gusogst.chat.app-debug-54:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_avatar_circle.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_avatar_circle.xml"
+    },
+    {
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_tab_unselected.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_tab_unselected.xml"
+    },
+    {
+        "merged": "com.gusogst.chat.app-debug-54:/drawable_bg_bubble_assistant.xml.flat",
+        "source": "com.gusogst.chat.app-main-56:/drawable/bg_bubble_assistant.xml"
     }
 ]
