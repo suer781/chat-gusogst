@@ -120,7 +120,8 @@ data class UIProvider(
     var baseUrl: String = "",
     var apiKey: String = "",
     val models: MutableList<ModelInfo> = mutableListOf(),
-    var enabled: Boolean = true
+    var enabled: Boolean = true,
+    var lastUpdated: Long = 0L  // 隐藏更新时间戳，用于检测数据是否过时
 )
 
 // ===== 设置 =====

@@ -71,6 +71,7 @@ class ChatStore(context: Context) {
 
     /** 播种默认供应商（同步 Web 主分支 providers-registry.json） */
     private fun seedDefaultProviders(): List<UIProvider> {
+        val now = System.currentTimeMillis()
         val defaults = ProviderRegistry.PROVIDERS.map { def ->
             UIProvider(
                 id = def.id,
@@ -80,7 +81,8 @@ class ChatStore(context: Context) {
                 models = def.models.map { mid ->
                     ModelInfo(id = mid)
                 }.toMutableList(),
-                enabled = true
+                enabled = true,
+                lastUpdated = now
             )
         }
         saveProviders(defaults)
