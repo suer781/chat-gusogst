@@ -68,13 +68,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
         haptics = HapticsHelper(this)
+        initNav()
+        if (savedInstanceState == null) selectNav(navItems[0])
 
-        // 延迟到首帧之后初始化导航/装饰性效果，不影响冷启动时间
+        // 推后非关键效果到首帧之后（insets、环境光、入场动画）
         findViewById<View>(android.R.id.content).post {
             currentTheme = readCurrentTheme()
-            initNav()
             setupWindowInsets()
-            if (savedInstanceState == null) selectNav(navItems[0])
             MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content), currentTheme)
             if (savedInstanceState == null) {
                 playEntryAnimation()
