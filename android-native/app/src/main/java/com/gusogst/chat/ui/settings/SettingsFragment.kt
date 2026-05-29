@@ -64,9 +64,6 @@ class SettingsFragment : Fragment() {
             isFocusable = true
         }
 
-        // 按压缩放 + 涟漪微动画
-        MaterialAnimator.applyButtonEffects(card)
-
         // Icon container
         val iconBg = GradientDrawable().apply {
             cornerRadius = dp(12).toFloat()
@@ -119,6 +116,9 @@ class SettingsFragment : Fragment() {
         card.addView(iconFrame)
         card.addView(textLayout)
         card.addView(arrowTv)
+
+        // 按压缩放
+        MaterialAnimator.applyButtonPress(card)
 
         card.setOnClickListener {
             // Navigate to sub-settings
