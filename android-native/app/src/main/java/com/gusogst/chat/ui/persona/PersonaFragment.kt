@@ -26,7 +26,7 @@ class PersonaFragment : Fragment() {
 
     private var searchQuery: String = ""
 
-    // 预设角色（同步 Web 主分支）
+    // 预设角色（同步 Web 主分支 persona.ts）
     data class PresetPersona(
         val id: String, val name: String, val emoji: String,
         val description: String, val tags: List<String>,
@@ -34,30 +34,30 @@ class PersonaFragment : Fragment() {
     )
 
     private val presets = listOf(
-        PresetPersona("default", "Hermes", "🌿",
-            "Calm, warm, and analytical — your everyday companion",
-            listOf("general"),
-            PersonalityTraits(calm = 0.8f, warm = 0.6f, analytical = 0.5f)),
-        PresetPersona("creative", "Muse", "🎨",
-            "Creative and curious, perfect for brainstorming",
-            listOf("creative", "writing"),
-            PersonalityTraits(creative = 0.9f, curious = 0.7f, playful = 0.5f)),
-        PresetPersona("coder", "Hephaestus", "⚒️",
-            "Precise and technical, your coding partner",
-            listOf("coding", "technical"),
-            PersonalityTraits(precise = 0.9f, analytical = 0.8f, calm = 0.6f)),
-        PresetPersona("analyst", "Athena", "🦉",
-            "Analytical and strategic, deep thinking partner",
-            listOf("analysis", "strategy"),
-            PersonalityTraits(analytical = 0.9f, precise = 0.7f, calm = 0.7f)),
-        PresetPersona("tutor", "Socrates", "📚",
-            "Curious and warm, great for learning",
-            listOf("education", "learning"),
-            PersonalityTraits(curious = 0.9f, warm = 0.7f, calm = 0.6f)),
-        PresetPersona("friend", "Companion", "💛",
-            "Warm and playful, your casual friend",
-            listOf("casual", "support"),
-            PersonalityTraits(warm = 0.9f, playful = 0.6f, energetic = 0.5f))
+        PresetPersona("gentle", "温柔型", "💕",
+            "性格温柔体贴，说话轻声细语",
+            listOf("日常", "温柔"),
+            PersonalityTraits(warm = 0.9f, calm = 0.6f)),
+        PresetPersona("tsundere", "傲娇型", "💢",
+            "嘴上说不关心其实很在乎",
+            listOf("日常", "傲娇"),
+            PersonalityTraits(playful = 0.8f, energetic = 0.6f)),
+        PresetPersona("genki", "元气型", "☀️",
+            "活泼开朗，充满正能量",
+            listOf("日常", "元气"),
+            PersonalityTraits(energetic = 0.9f, playful = 0.7f)),
+        PresetPersona("night", "深夜谈心", "🌙",
+            "安静有深度的深夜聊天",
+            listOf("深夜", "谈心"),
+            PersonalityTraits(calm = 0.8f, warm = 0.7f)),
+        PresetPersona("study", "陪伴学习", "📚",
+            "学习工作时的温柔陪伴",
+            listOf("学习", "陪伴"),
+            PersonalityTraits(calm = 0.7f, warm = 0.6f)),
+        PresetPersona("healing", "治愈安慰", "🫂",
+            "难过时的温暖安慰",
+            listOf("安慰", "治愈"),
+            PersonalityTraits(warm = 0.9f, calm = 0.8f))
     )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
