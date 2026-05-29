@@ -174,24 +174,45 @@ object MaterialAnimator {
 
     // ── 环境光背景设置 ──
     // Web: body::after radial-gradient (独立合成层)
-    // Android: 用 GradientDrawable 程序化创建径向渐变
+    // Android: 用 View 叠加层放在内容上方
     fun setAmbientBackground(rootView: View) {
         val density = rootView.resources.displayMetrics.density
         val w = rootView.resources.displayMetrics.widthPixels
         val h = rootView.resources.displayMetrics.heightPixels
         val radius = Math.sqrt((w * w + h * h).toDouble()).toFloat() * 1.2f
 
+        // 检查当前是否是暗色主题
+        val isDark = (rootView.resources.configuration.uiMode and
+            android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+        val topColor = if (isDark) 0x99B0A0FF.toInt() else 0x66C8B8FF.toInt()
+        val midColor = if (isDark) 0x337080FF.toInt() else 0x22A098FF.toInt()
+        val endColor = Color.TRANSPARENT
+
         val bg = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(
-                0x99FFE0FF.toInt(),  // 顶部紫光
-                0x33E8D5FF.toInt(),  // 中部
-                0x000D0D2B           // 底部透明（露出 bg_primary）
-            )
+            GradientDrawable.Orientation.TL_BR,
+            intArrayOf(topColor, midColor, endColor)
         )
         bg.gradientType = GradientDrawable.RADIAL_GRADIENT
         bg.gradientRadius = radius
-        bg.setGradientCenter((w / 2).toFloat(), 0f)
-        rootView.background = bg
+        // 光源位置：右上角（75% 宽度, 10% 高度）
+        bg.setGradientCenter((w * 0.75f).toFloat(), (h * 0.1f).toFloat())
+
+        // 用覆盖层而非替换背景，保留 bg_primary
+        val overlay = rootView.findViewWithTag<View>("ambient_overlay")
+        if (overlay != null) {
+            overlay.background = bg
+        } else {
+            // 创建覆盖层
+            val cover = View(rootView.context)
+            cover.tag = "ambient_overlay"
+            cover.background = bg
+            cover.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            (rootView as? ViewGroup)?.addView(cover, 0)
+        }
     }
 }
