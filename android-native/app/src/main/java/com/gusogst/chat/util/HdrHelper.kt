@@ -214,7 +214,7 @@ object HdrHelper {
      */
     fun applyGlassWithHdr(view: View, enabled: Boolean, glassEnabled: Boolean, isDark: Boolean = true) {
         if (!enabled && !glassEnabled) {
-            view.background = null
+            // 都不开时不动原有背景，避免 header 底色丢失
             view.elevation = 0f
             return
         }
@@ -223,8 +223,11 @@ object HdrHelper {
 
         val layers = mutableListOf<Drawable>()
 
-        // 玻璃底色（glass→bgTint, HDR→headerBg 稍强）
-        layers.add(ColorDrawable(if (enabled && glassEnabled) c.headerBg else if (glassEnabled) c.bgTint else Color.TRANSPARENT))
+        // 保持原有背景作为最底层（header 的 bg_header 等）
+        val originalBg = view.background
+        if (originalBg != null) {
+            layers.add(originalBg)
+        }
 
         // ── 玻璃层（glassEnabled=true 时始终生效）──
         if (glassEnabled) {

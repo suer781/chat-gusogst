@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.activity.viewModels
 import com.gusogst.chat.R
+import com.gusogst.chat.ChatApplication
 import com.gusogst.chat.ui.chat.ChatFragment
 import com.gusogst.chat.model.UISettings
 import com.gusogst.chat.viewmodel.ChatViewModel
@@ -41,13 +42,7 @@ class MainActivity : AppCompatActivity() {
     private var settingsFirstFire = true
 
     /** 从 SharedPreferences 读取当前保存的主题名 */
-    private fun readCurrentTheme(): String {
-        val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
-        val json = prefs.getString("settings", null) ?: return "dark"
-        return try {
-            org.json.JSONObject(json).optString("theme", "dark")
-        } catch (_: Exception) { "dark" }
-    }
+    private fun readCurrentTheme(): String = ChatApplication.cachedTheme
 
     private data class NavItem(
         val container: LinearLayout,
@@ -64,14 +59,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        // 读取保存的主题（Application.onCreate 已设好默认深色，这里只读取记录）
-        val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
-        val settingsJson = prefs.getString("settings", null)
-        val themeName = if (settingsJson != null) {
-            try {
-                org.json.JSONObject(settingsJson).optString("theme", "dark")
-            } catch (_: Exception) { "dark" }
-        } else "dark"
+        // 使用 Application 缓存的主题（避免重复读 SharedPreferences）
+        val themeName = ChatApplication.cachedTheme
         currentTheme = themeName
         // pureBlack 需要额外的 Amoled 主题覆盖
         if (themeName == "pureBlack") {
