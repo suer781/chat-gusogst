@@ -59,6 +59,7 @@ class ProvidersFragment : Fragment() {
     private val exactCategoryMap = mapOf(
         "nano-gpt" to "aggregator",
         "openrouter" to "aggregator",
+        "together" to "aggregator",
         "tencent-tokenhub" to "domestic",
         "deepseek" to "domestic",
         "zhipu" to "domestic",
