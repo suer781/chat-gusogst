@@ -14,6 +14,7 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
+import com.gusogst.chat.data.ProviderRegistry
 import com.gusogst.chat.model.UIProvider
 import com.gusogst.chat.util.MaterialAnimator
 import com.gusogst.chat.viewmodel.ChatViewModel
@@ -52,21 +53,11 @@ class ProvidersFragment : Fragment() {
         Category("all", "📋 全部")
     )
 
-    private val recommendedIds = setOf("nano-gpt", "openai", "anthropic", "zhipu", "deepseek")
-    private val domesticKeywords = listOf("zhipu","glm","qwen","wenxin","ernie","tongyi","doubao","deepseek","tencent","step","hunyuan","minimax","moonshot","kimi")
-    private val aggregatorKeywords = listOf("nano","wafer","router","proxy","relay","openrouter")
+    private val recommendedIds = ProviderRegistry.RECOMMENDED_IDS
+    private val domesticKeywords = ProviderRegistry.DOMESTIC_KEYWORDS
+    private val aggregatorKeywords = ProviderRegistry.AGGREGATOR_KEYWORDS
 
-    private val exactCategoryMap = mapOf(
-        "nano-gpt" to "aggregator",
-        "openrouter" to "aggregator",
-        "together" to "aggregator",
-        "tencent-tokenhub" to "domestic",
-        "deepseek" to "domestic",
-        "zhipu" to "domestic",
-        "qwen" to "domestic",
-        "moonshot" to "domestic",
-        "minimax" to "domestic"
-    )
+    private val exactCategoryMap = ProviderRegistry.EXACT_CATEGORY_MAP
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_providers, container, false)

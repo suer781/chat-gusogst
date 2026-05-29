@@ -11,6 +11,10 @@ class ChatStore(context: Context) {
         context.getSharedPreferences("chat_gusogst", Context.MODE_PRIVATE)
     private val gson = Gson()
 
+    init {
+        ProviderRegistry.load(context)
+    }
+
     companion object {
         @Volatile
         private var INSTANCE: ChatStore? = null
@@ -72,15 +76,17 @@ class ChatStore(context: Context) {
         } catch (_: Exception) { seedDefaultProviders() }
     }
 
-    /** 首次加载时播种默认供应商（同步 Web 主分支） */
+    /** 首次加载时播种默认供应商（同步 Web 主分支 providers-registry.json） */
     private fun seedDefaultProviders(): List<UIProvider> {
         val defaults = ProviderRegistry.PROVIDERS.map { def ->
             UIProvider(
                 id = def.id,
                 name = def.name,
-                baseUrl = def.baseUrl,
+                baseUrl = def.base_url,
                 apiKey = "",
-                models = def.models.map { ModelInfo(it, def.name) }.toMutableList(),
+                models = def.models.map { m ->
+                    ModelInfo(id = m.id, name = m.name, contextLength = m.context_length)
+                }.toMutableList(),
                 enabled = true
             )
         }

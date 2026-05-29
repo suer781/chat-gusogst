@@ -1,39 +1,99 @@
 package com.gusogst.chat.data
 
+import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.io.InputStreamReader
+
 /**
- * Provider definitions - mirrors Web providers/definitions/agent-core.ts
+ * Provider definitions - loaded from Web main branch's providers-registry.json
+ * Contains 129 providers with 4774+ models total.
  */
 data class ProviderDef(
     val id: String,
     val name: String,
-    val baseUrl: String,
-    val models: List<String>,
-    val authType: String = "api_key", // api_key / oauth / none
-    val transport: String = "http",   // http / websocket / local
-    val isAggregator: Boolean = false,
-    val isLocal: Boolean = false
+    val env_key: List<String> = emptyList(),
+    val base_url: String = "",
+    val doc: String = "",
+    val api: String = "",
+    val models: List<ProviderModel> = emptyList()
+)
+
+data class ProviderModel(
+    val id: String,
+    val name: String? = null,
+    val context_length: Long = 0,
+    val max_output: Long = 0,
+    val cost_input: Double = 0.0,
+    val cost_output: Double = 0.0
 )
 
 object ProviderRegistry {
-    val PROVIDERS = listOf(
-        ProviderDef("openai", "OpenAI", "https://api.openai.com/v1", listOf("gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo")),
-        ProviderDef("anthropic", "Anthropic", "https://api.anthropic.com/v1", listOf("claude-3-opus", "claude-3-sonnet", "claude-3-haiku")),
-        ProviderDef("ollama", "Ollama", "http://localhost:11434/v1", listOf("llama3", "mistral", "codellama"), authType = "none", isLocal = true),
-        ProviderDef("google", "Google", "https://generativelanguage.googleapis.com/v1", listOf("gemini-pro", "gemini-ultra")),
-        ProviderDef("deepseek", "DeepSeek", "https://api.deepseek.com/v1", listOf("deepseek-chat", "deepseek-coder")),
-        ProviderDef("qwen", "Qwen", "https://dashscope.aliyuncs.com/api/v1", listOf("qwen-max", "qwen-plus", "qwen-turbo")),
-        ProviderDef("zhipu", "ZhiPu", "https://open.bigmodel.cn/api/paas/v4", listOf("glm-4", "glm-3-turbo")),
-        ProviderDef("moonshot", "Moonshot", "https://api.moonshot.cn/v1", listOf("moonshot-v1-128k", "moonshot-v1-32k")),
-        ProviderDef("openrouter", "OpenRouter", "https://openrouter.ai/api/v1", listOf(), isAggregator = true),
-        ProviderDef("together", "Together", "https://api.together.xyz/v1", listOf(), isAggregator = true),
-        ProviderDef("groq", "Groq", "https://api.groq.com/openai/v1", listOf("llama3-70b", "mixtral-8x7b")),
-        ProviderDef("lmstudio", "LM Studio", "http://localhost:1234/v1", listOf(), authType = "none", isLocal = true),
-        ProviderDef("custom", "\u81EA\u5B9A\u4E49", "", listOf())
+    private var cached: List<ProviderDef>? = null
+
+    fun load(context: Context): List<ProviderDef> {
+        cached?.let { return it }
+
+        return try {
+            val stream = context.assets.open("providers-registry.json")
+            val reader = InputStreamReader(stream)
+            val type = object : TypeToken<List<ProviderDef>>() {}.type
+            val providers: List<ProviderDef> = Gson().fromJson(reader, type)
+            reader.close()
+            cached = providers
+            providers
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    val PROVIDERS: List<ProviderDef>
+        get() = cached ?: emptyList()
+
+    fun getById(id: String): ProviderDef? = cached?.find { it.id == id }
+
+    /**
+     * 获取推荐供应商 ID 列表（对齐 Web 主分支）
+     */
+    val RECOMMENDED_IDS = setOf("nano-gpt", "openai", "anthropic", "zhipu", "deepseek")
+
+    /**
+     * 国产关键词（用于模糊匹配分类）
+     */
+    val DOMESTIC_KEYWORDS = listOf(
+        "zhipu","glm","qwen","wenxin","ernie","tongyi","doubao",
+        "deepseek","tencent","kuae","step","hunyuan","minimax","moonshot","kimi"
     )
 
-    val ALIASES = mapOf("openai-compatible" to "openai")
+    /**
+     * 聚合关键词（用于模糊匹配分类）
+     */
+    val AGGREGATOR_KEYWORDS = listOf("nano","wafer","router","proxy","relay","openrouter")
 
-    fun getById(id: String): ProviderDef? = PROVIDERS.find { it.id == (ALIASES[id] ?: id) }
-    fun getAggregators(): List<ProviderDef> = PROVIDERS.filter { it.isAggregator }
-    fun getLocal(): List<ProviderDef> = PROVIDERS.filter { it.isLocal }
+    /**
+     * 精确分类映射（覆盖关键词匹配）
+     */
+    val EXACT_CATEGORY_MAP = mapOf(
+        "nano-gpt" to "aggregator",
+        "wafer" to "aggregator",
+        "openrouter" to "aggregator",
+        "kuae-cloud-coding-plan" to "domestic",
+        "tencent-tokenhub" to "domestic",
+        "xpersona" to "overseas",
+        "abliteration-ai" to "overseas",
+        "claudinio" to "overseas",
+        "firepass" to "overseas"
+    )
+
+    /**
+     * 分类函数（对齐 Web 主分支）
+     */
+    fun classify(id: String): String {
+        EXACT_CATEGORY_MAP[id]?.let { return it }
+        val lower = id.lowercase()
+        if (DOMESTIC_KEYWORDS.any { lower.contains(it) }) return "domestic"
+        if (AGGREGATOR_KEYWORDS.any { lower.contains(it) }) return "aggregator"
+        return "overseas"
+    }
 }
