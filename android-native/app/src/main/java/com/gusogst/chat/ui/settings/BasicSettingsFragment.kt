@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
+import com.gusogst.chat.util.MaterialAnimator
 import com.gusogst.chat.viewmodel.ChatViewModel
 
 class BasicSettingsFragment : Fragment() {
@@ -67,6 +68,7 @@ class BasicSettingsFragment : Fragment() {
                     addView(TextView(requireContext()).apply { text = icon; textSize = 22f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_300, null)); gravity = Gravity.CENTER })
                     addView(TextView(requireContext()).apply { text = label; textSize = 11f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_300, null)); gravity = Gravity.CENTER })
                     setOnClickListener { viewModel.updateSettings { it.copy(theme = key) } }
+                    MaterialAnimator.applyButtonEffects(this)
                 }, lp)
             }
             return@addSection grid
@@ -85,6 +87,7 @@ class BasicSettingsFragment : Fragment() {
             })
             row.background = GradientDrawable().apply { cornerRadius = dp(12).toFloat(); setColor(resources.getColor(R.color.bg_secondary, null)) }
             row.isClickable = true; row.isFocusable = true
+            MaterialAnimator.applyButtonEffects(row)
             row.setOnClickListener {
                 parentFragmentManager.beginTransaction()
                     .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
@@ -176,6 +179,7 @@ class BasicSettingsFragment : Fragment() {
 
     private fun createToggleRow(label: String, desc: String, checked: Boolean, onChange: (Boolean) -> Unit): LinearLayout {
         val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(10), 0, dp(10)); setOnClickListener { onChange(!checked) } }
+        MaterialAnimator.applyButtonEffects(row)
         val textCol = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
         textCol.addView(TextView(requireContext()).apply { text = label; setTextColor(resources.getColor(R.color.gray_100, null)); textSize = 14f })
         textCol.addView(TextView(requireContext()).apply { text = desc; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, dp(2), 0, 0) })
