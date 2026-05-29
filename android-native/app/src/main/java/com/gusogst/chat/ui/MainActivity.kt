@@ -190,6 +190,15 @@ class MainActivity : AppCompatActivity() {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         if (AppCompatDelegate.getDefaultNightMode() != mode) {
+            // 设置窗口背景色匹配目标主题，避免重建间隙透出白色
+            window.setBackgroundDrawableResource(
+                when (theme) {
+                    "light", "pureWhite" -> android.R.color.white
+                    "dark" -> R.color.bg_primary_dark
+                    "pureBlack" -> android.R.color.black
+                    else -> R.color.bg_primary_dark
+                }
+            )
             overridePendingTransition(R.anim.theme_enter, R.anim.theme_exit)
             AppCompatDelegate.setDefaultNightMode(mode)
         }

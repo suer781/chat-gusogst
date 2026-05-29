@@ -116,10 +116,6 @@
         "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/mipmap-xxhdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "com.gusogst.chat.app-debug-54:/anim_theme_enter.xml.flat",
-        "source": "com.gusogst.chat.app-main-56:/anim/theme_enter.xml"
-    },
-    {
         "merged": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-debug-54:/drawable_bg_input.xml.flat",
         "source": "/opt/data/.gradle/daemon/8.11.1/com.gusogst.chat.app-main-56:/drawable/bg_input.xml"
     },
