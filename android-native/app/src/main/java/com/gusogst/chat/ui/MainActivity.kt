@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        // 默认深色主题，用户设置后保存
+        // 读取保存的主题，在 super.onCreate 前应用（仅当与当前不同，避免重建闪烁）
         val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
         val settingsJson = prefs.getString("settings", null)
         val themeName = if (settingsJson != null) {
@@ -71,13 +71,15 @@ class MainActivity : AppCompatActivity() {
                 org.json.JSONObject(settingsJson).optString("theme", "dark")
             } catch (_: Exception) { "dark" }
         } else "dark"
-        if (themeName == "pureBlack") {
-            setTheme(R.style.Theme_ChatGusogst_Amoled)
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else if (themeName == "dark") {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else if (themeName == "light" || themeName == "pureWhite") {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        currentTheme = themeName
+        val targetMode = when (themeName) {
+            "pureBlack" -> { setTheme(R.style.Theme_ChatGusogst_Amoled); AppCompatDelegate.MODE_NIGHT_YES }
+            "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+            "light", "pureWhite" -> AppCompatDelegate.MODE_NIGHT_NO
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+            AppCompatDelegate.setDefaultNightMode(targetMode)
         }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -93,7 +95,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.settings.observe(this) { s ->
             val themeChanged = s.theme != currentTheme
             currentTheme = s.theme
-            applyTheme(s.theme)
+            // 仅当主题真正变化时才调用 applyTheme（避免首次注册时重建闪烁）
+            if (themeChanged) {
+                applyTheme(s.theme)
+            }
             val isDark = isDarkTheme(s.theme)
             // HDR + 毛玻璃应用到 header 和根背景
             HdrHelper.applyGlassWithHdr(
