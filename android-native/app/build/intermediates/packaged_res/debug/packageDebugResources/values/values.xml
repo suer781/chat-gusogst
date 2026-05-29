@@ -179,13 +179,13 @@
     <string name="nav_settings">设置</string>
     <string name="persona_create">创建角色</string>
     <string name="persona_create_desc">自定义你的AI伙伴</string>
-    <string name="persona_default_desc">A warm, friendly companion</string>
-    <string name="persona_default_name">Companion</string>
+    <string name="persona_default_desc">一个温暖的伴侣</string>
+    <string name="persona_default_name">伴侣</string>
     <string name="persona_search_hint">搜索角色…</string>
     <string name="persona_selected">当前</string>
     <string name="persona_title">角色</string>
-    <string name="providers_api_key_hint">API Key</string>
-    <string name="providers_base_url_hint">Base URL（可选）</string>
+    <string name="providers_api_key_hint">API 密钥</string>
+    <string name="providers_base_url_hint">基础地址（可选）</string>
     <string name="providers_connect_failed">连接失败</string>
     <string name="providers_connected">已连接</string>
     <string name="providers_cost_format">$%s/M in</string>

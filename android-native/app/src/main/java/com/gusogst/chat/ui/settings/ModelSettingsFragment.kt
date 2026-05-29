@@ -27,7 +27,7 @@ class ModelSettingsFragment : Fragment() {
         Triple("openai", "OpenAI", "sk-..."),
         Triple("anthropic", "Anthropic", "sk-ant-..."),
         Triple("ollama", "Ollama", ""),
-        Triple("custom", "\u81EA\u5B9A\u4E49", "API Key")
+        Triple("custom", "\u81EA\u5B9A\u4E49", "API \u5BC6\u94A5")
     )
     private val tokenOptions = listOf(1024, 2048, 4096, 8192, 16384)
 

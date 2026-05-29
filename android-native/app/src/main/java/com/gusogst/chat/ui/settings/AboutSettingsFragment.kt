@@ -57,7 +57,7 @@ class AboutSettingsFragment : Fragment() {
             setPadding(0, dp(12), 0, dp(4))
         })
         logoCard.addView(TextView(requireContext()).apply {
-            text = "AI Virtual Companion"; textSize = 14f
+            text = "AI \u865A\u62DF\u4F34\u4FA3"; textSize = 14f
             setTextColor(resources.getColor(R.color.text_secondary, null)); gravity = Gravity.CENTER
         })
         logoCard.addView(TextView(requireContext()).apply {
@@ -77,7 +77,7 @@ class AboutSettingsFragment : Fragment() {
 
         addInfoCard("\u5F00\u6E90", listOf(
             "\u4ED3\u5E93" to "github.com/suer781/chat-gusogst",
-            "\u8BB8\u53EF\u8BC1" to "MIT License"
+            "\u8BB8\u53EF\u8BC1" to "MIT \u8BB8\u53EF\u8BC1"
         ))
 
         // Version check button

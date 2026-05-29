@@ -287,7 +287,7 @@ class ProvidersFragment : Fragment() {
         // LIVE badge
         if (hasLiveData && isConnected == true) {
             nameRow.addView(TextView(requireContext()).apply {
-                text = "LIVE"
+                text = "\u5728\u7EBF"
                 textSize = 9f
                 setTextColor(resources.getColor(R.color.accent, null))
                 setTypeface(null, Typeface.BOLD)

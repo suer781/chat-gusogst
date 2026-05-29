@@ -173,7 +173,7 @@ class PersonaProfileFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16); bottomMargin = dp(8) }
         })
         root.addView(TextView(requireContext()).apply {
-            text = prompt.ifEmpty { "No system prompt set" }
+            text = prompt.ifEmpty { "\u672A\u8BBE\u7F6E\u7CFB\u7EDF\u63D0\u793A\u8BCD" }
             setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f; setLineSpacing(0f, 1.6f)
             setPadding(dp(16), dp(16), dp(16), dp(16))
             background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); cornerRadius = dp(10).toFloat() }

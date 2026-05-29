@@ -43,7 +43,7 @@ class PersonaSettingsDialog : DialogFragment() {
     private fun createEmptyDialog(): Dialog {
         return Dialog(requireContext()).apply {
             setContentView(TextView(requireContext()).apply {
-                text = "Error loading persona"; setPadding(40, 40, 40, 40)
+                text = "\u52A0\u8F7D\u89D2\u8272\u5931\u8D25"; setPadding(40, 40, 40, 40)
             })
         }
     }
@@ -172,7 +172,7 @@ class PersonaSettingsDialog : DialogFragment() {
         // Auto mode
         content.addView(sectionLabel("聊天时自动调节"))
         val modeRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(8), 0, dp(8)) }
-        for ((key, label) in listOf("off" to "关闭", "rule" to "规则", "llm" to "LLM")) {
+        for ((key, label) in listOf("off" to "\u5173\u95ED", "rule" to "\u89C4\u5219", "llm" to "\u5927\u8BED\u8A00\u6A21\u578B")) {
             modeRow.addView(createModeBtn(label, key == autoMode) { autoMode = key })
         }
         content.addView(modeRow)
