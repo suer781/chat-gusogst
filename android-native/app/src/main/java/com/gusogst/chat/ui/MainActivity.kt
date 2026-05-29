@@ -14,6 +14,7 @@ import android.view.animation.DecelerateInterpolator
 import android.animation.ValueAnimator
 import android.content.res.Configuration
 import android.graphics.Color
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNav: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         // 使用 Application 缓存的主题（避免重复读 SharedPreferences）
         val themeName = ChatApplication.cachedTheme
         currentTheme = themeName
@@ -70,11 +72,11 @@ class MainActivity : AppCompatActivity() {
         haptics = HapticsHelper(this)
         initNav()
         if (savedInstanceState == null) selectNav(navItems[0])
+        setupWindowInsets()
 
-        // 推后非关键效果到首帧之后（insets、环境光、入场动画）
+        // 推后非关键效果到首帧之后（环境光、入场动画）
         findViewById<View>(android.R.id.content).post {
             currentTheme = readCurrentTheme()
-            setupWindowInsets()
             MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content), currentTheme)
             if (savedInstanceState == null) {
                 playEntryAnimation()

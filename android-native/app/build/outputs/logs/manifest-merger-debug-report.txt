@@ -126,7 +126,7 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /opt/data/.
 	android:allowBackup
 		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:10:9-35
 	android:theme
-		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:15:9-49
+		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:15:9-56
 	android:usesCleartextTraffic
 		ADDED from /tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:16:9-44
 	android:name
