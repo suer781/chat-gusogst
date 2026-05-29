@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/bg_primary_dark">
+    android:background="@color/bg_primary">
 
     <!-- Header -->
     <RelativeLayout
@@ -42,7 +42,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="@dimen/spacing_md"
-        android:background="@drawable/bg_search_bar_dark">
+        android:background="@drawable/bg_search_bar">
 
         <ImageView
             android:layout_width="20dp"
