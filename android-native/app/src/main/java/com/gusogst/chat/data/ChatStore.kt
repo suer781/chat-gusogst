@@ -56,7 +56,19 @@ class ChatStore(context: Context) {
         val json = prefs.getString("providers", null) ?: return seedDefaultProviders()
         return try {
             val type = object : TypeToken<List<UIProvider>>() {}.type
-            gson.fromJson(json, type)
+            val list: List<UIProvider> = gson.fromJson(json, type)
+            // 迁移旧数据：修正缺少 id 或 id 为 UUID 的供应商
+            val migrated = list.map { p ->
+                val def = ProviderRegistry.getById(p.id)
+                if (def != null) p else {
+                    // id 不匹配任一已知供应商 → 尝试用 name 匹配
+                    val match = ProviderRegistry.PROVIDERS.find {
+                        it.name == p.name || p.id.startsWith(it.id) || it.id.startsWith(p.id.lowercase())
+                    }
+                    if (match != null) p.copy(id = match.id) else p
+                }
+            }
+            migrated
         } catch (_: Exception) { seedDefaultProviders() }
     }
 
@@ -64,6 +76,7 @@ class ChatStore(context: Context) {
     private fun seedDefaultProviders(): List<UIProvider> {
         val defaults = ProviderRegistry.PROVIDERS.map { def ->
             UIProvider(
+                id = def.id,
                 name = def.name,
                 baseUrl = def.baseUrl,
                 apiKey = "",
