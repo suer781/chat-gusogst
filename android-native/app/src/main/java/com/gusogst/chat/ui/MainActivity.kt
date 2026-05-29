@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvHeaderTitle: TextView
     private var currentTheme: String = "system"
     private var settingsFirstFire = true
+    private var isNavAnimating = false
 
     /** 从 SharedPreferences 读取当前保存的主题名 */
     private fun readCurrentTheme(): String = ChatApplication.cachedTheme
@@ -260,17 +261,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun selectNav(item: NavItem) {
-        if (item == currentNavItem) return
+        if (item == currentNavItem || isNavAnimating) return
+        isNavAnimating = true
 
-        // 先退出当前页面（120ms），再替换，再进入新页面（200ms）
         val container = findViewById<View>(R.id.fragmentContainer)
 
-        // 获取当前 fragment 的视图做退出动画
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
         val exitView = currentFragment?.view
 
         if (exitView != null) {
-            MaterialAnimator.viewExit(exitView, 120) {
+            exitView.animate().cancel()
+            MaterialAnimator.viewExit(exitView, 80) {
                 doFragmentReplace(item, container)
             }
         } else {
@@ -301,6 +302,7 @@ class MainActivity : AppCompatActivity() {
         val index = navItems.indexOf(item)
         moveIndicator(index, true)
         currentNavItem = item
+        isNavAnimating = false
     }
 
     fun navigateToChat() {
