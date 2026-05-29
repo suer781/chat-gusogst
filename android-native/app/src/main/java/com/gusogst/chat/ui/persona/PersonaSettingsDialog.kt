@@ -85,7 +85,7 @@ class PersonaSettingsDialog : DialogFragment() {
 
         val root = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.parseColor("#151525"))
+            setBackgroundColor(resources.getColor(R.color.bg_primary, null))
             setPadding(dp(20), dp(16), dp(20), dp(16))
         }
 
@@ -139,7 +139,7 @@ class PersonaSettingsDialog : DialogFragment() {
         })
         val toggle = FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(dp(46), dp(26))
-            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (overrideGlobal) resources.getColor(R.color.accent, null) else Color.parseColor("#1AFFFFFF")) }
+            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (overrideGlobal) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null)) }
         }
         toggle.addView(View(requireContext()).apply {
             val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (overrideGlobal) 22 else 2), dp(2), 0, 0); layoutParams = lp
@@ -301,7 +301,7 @@ class PersonaSettingsDialog : DialogFragment() {
             setPadding((12 * d).toInt(), (8 * d).toInt(), (12 * d).toInt(), (8 * d).toInt())
             setTextColor(if (active) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_400, null))
             background = GradientDrawable().apply {
-                setColor(if (active) Color.parseColor("#1AE94560") else resources.getColor(R.color.bg_tertiary, null))
+                setColor(if (active) resources.getColor(R.color.accent_soft, null) else resources.getColor(R.color.bg_tertiary, null))
                 setStroke(if (active) 1 else 0, if (active) resources.getColor(R.color.accent, null) else Color.TRANSPARENT)
                 cornerRadius = (8 * d).toFloat()
             }

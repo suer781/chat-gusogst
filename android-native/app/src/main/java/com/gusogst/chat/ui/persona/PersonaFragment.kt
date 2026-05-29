@@ -125,7 +125,7 @@ class PersonaFragment : Fragment() {
 
         // Emoji 头像
         val avatarSize = dp(48)
-        val avatarBg = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#E94560")) }
+        val avatarBg = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.accent, null)) }
         topRow.addView(FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(avatarSize, avatarSize)
             background = avatarBg
@@ -200,7 +200,7 @@ class PersonaFragment : Fragment() {
             })
             traitChip.addView(TextView(requireContext()).apply {
                 text = "${(value * 100).toInt()}%"
-                setTextColor(Color.parseColor("#E94560")); textSize = 10f; setTypeface(null, Typeface.BOLD)
+                setTextColor(resources.getColor(R.color.accent, null)); textSize = 10f; setTypeface(null, Typeface.BOLD)
                 layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginStart = dp(2) }
             })
             bottomRow.addView(traitChip)
@@ -245,9 +245,9 @@ class PersonaFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { topMargin = dp(4) }
         }
         card.addView(TextView(requireContext()).apply {
-            text = "＋"; setTextColor(Color.parseColor("#E94560")); textSize = 24f; gravity = Gravity.CENTER
+            text = "＋"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 24f; gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#1AE94560")) }
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.accent_soft, null)) }
         })
         val textLayout = LinearLayout(requireContext()).apply {
             orientation = VERTICAL
