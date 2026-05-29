@@ -3517,7 +3517,7 @@ id coordinator
 id cos
 id counterclockwise
 id cradle
-id currentModelBadge
+id currentModelBar
 id currentState
 id custom
 id customPanel

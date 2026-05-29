@@ -3516,7 +3516,7 @@ int id coordinator 0x7f080090
 int id cos 0x7f080091
 int id counterclockwise 0x7f080092
 int id cradle 0x7f080093
-int id currentModelBadge 0x7f080094
+int id currentModelBar 0x7f080094
 int id currentState 0x7f080095
 int id custom 0x7f080096
 int id customPanel 0x7f080097

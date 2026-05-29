@@ -15,7 +15,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
 import com.gusogst.chat.model.UIProvider
+import com.gusogst.chat.util.MaterialAnimator
 import com.gusogst.chat.viewmodel.ChatViewModel
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProvidersFragment : Fragment() {
 
@@ -26,11 +33,14 @@ class ProvidersFragment : Fragment() {
     private lateinit var tvModelCount: TextView
     private lateinit var tvCurrentModel: TextView
     private lateinit var guideCard: LinearLayout
+    private lateinit var currentModelBar: LinearLayout
 
     private var allProviders: List<UIProvider> = emptyList()
     private var currentTab = "recommended"
     private var searchQuery = ""
     private var expandedId: String? = null
+    private var liveModels = mutableMapOf<String, Boolean>() // providerId -> connected
+    private var fetchingId: String? = null
 
     data class Category(val id: String, val label: String)
 
@@ -70,6 +80,7 @@ class ProvidersFragment : Fragment() {
         tvModelCount = view.findViewById(R.id.tvModelCount)
         tvCurrentModel = view.findViewById(R.id.tvCurrentModel)
         guideCard = view.findViewById(R.id.guideCard)
+        currentModelBar = view.findViewById(R.id.currentModelBar)
 
         view.findViewById<TextView>(R.id.btnDone).setOnClickListener {
             parentFragmentManager.popBackStack()
@@ -98,7 +109,13 @@ class ProvidersFragment : Fragment() {
         }
 
         viewModel.activeConversation.observe(viewLifecycleOwner) { conv ->
-            tvCurrentModel.text = conv?.modelId ?: "Not selected"
+            if (conv?.modelId != null) {
+                currentModelBar.visibility = View.VISIBLE
+                tvCurrentModel.text = conv.modelId
+            } else {
+                currentModelBar.visibility = View.GONE
+            }
+            buildList()
         }
     }
 
@@ -116,7 +133,7 @@ class ProvidersFragment : Fragment() {
             val tab = TextView(requireContext()).apply {
                 text = cat.label
                 textSize = 13f
-                setPadding(dp(14), dp(6), dp(14), dp(6))
+                setPadding(dp(14), dp(7), dp(14), dp(7))
                 val isSelected = cat.id == currentTab
                 val bg = GradientDrawable().apply {
                     cornerRadius = dp(100).toFloat()
@@ -135,6 +152,7 @@ class ProvidersFragment : Fragment() {
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply { marginEnd = dp(6) }
             }
+            MaterialAnimator.applyButtonPress(tab)
             tab.setOnClickListener {
                 currentTab = cat.id
                 searchQuery = ""
@@ -187,6 +205,11 @@ class ProvidersFragment : Fragment() {
 
     private fun createProviderCard(provider: UIProvider): View {
         val isExpanded = provider.id == expandedId
+        val isSelected = viewModel.activeConversation.value?.providerId == provider.id
+        val isConnected = liveModels[provider.id]
+        val hasLiveData = liveModels.containsKey(provider.id)
+        val isFetching = fetchingId == provider.id
+
         val container = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
@@ -203,12 +226,17 @@ class ProvidersFragment : Fragment() {
             val bg = GradientDrawable().apply {
                 cornerRadius = dp(16).toFloat()
                 setColor(resources.getColor(R.color.bg_secondary, null))
-                setStroke(1, if (isExpanded) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null))
+                if (isSelected) {
+                    setStroke(2, resources.getColor(R.color.accent, null))
+                } else {
+                    setStroke(1, if (isExpanded) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null))
+                }
             }
             background = bg
             isClickable = true
             isFocusable = true
         }
+        MaterialAnimator.applyButtonPress(header)
 
         // Provider icon
         val iconBg = GradientDrawable().apply {
@@ -232,21 +260,61 @@ class ProvidersFragment : Fragment() {
             ))
         }
 
-        // Name + model count
+        // Name + model count + status dot
         val infoLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
                 marginStart = dp(12)
             }
         }
-        infoLayout.addView(TextView(requireContext()).apply {
+
+        // Name row with status dot
+        val nameRow = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        nameRow.addView(TextView(requireContext()).apply {
             text = provider.name
             setTextColor(resources.getColor(R.color.text_primary, null))
             textSize = 15f
             setTypeface(null, Typeface.BOLD)
         })
+
+        // Status dot (green/red)
+        if (hasLiveData) {
+            nameRow.addView(View(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(dp(8), dp(8)).apply { marginStart = dp(6) }
+                val dot = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(if (isConnected == true) resources.getColor(R.color.success, null) else resources.getColor(R.color.danger, null))
+                }
+                background = dot
+            })
+        }
+
+        // LIVE badge
+        if (hasLiveData && isConnected == true) {
+            nameRow.addView(TextView(requireContext()).apply {
+                text = "LIVE"
+                textSize = 9f
+                setTextColor(resources.getColor(R.color.accent, null))
+                setTypeface(null, Typeface.BOLD)
+                setPadding(dp(6), dp(2), dp(6), dp(2))
+                val badgeBg = GradientDrawable().apply {
+                    cornerRadius = dp(4).toFloat()
+                    setColor(resources.getColor(R.color.accent_soft, null))
+                }
+                background = badgeBg
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { marginStart = dp(6) }
+            })
+        }
+
+        infoLayout.addView(nameRow)
         infoLayout.addView(TextView(requireContext()).apply {
-            text = "${provider.models.size} models"
+            text = "${provider.models.size} 模型${if (provider.apiKey.isNotEmpty()) " · 已配置" else ""}"
             setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 12f
             layoutParams = LinearLayout.LayoutParams(
@@ -255,16 +323,35 @@ class ProvidersFragment : Fragment() {
             ).apply { topMargin = dp(2) }
         })
 
-        // Expand arrow
+        // Check icon if selected + arrow
+        val endRow = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        if (isSelected) {
+            endRow.addView(TextView(requireContext()).apply {
+                text = "✓"
+                setTextColor(resources.getColor(R.color.accent, null))
+                textSize = 14f
+                setTypeface(null, Typeface.BOLD)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { marginEnd = dp(6) }
+            })
+        }
+
         val arrowTv = TextView(requireContext()).apply {
             text = if (isExpanded) "▲" else "▼"
             setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 12f
         }
+        endRow.addView(arrowTv)
 
         header.addView(iconFrame)
         header.addView(infoLayout)
-        header.addView(arrowTv)
+        header.addView(endRow)
 
         header.setOnClickListener {
             expandedId = if (isExpanded) null else provider.id
@@ -288,34 +375,39 @@ class ProvidersFragment : Fragment() {
 
             // API Key input
             val apiKeyInput = EditText(requireContext()).apply {
-                hint = "API Key"
+                hint = "API Key (${provider.id})"
                 setTextColor(resources.getColor(R.color.text_primary, null))
                 setHintTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 setPadding(dp(12), dp(10), dp(12), dp(10))
                 val inputBg = GradientDrawable().apply {
                     cornerRadius = dp(10).toFloat()
-                    setColor(resources.getColor(R.color.bg_tertiary, null))
+                    setColor(resources.getColor(R.color.bg_secondary, null))
+                    setStroke(1, resources.getColor(R.color.border_color, null))
                 }
                 background = inputBg
                 inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                // Pre-fill existing key
                 if (provider.apiKey.isNotEmpty()) {
                     setText(provider.apiKey)
                 }
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
             }
             expandedContent.addView(apiKeyInput)
 
             // Base URL input
             val baseUrlInput = EditText(requireContext()).apply {
-                hint = "Base URL（可选）"
+                hint = "Base URL（可选，默认: ${provider.baseUrl}）"
                 setTextColor(resources.getColor(R.color.text_primary, null))
                 setHintTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 setPadding(dp(12), dp(10), dp(12), dp(10))
                 val inputBg = GradientDrawable().apply {
                     cornerRadius = dp(10).toFloat()
-                    setColor(resources.getColor(R.color.bg_tertiary, null))
+                    setColor(resources.getColor(R.color.bg_secondary, null))
+                    setStroke(1, resources.getColor(R.color.border_color, null))
                 }
                 background = inputBg
                 inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
@@ -341,29 +433,43 @@ class ProvidersFragment : Fragment() {
             }
 
             val fetchBtn = TextView(requireContext()).apply {
-                text = "获取实时模型"
-                setTextColor(resources.getColor(R.color.accent, null))
+                text = if (isFetching) "获取中..." else "获取实时模型"
+                setTextColor(if (provider.apiKey.isNotEmpty()) resources.getColor(R.color.white, null) else resources.getColor(R.color.text_tertiary, null))
                 textSize = 13f
                 setTypeface(null, Typeface.BOLD)
-                setPadding(dp(12), dp(6), dp(12), dp(6))
+                setPadding(dp(12), dp(8), dp(12), dp(8))
                 val btnBg = GradientDrawable().apply {
                     cornerRadius = dp(8).toFloat()
-                    setColor(resources.getColor(R.color.accent_soft, null))
+                    setColor(if (provider.apiKey.isNotEmpty()) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null))
                 }
                 background = btnBg
             }
+            MaterialAnimator.applyButtonPress(fetchBtn)
             fetchBtn.setOnClickListener {
                 val key = apiKeyInput.text.toString().trim()
                 if (key.isNotEmpty()) {
-                    fetchBtn.text = "获取中..."
-                    // Save API key to provider
                     provider.apiKey = key
                     provider.baseUrl = baseUrlInput.text.toString().trim()
                     viewModel.saveProviders(allProviders)
-                    // TODO: Call fetchLiveModels via ViewModel
+                    fetchLiveModels(provider)
                 }
             }
             actionRow.addView(fetchBtn)
+
+            // Connection status
+            if (hasLiveData) {
+                val statusIcon = TextView(requireContext()).apply {
+                    text = if (isConnected == true) "✓" else "✗"
+                    setTextColor(if (isConnected == true) resources.getColor(R.color.success, null) else resources.getColor(R.color.danger, null))
+                    textSize = 16f
+                    setTypeface(null, Typeface.BOLD)
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { marginStart = dp(8) }
+                }
+                actionRow.addView(statusIcon)
+            }
 
             expandedContent.addView(actionRow)
 
@@ -373,13 +479,15 @@ class ProvidersFragment : Fragment() {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     dp(1)
                 ).apply { topMargin = dp(12); bottomMargin = dp(8) }
-                setBackgroundColor(resources.getColor(R.color.bg_tertiary, null))
+                setBackgroundColor(resources.getColor(R.color.border_color, null))
             })
 
             // Model list
             val models = provider.models
             if (models.isNotEmpty()) {
-                for (model in models.take(20)) {
+                for (model in models.take(50)) {
+                    val isThisModel = viewModel.activeConversation.value?.modelId == model.id &&
+                        viewModel.activeConversation.value?.providerId == provider.id
                     val modelRow = LinearLayout(requireContext()).apply {
                         orientation = LinearLayout.HORIZONTAL
                         gravity = Gravity.CENTER_VERTICAL
@@ -388,7 +496,12 @@ class ProvidersFragment : Fragment() {
                         isFocusable = true
                         val rowBg = GradientDrawable().apply {
                             cornerRadius = dp(8).toFloat()
-                            setColor(Color.TRANSPARENT)
+                            if (isThisModel) {
+                                setColor(resources.getColor(R.color.accent_soft, null))
+                                setStroke(1, resources.getColor(R.color.accent, null))
+                            } else {
+                                setColor(Color.TRANSPARENT)
+                            }
                         }
                         background = rowBg
                         layoutParams = LinearLayout.LayoutParams(
@@ -396,29 +509,43 @@ class ProvidersFragment : Fragment() {
                             LinearLayout.LayoutParams.WRAP_CONTENT
                         ).apply { bottomMargin = dp(2) }
                     }
+                    MaterialAnimator.applyButtonPress(modelRow)
 
                     modelRow.addView(TextView(requireContext()).apply {
                         text = model.name ?: model.id
-                        setTextColor(resources.getColor(R.color.text_primary, null))
+                        setTextColor(if (isThisModel) resources.getColor(R.color.accent, null) else resources.getColor(R.color.text_primary, null))
                         textSize = 13f
+                        setTypeface(null, if (isThisModel) Typeface.BOLD else Typeface.NORMAL)
                         layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                     })
 
                     if (model.contextLength > 0) {
                         val ctxText = when {
-                            model.contextLength >= 1_000_000 -> "${model.contextLength / 1_000_000}M ctx"
-                            model.contextLength >= 1000 -> "${model.contextLength / 1000}K ctx"
-                            else -> "${model.contextLength} ctx"
+                            model.contextLength >= 1_000_000 -> "${model.contextLength / 1_000_000}M"
+                            model.contextLength >= 1000 -> "${model.contextLength / 1000}K"
+                            else -> "${model.contextLength}"
                         }
                         modelRow.addView(TextView(requireContext()).apply {
                             text = ctxText
                             setTextColor(resources.getColor(R.color.text_tertiary, null))
                             textSize = 11f
+                            layoutParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            ).apply { marginEnd = dp(6) }
+                        })
+                    }
+
+                    if (isThisModel) {
+                        modelRow.addView(TextView(requireContext()).apply {
+                            text = "✓"
+                            setTextColor(resources.getColor(R.color.accent, null))
+                            textSize = 14f
+                            setTypeface(null, Typeface.BOLD)
                         })
                     }
 
                     modelRow.setOnClickListener {
-                        // Select this model
                         viewModel.setModel(provider.id, model.id)
                         expandedId = null
                         buildList()
@@ -440,6 +567,35 @@ class ProvidersFragment : Fragment() {
         }
 
         return container
+    }
+
+    private fun fetchLiveModels(provider: UIProvider) {
+        fetchingId = provider.id
+        buildList()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val baseUrl = provider.baseUrl.trimEnd('/')
+            val key = provider.apiKey
+            var success = false
+            try {
+                val url = URL("$baseUrl/models")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.setRequestProperty("Authorization", "Bearer $key")
+                conn.connectTimeout = 10000
+                conn.readTimeout = 10000
+                val code = conn.responseCode
+                success = code in 200..299
+                conn.disconnect()
+            } catch (_: Exception) {
+                success = false
+            }
+
+            withContext(Dispatchers.Main) {
+                liveModels[provider.id] = success
+                fetchingId = null
+                buildList()
+            }
+        }
     }
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()

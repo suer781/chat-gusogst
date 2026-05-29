@@ -213,7 +213,7 @@ id btnNewChat
 id btnRegen
 id btnSend
 id categoryTabs
-id currentModelBadge
+id currentModelBar
 id emptyState
 id etInput
 id etSearch
