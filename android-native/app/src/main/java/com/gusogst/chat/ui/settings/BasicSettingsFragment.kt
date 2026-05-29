@@ -65,8 +65,8 @@ class BasicSettingsFragment : Fragment() {
                         setStroke(if (isActive) 2 else 1, if (isActive) resources.getColor(R.color.accent_glow, null) else Color.TRANSPARENT)
                         cornerRadius = dp(14).toFloat()
                     }
-                    addView(TextView(requireContext()).apply { text = icon; textSize = 22f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_300, null)); gravity = Gravity.CENTER })
-                    addView(TextView(requireContext()).apply { text = label; textSize = 11f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_300, null)); gravity = Gravity.CENTER })
+                    addView(TextView(requireContext()).apply { text = icon; textSize = 22f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.text_secondary, null)); gravity = Gravity.CENTER })
+                    addView(TextView(requireContext()).apply { text = label; textSize = 11f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.text_secondary, null)); gravity = Gravity.CENTER })
                     setOnClickListener { viewModel.updateSettings { it.copy(theme = key) } }
                     MaterialAnimator.applyButtonPress(this)
                 }, lp)
@@ -77,13 +77,13 @@ class BasicSettingsFragment : Fragment() {
         // Font size (navigate to subpage)
         addSection("字号大小", "A") {
             val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(16), dp(14), dp(16), dp(14)) }
-            row.addView(TextView(requireContext()).apply { text = "A"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 16f; setPadding(0, 0, dp(12), 0) })
+            row.addView(TextView(requireContext()).apply { text = "A"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 16f; setPadding(0, 0, dp(12), 0) })
             row.addView(TextView(requireContext()).apply {
                 text = "${fontSize}px"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 15f
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             })
             row.addView(TextView(requireContext()).apply {
-                text = ">"; setTextColor(resources.getColor(R.color.gray_500, null)); textSize = 16f
+                text = ">"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 16f
             })
             row.background = GradientDrawable().apply { cornerRadius = dp(12).toFloat(); setColor(resources.getColor(R.color.bg_secondary, null)) }
             row.isClickable = true; row.isFocusable = true
@@ -105,7 +105,7 @@ class BasicSettingsFragment : Fragment() {
             if (eyeCare) {
                 // 暖色强度滑块
                 val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(8), 0, 0) }
-                row.addView(TextView(requireContext()).apply { text = "暖度"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
+                row.addView(TextView(requireContext()).apply { text = "暖度"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
                 row.addView(SeekBar(requireContext()).apply {
                     max = 100; progress = eyeCareIntensity
                     progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
@@ -116,7 +116,7 @@ class BasicSettingsFragment : Fragment() {
                         override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
                     })
                 })
-                row.addView(TextView(requireContext()).apply { text = "$eyeCareIntensity%"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; minWidth = dp(30); gravity = Gravity.END })
+                row.addView(TextView(requireContext()).apply { text = "$eyeCareIntensity%"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; minWidth = dp(30); gravity = Gravity.END })
                 col.addView(row)
             }
             return@addSection col
@@ -128,7 +128,7 @@ class BasicSettingsFragment : Fragment() {
             col.addView(createToggleRow("毛玻璃效果", "背景模糊和透明效果", glass) { viewModel.updateSettings { s -> s.copy(glassEnabled = it) } })
             if (glass) {
                 val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(8), 0, 0) }
-                row.addView(TextView(requireContext()).apply { text = "透明度"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
+                row.addView(TextView(requireContext()).apply { text = "透明度"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
                 row.addView(SeekBar(requireContext()).apply {
                     max = 100; progress = glassOpacity
                     progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
@@ -139,7 +139,7 @@ class BasicSettingsFragment : Fragment() {
                         override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
                     })
                 })
-                row.addView(TextView(requireContext()).apply { text = "$glassOpacity%"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 12f; minWidth = dp(30); gravity = Gravity.END })
+                row.addView(TextView(requireContext()).apply { text = "$glassOpacity%"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; minWidth = dp(30); gravity = Gravity.END })
                 col.addView(row)
             }
             return@addSection col
@@ -166,9 +166,14 @@ class BasicSettingsFragment : Fragment() {
     }
 
     private fun addSection(title: String, icon: String, content: () -> View) {
+        val isGlass = viewModel.settings.value?.glassEnabled == true
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
-            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(16).toFloat() }
+            background = GradientDrawable().apply {
+                setColor(if (isGlass) Color.parseColor("#08FFFFFF") else resources.getColor(R.color.bg_secondary, null))
+                setStroke(1, if (isGlass) Color.parseColor("#0AFFFFFF") else resources.getColor(R.color.border_color, null))
+                cornerRadius = dp(16).toFloat()
+            }
             elevation = 1f * resources.displayMetrics.density
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
@@ -182,8 +187,8 @@ class BasicSettingsFragment : Fragment() {
         val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(10), 0, dp(10)); setOnClickListener { onChange(!checked) } }
         MaterialAnimator.applyButtonPress(row)
         val textCol = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
-        textCol.addView(TextView(requireContext()).apply { text = label; setTextColor(resources.getColor(R.color.gray_100, null)); textSize = 14f })
-        textCol.addView(TextView(requireContext()).apply { text = desc; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, dp(2), 0, 0) })
+        textCol.addView(TextView(requireContext()).apply { text = label; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f })
+        textCol.addView(TextView(requireContext()).apply { text = desc; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 12f; setPadding(0, dp(2), 0, 0) })
         row.addView(textCol)
         val toggle = FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(dp(46), dp(26)).apply { marginStart = dp(12) }
