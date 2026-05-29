@@ -115,9 +115,9 @@ class PersonaFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(8) }
             isClickable = true
             isFocusable = true
+            elevation = 2f * resources.displayMetrics.density
         }
 
-        // === 上部分：头像 + 名称 + 描述 ===
         val topRow = LinearLayout(requireContext()).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL

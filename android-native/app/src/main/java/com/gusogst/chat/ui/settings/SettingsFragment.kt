@@ -24,12 +24,12 @@ class SettingsFragment : Fragment() {
     )
 
     private val settingsItems = listOf(
-        SettingItem("basic", "🎨", "外观", "主题、毛玻璃、HDR", "#E94560"),
-        SettingItem("model", "🤖", "模型", "参数、温度、上下文", "#6C5CE7"),
-        SettingItem("platform", "🔗", "平台", "MCP、Agent、工具", "#3498DB"),
-        SettingItem("memory", "🧠", "记忆", "长期记忆、上下文管理", "#FDCB6E"),
-        SettingItem("search", "🔍", "搜索", "联网搜索、搜索引擎", "#FF9800"),
-        SettingItem("about", "ℹ️", "关于", "版本、开源许可", "#8888A0")
+        SettingItem("basic", "\uD83C\uDFA8", "\u5916\u89C2", "\u4E3B\u9898\u3001\u6BDB\u73BB\u7483\u3001HDR", "#E94560"),
+        SettingItem("model", "\uD83E\uDD16", "\u6A21\u578B", "\u53C2\u6570\u3001\u6E29\u5EA6\u3001\u4E0A\u4E0B\u6587", "#6C5CE7"),
+        SettingItem("platform", "\uD83D\uDD17", "\u5E73\u53F0", "MCP\u3001Agent\u3001\u5DE5\u5177", "#3498DB"),
+        SettingItem("memory", "\uD83E\uDDE0", "\u8BB0\u5FC6", "\u957F\u671F\u8BB0\u5FC6\u3001\u4E0A\u4E0B\u6587\u7BA1\u7406", "#FDCB6E"),
+        SettingItem("search", "\uD83D\uDD0D", "\u641C\u7D22", "\u8054\u7F51\u641C\u7D22\u3001\u641C\u7D22\u5F15\u64CE", "#FF9800"),
+        SettingItem("about", "\u2139\uFE0F", "\u5173\u4E8E", "\u7248\u672C\u3001\u5F00\u6E90\u8BB8\u53EF", "#8888A0")
     )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -62,6 +62,7 @@ class SettingsFragment : Fragment() {
             ).apply { bottomMargin = dp(10) }
             isClickable = true
             isFocusable = true
+            elevation = 2f * resources.displayMetrics.density
         }
 
         // Icon container
@@ -108,7 +109,7 @@ class SettingsFragment : Fragment() {
 
         // Arrow
         val arrowTv = TextView(requireContext()).apply {
-            text = "›"
+            text = "\u203A"
             setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 22f
         }
@@ -121,7 +122,6 @@ class SettingsFragment : Fragment() {
         MaterialAnimator.applyButtonPress(card)
 
         card.setOnClickListener {
-            // Navigate to sub-settings
             val fragment = when (item.key) {
                 "basic" -> BasicSettingsFragment()
                 "model" -> ModelSettingsFragment()
