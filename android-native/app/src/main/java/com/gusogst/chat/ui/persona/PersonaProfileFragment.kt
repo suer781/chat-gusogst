@@ -90,7 +90,7 @@ class PersonaProfileFragment : Fragment() {
             background = avatarBg
             addView(TextView(requireContext()).apply {
                 text = avatar.ifEmpty { name.first().toString() }; textSize = 28f
-                gravity = Gravity.CENTER; setTextColor(Color.WHITE)
+                gravity = Gravity.CENTER; setTextColor(resources.getColor(R.color.white, null))
                 layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             })
         })
@@ -190,7 +190,7 @@ class PersonaProfileFragment : Fragment() {
             setOnClickListener { parentFragmentManager.popBackStack() }
         })
         btnRow.addView(TextView(requireContext()).apply {
-            text = "开始对话"; setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD)
+            text = "开始对话"; setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD)
             gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
             background = GradientDrawable().apply { setColor(resources.getColor(R.color.accent, null)); cornerRadius = dp(10).toFloat() }
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 2f)

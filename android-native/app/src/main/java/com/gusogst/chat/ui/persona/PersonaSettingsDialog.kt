@@ -95,7 +95,7 @@ class PersonaSettingsDialog : DialogFragment() {
             setPadding(0, 0, 0, dp(16))
         }
         header.addView(TextView(requireContext()).apply {
-            text = "角色设置"; setTextColor(Color.WHITE); textSize = 18f; setTypeface(null, Typeface.BOLD)
+            text = "角色设置"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f; setTypeface(null, Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         header.addView(TextView(requireContext()).apply {
@@ -143,7 +143,7 @@ class PersonaSettingsDialog : DialogFragment() {
         }
         toggle.addView(View(requireContext()).apply {
             val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (overrideGlobal) 22 else 2), dp(2), 0, 0); layoutParams = lp
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.WHITE) }
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.text_primary, null)) }
         })
         overrideRow.addView(toggle)
         content.addView(overrideRow)
@@ -203,7 +203,7 @@ class PersonaSettingsDialog : DialogFragment() {
             setOnClickListener { dismiss() }
         })
         btnRow.addView(TextView(requireContext()).apply {
-            text = "保存设置"; setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
+            text = "保存设置"; setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
             setPadding(dp(12), dp(12), dp(12), dp(12))
             background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(resources.getColor(R.color.accent, null)) }
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 2f)
