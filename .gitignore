@@ -63,3 +63,4 @@ ACEKEY/
 mcp/
 mcpkeys/
 fix_*.py >> .gitignore
+android-native/app/build/

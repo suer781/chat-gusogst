@@ -1,6 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_ambient_top">#9916163C</color>
-    <color name="bg_primary">#0F0F23</color>
-    <color name="text_primary">#E0E0E0</color>
+    <color name="bg_ambient_left">@color/bg_ambient_left_dark</color>
+    <color name="bg_ambient_right">@color/bg_ambient_right_dark</color>
+    <color name="bg_ambient_top">@color/bg_ambient_top_dark</color>
+    <color name="bg_card">#1A1A4A</color>
+    <color name="bg_elevated">#1E1E50</color>
+    <color name="bg_overlay">#0A0A20</color>
+    <color name="bg_primary">#0D0D2B</color>
+    <color name="bg_secondary">#14143A</color>
+    <color name="bg_tertiary">#1A1A4A</color>
+    <color name="border">#2A2A5A</color>
+    <color name="border_color">#2A2A5A</color>
+    <color name="border_focus">#3A3A7A</color>
+    <color name="border_soft">#1E1E4A</color>
+    <color name="bubble_assistant">@color/bg_tertiary</color>
+    <color name="bubble_assistant_text">@color/text_primary</color>
+    <color name="divider">#1A1A40</color>
+    <color name="input_bg">@color/bg_secondary</color>
+    <color name="nav_bg">#0D0D2B</color>
+    <color name="text_disabled">#404060</color>
+    <color name="text_inverse">#1A1A30</color>
+    <color name="text_primary">#F0F0FF</color>
+    <color name="text_secondary">#8888B0</color>
+    <color name="text_tertiary">#606080</color>
+    <color name="thinking_border">#262650</color>
+    <style name="Theme.ChatGusogst" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorPrimaryDark">@color/accent_hover</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:colorBackground">@color/bg_primary_dark</item>
+        <item name="android:windowBackground">@color/bg_primary_dark</item>
+        <item name="android:statusBarColor">@color/bg_primary_dark</item>
+        <item name="android:navigationBarColor">@color/bg_primary_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="themeBgPrimary">@color/bg_primary_dark</item>
+        <item name="themeBgSecondary">@color/bg_secondary_dark</item>
+        <item name="themeBgTertiary">@color/bg_tertiary_dark</item>
+        <item name="themeBgElevated">@color/bg_elevated_dark</item>
+        <item name="themeTextPrimary">@color/text_primary_dark</item>
+        <item name="themeTextSecondary">@color/text_secondary_dark</item>
+        <item name="themeTextTertiary">@color/text_tertiary_dark</item>
+        <item name="themeBorderColor">@color/border_color_dark</item>
+        <item name="themeBorder">@color/border_dark</item>
+        <item name="themeDivider">@color/divider_dark</item>
+        <item name="themeAmbientTop">@color/bg_ambient_top_dark</item>
+        <item name="themeAmbientLeft">@color/bg_ambient_left_dark</item>
+        <item name="themeAmbientRight">@color/bg_ambient_right_dark</item>
+    </style>
+    <style name="Theme.ChatGusogst.Amoled" parent="Theme.ChatGusogst">
+        <item name="android:colorBackground">@color/bg_primary_amoled</item>
+        <item name="android:windowBackground">@color/bg_primary_amoled</item>
+        <item name="android:statusBarColor">@color/bg_primary_amoled</item>
+        <item name="android:navigationBarColor">@color/bg_primary_amoled</item>
+        <item name="themeBgPrimary">@color/bg_primary_amoled</item>
+        <item name="themeAmbientTop">@color/bg_ambient_top_amoled</item>
+        <item name="themeAmbientLeft">@color/bg_ambient_left_amoled</item>
+        <item name="themeAmbientRight">@color/bg_ambient_right_amoled</item>
+    </style>
+    <style name="Theme.ChatGusogst.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_primary_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.ChatGusogst</item>
+    </style>
 </resources>

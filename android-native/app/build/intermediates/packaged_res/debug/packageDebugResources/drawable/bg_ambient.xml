@@ -2,5 +2,5 @@
 <!-- 环境光背景渐变 — 对应 Web body::after 的 radial-gradient ambient -->
 <!-- 注意：不用 %p（gradientRadius 不支持），改用固定 dp + 程序化设置 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="@color/bg_primary_dark" />
+    <solid android:color="@color/bg_primary" />
 </shape>

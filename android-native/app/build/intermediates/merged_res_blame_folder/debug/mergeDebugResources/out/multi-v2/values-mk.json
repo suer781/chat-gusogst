@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.gusogst.chat.app-mergeDebugResources-51:/values-mk/values-mk.xml",
+            "outputFile": "com.gusogst.chat.app-mergeDebugResources-52:/values-mk/values-mk.xml",
             "map": [
                 {
                     "source": "/opt/data/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/res/values-mk/values-mk.xml",

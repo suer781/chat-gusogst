@@ -1,5 +1,9 @@
 R_DEF: Internal format may change without notice
 local
+anim page_enter
+anim page_exit
+anim theme_enter
+anim theme_exit
 attr themeAmbientLeft
 attr themeAmbientRight
 attr themeAmbientTop
@@ -168,6 +172,7 @@ drawable bg_avatar_circle
 drawable bg_bubble_ai
 drawable bg_bubble_assistant
 drawable bg_bubble_user
+drawable bg_card
 drawable bg_card_dark
 drawable bg_card_light
 drawable bg_glass_divider
@@ -176,11 +181,13 @@ drawable bg_input
 drawable bg_input_field
 drawable bg_nav_active
 drawable bg_nav_indicator
+drawable bg_search_bar
 drawable bg_search_bar_dark
 drawable bg_search_bar_light
 drawable bg_send_button
 drawable bg_tab_selected_dark
 drawable bg_tab_selected_light
+drawable bg_tab_unselected
 drawable bg_tab_unselected_dark
 drawable bg_tab_unselected_light
 drawable bg_tag_chip_dark
@@ -333,4 +340,4 @@ string tool_done
 string tool_running
 style Theme.ChatGusogst
 style Theme.ChatGusogst.Amoled
-style Theme.ChatGusogst.Light
+style Theme.ChatGusogst.Splash

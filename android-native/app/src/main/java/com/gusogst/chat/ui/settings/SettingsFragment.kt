@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
+import com.gusogst.chat.util.MaterialAnimator
 
 class SettingsFragment : Fragment() {
 
@@ -62,6 +63,9 @@ class SettingsFragment : Fragment() {
             isClickable = true
             isFocusable = true
         }
+
+        // 按压缩放 + 涟漪微动画
+        MaterialAnimator.applyButtonEffects(card)
 
         // Icon container
         val iconBg = GradientDrawable().apply {
