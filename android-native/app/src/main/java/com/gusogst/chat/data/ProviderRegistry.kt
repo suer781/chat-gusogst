@@ -37,10 +37,11 @@ object ProviderRegistry {
 
         return try {
             val stream = context.assets.open("providers-registry.json")
-            val reader = InputStreamReader(stream)
-            val type = object : TypeToken<List<ProviderDef>>() {}.type
-            val providers: List<ProviderDef> = Gson().fromJson(reader, type)
-            reader.close()
+            val text = stream.bufferedReader().use { it.readText() }
+            // 修复 env_key 字段：字符串 → 数组（JSON 中混用了两种格式）
+            val fixed = text.replace(Regex("\"env_key\"\\s*:\\s*\"([^\"]*)\""), "\"env_key\": [\"$1\"]")
+            val providers: List<ProviderDef> = Gson().fromJson(fixed, 
+                object : TypeToken<List<ProviderDef>>() {}.type)
             if (providers.isEmpty()) throw RuntimeException("Empty provider list from JSON")
             cached = providers
             providers
