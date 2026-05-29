@@ -67,7 +67,7 @@ class PlatformSettingsFragment : Fragment() {
             val card = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(16), dp(14), dp(16), dp(14))
-                background = GradientDrawable().apply { setColor(Color.parseColor("#03FFFFFF")); setStroke(1, Color.parseColor("#05FFFFFF")); cornerRadius = dp(10).toFloat() }
+                background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); setStroke(1, Color.parseColor("#05FFFFFF")); cornerRadius = dp(10).toFloat() }
                 layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) }
             }
             // Icon 40x40

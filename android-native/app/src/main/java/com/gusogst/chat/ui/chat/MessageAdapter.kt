@@ -3,7 +3,6 @@ package com.gusogst.chat.ui.chat
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
@@ -120,8 +119,8 @@ class MessageAdapter(
                 actionBar.visibility = View.GONE
             }
             // 按钮按压动画 + 涟漪
-            MaterialAnimator.applyButtonEffects(btnCopy, Color.argb(48, 233, 69, 96))
-            MaterialAnimator.applyButtonEffects(btnDelete, Color.argb(48, 255, 82, 82))
+            MaterialAnimator.applyButtonEffects(btnCopy, itemView.resources.getColor(R.color.accent_soft, null))
+            MaterialAnimator.applyButtonEffects(btnDelete, itemView.resources.getColor(R.color.danger_soft, null))
         }
 
         private fun copyToClipboard(context: Context, text: String) {
@@ -227,9 +226,9 @@ class MessageAdapter(
                 actionBar.visibility = View.GONE
             }
             // 按钮按压动画 + 涟漪
-            MaterialAnimator.applyButtonEffects(btnCopy, Color.argb(48, 233, 69, 96))
-            MaterialAnimator.applyButtonEffects(btnRegen, Color.argb(48, 108, 92, 231))
-            MaterialAnimator.applyButtonEffects(btnDelete, Color.argb(48, 255, 82, 82))
+            MaterialAnimator.applyButtonEffects(btnCopy, itemView.resources.getColor(R.color.accent_soft, null))
+            MaterialAnimator.applyButtonEffects(btnRegen, itemView.resources.getColor(R.color.purple_soft, null))
+            MaterialAnimator.applyButtonEffects(btnDelete, itemView.resources.getColor(R.color.danger_soft, null))
         }
 
         private fun copyToClipboard(context: Context, text: String) {

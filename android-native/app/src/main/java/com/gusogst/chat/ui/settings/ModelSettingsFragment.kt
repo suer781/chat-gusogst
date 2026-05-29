@@ -61,7 +61,7 @@ class ModelSettingsFragment : Fragment() {
                     setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
                     background = GradientDrawable().apply {
                         setColor(if (isActive) resources.getColor(R.color.purple_soft, null) else resources.getColor(R.color.bg_tertiary, null))
-                        setStroke(if (isActive) 2 else 1, if (isActive) Color.argb(128, 108, 92, 231) else Color.TRANSPARENT)
+                        setStroke(if (isActive) 2 else 1, if (isActive) resources.getColor(R.color.purple_soft, null) else Color.TRANSPARENT)
                         cornerRadius = dp(10).toFloat()
                     }
                 }, lp)
@@ -112,7 +112,7 @@ class ModelSettingsFragment : Fragment() {
                     setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
                     background = GradientDrawable().apply {
                         setColor(if (isActive) resources.getColor(R.color.purple_soft, null) else resources.getColor(R.color.bg_tertiary, null))
-                        setStroke(if (isActive) 1 else 0, if (isActive) Color.argb(102, 108, 92, 231) else Color.TRANSPARENT)
+                        setStroke(if (isActive) 1 else 0, if (isActive) resources.getColor(R.color.purple_soft, null) else Color.TRANSPARENT)
                         cornerRadius = dp(10).toFloat()
                     }
                 }, lp)

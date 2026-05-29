@@ -62,7 +62,7 @@ class BasicSettingsFragment : Fragment() {
                     setPadding(dp(4), dp(14), dp(4), dp(14))
                     background = GradientDrawable().apply {
                         setColor(if (isActive) resources.getColor(R.color.accent_soft, null) else resources.getColor(R.color.bg_tertiary, null))
-                        setStroke(if (isActive) 2 else 1, if (isActive) Color.argb(128, 233, 69, 96) else Color.TRANSPARENT)
+                        setStroke(if (isActive) 2 else 1, if (isActive) resources.getColor(R.color.accent_glow, null) else Color.TRANSPARENT)
                         cornerRadius = dp(14).toFloat()
                     }
                     addView(TextView(requireContext()).apply { text = icon; textSize = 22f; setTextColor(if (isActive) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_300, null)); gravity = Gravity.CENTER })
