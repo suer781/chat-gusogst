@@ -172,9 +172,10 @@ object HdrHelper {
 
         val cr = 16f * density  // 卡片圆角
 
-        // Layer 0: 玻璃底色染
+        // Layer 0: 玻璃底色染（含边框）
         layers.add(GradientDrawable().apply {
             setColor(c.bgTint)
+            setStroke(1, c.cardBorder)
             cornerRadius = cr
         })
 

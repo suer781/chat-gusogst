@@ -42,10 +42,10 @@ class MainActivity : AppCompatActivity() {
     /** 从 SharedPreferences 读取当前保存的主题名 */
     private fun readCurrentTheme(): String {
         val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
-        val json = prefs.getString("settings", null) ?: return "system"
+        val json = prefs.getString("settings", null) ?: return "dark"
         return try {
-            org.json.JSONObject(json).optString("theme", "system")
-        } catch (_: Exception) { "system" }
+            org.json.JSONObject(json).optString("theme", "dark")
+        } catch (_: Exception) { "dark" }
     }
 
     private data class NavItem(
@@ -63,15 +63,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        // 纯黑/Amoled 主题在 super.onCreate 前替换
+        // 默认深色主题，用户设置后保存
         val prefs = getSharedPreferences("chat_prefs", MODE_PRIVATE)
         val settingsJson = prefs.getString("settings", null)
-        if (settingsJson != null) {
+        val themeName = if (settingsJson != null) {
             try {
-                val json = org.json.JSONObject(settingsJson)
-                if (json.optString("theme", "") == "pureBlack")
-                    setTheme(R.style.Theme_ChatGusogst_Amoled)
-            } catch (_: Exception) {}
+                org.json.JSONObject(settingsJson).optString("theme", "dark")
+            } catch (_: Exception) { "dark" }
+        } else "dark"
+        if (themeName == "pureBlack") {
+            setTheme(R.style.Theme_ChatGusogst_Amoled)
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else if (themeName == "dark") {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else if (themeName == "light" || themeName == "pureWhite") {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
