@@ -47,8 +47,8 @@
 29-->/tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:11:9-54
 30        android:supportsRtl="true"
 30-->/tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:13:9-35
-31        android:theme="@style/Theme.ChatGusogst"
-31-->/tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:14:9-49
+31        android:theme="@style/Theme.ChatGusogst.Splash"
+31-->/tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:14:9-56
 32        android:usesCleartextTraffic="true" >
 32-->/tmp/build-android/chat-gusogst/android-native/app/src/main/AndroidManifest.xml:15:9-44
 33        <activity
