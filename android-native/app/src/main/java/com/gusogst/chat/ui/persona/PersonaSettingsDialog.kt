@@ -99,7 +99,7 @@ class PersonaSettingsDialog : DialogFragment() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         header.addView(TextView(requireContext()).apply {
-            text = "✕"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 18f
+            text = "✕"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 18f
             setPadding(dp(8), dp(8), dp(8), dp(8)); setOnClickListener { dismiss() }
         })
         root.addView(header)
@@ -112,8 +112,8 @@ class PersonaSettingsDialog : DialogFragment() {
         // Prompt editor
         content.addView(sectionLabel("📝 系统提示词"))
         val promptInput = EditText(requireContext()).apply {
-            setText(prompt); setTextColor(resources.getColor(R.color.gray_100, null))
-            setHintTextColor(resources.getColor(R.color.gray_500, null)); hint = "描述角色的性格、风格、行为准则..."
+            setText(prompt); setTextColor(resources.getColor(R.color.text_primary, null))
+            setHintTextColor(resources.getColor(R.color.text_tertiary, null)); hint = "描述角色的性格、风格、行为准则..."
             textSize = 14f; setPadding(dp(14), dp(12), dp(14), dp(12)); minLines = 4; maxLines = 8
             background = GradientDrawable().apply {
                 setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(8).toFloat()
@@ -134,7 +134,7 @@ class PersonaSettingsDialog : DialogFragment() {
         }
         overrideRow.addView(TextView(requireContext()).apply {
             text = if (overrideGlobal) "使用本角色独立参数" else "跟随全局模型设置"
-            setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 14f
+            setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 14f
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         val toggle = FrameLayout(requireContext()).apply {
@@ -196,7 +196,7 @@ class PersonaSettingsDialog : DialogFragment() {
         // Buttons
         val btnRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(16), 0, 0) }
         btnRow.addView(TextView(requireContext()).apply {
-            text = "取消"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 14f; gravity = Gravity.CENTER
+            text = "取消"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 14f; gravity = Gravity.CENTER
             setPadding(dp(12), dp(12), dp(12), dp(12))
             background = GradientDrawable().apply { setColor(Color.TRANSPARENT); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat() }
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(10) }
@@ -252,7 +252,7 @@ class PersonaSettingsDialog : DialogFragment() {
     private fun sectionLabel(text: String): TextView {
         val d = resources.displayMetrics.density
         return TextView(requireContext()).apply {
-            this.text = text; setTextColor(resources.getColor(R.color.gray_100, null)); textSize = 14f
+            this.text = text; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f
             setTypeface(null, Typeface.BOLD); setPadding(0, (16 * d).toInt(), 0, (8 * d).toInt())
         }
     }
@@ -260,7 +260,7 @@ class PersonaSettingsDialog : DialogFragment() {
     private fun createPresetBtn(label: String, onClick: () -> Unit): TextView {
         val d = resources.displayMetrics.density
         return TextView(requireContext()).apply {
-            text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 13f
+            text = label; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
             gravity = Gravity.CENTER; setPadding((8 * d).toInt(), (10 * d).toInt(), (8 * d).toInt(), (10 * d).toInt())
             background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = (8 * d).toFloat() }
             setOnClickListener { onClick() }
@@ -271,11 +271,11 @@ class PersonaSettingsDialog : DialogFragment() {
         val d = resources.displayMetrics.density
         val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, (8 * d).toInt(), 0, (8 * d).toInt()) }
         col.addView(TextView(requireContext()).apply {
-            this.text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 14f
+            this.text = label; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 14f
             setPadding(0, 0, 0, (6 * d).toInt())
         })
         val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", min); setTextColor(resources.getColor(R.color.gray_500, null)); textSize = 11f; minWidth = (32 * d).toInt() })
+        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", min); setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 11f; minWidth = (32 * d).toInt() })
         row.addView(SeekBar(requireContext()).apply {
             setMax(((max - min) / step).toInt()); progress = ((value - min) / step).toInt()
             progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
@@ -286,10 +286,10 @@ class PersonaSettingsDialog : DialogFragment() {
                 override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
             })
         })
-        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", max); setTextColor(resources.getColor(R.color.gray_500, null)); textSize = 11f; minWidth = (32 * d).toInt(); gravity = Gravity.END })
+        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", max); setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 11f; minWidth = (32 * d).toInt(); gravity = Gravity.END })
         col.addView(row)
         col.addView(TextView(requireContext()).apply {
-            text = String.format("%.2f", value); setTextColor(resources.getColor(R.color.gray_200, null)); textSize = 13f; gravity = Gravity.CENTER; setPadding(0, (4 * d).toInt(), 0, 0)
+            text = String.format("%.2f", value); setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f; gravity = Gravity.CENTER; setPadding(0, (4 * d).toInt(), 0, 0)
         })
         return col
     }
@@ -299,7 +299,7 @@ class PersonaSettingsDialog : DialogFragment() {
         return TextView(requireContext()).apply {
             text = label; textSize = 13f; gravity = Gravity.CENTER
             setPadding((12 * d).toInt(), (8 * d).toInt(), (12 * d).toInt(), (8 * d).toInt())
-            setTextColor(if (active) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_400, null))
+            setTextColor(if (active) resources.getColor(R.color.accent, null) else resources.getColor(R.color.text_tertiary, null))
             background = GradientDrawable().apply {
                 setColor(if (active) resources.getColor(R.color.accent_soft, null) else resources.getColor(R.color.bg_tertiary, null))
                 setStroke(if (active) 1 else 0, if (active) resources.getColor(R.color.accent, null) else Color.TRANSPARENT)
@@ -317,7 +317,7 @@ class PersonaSettingsDialog : DialogFragment() {
             setPadding(0, (6 * d).toInt(), 0, (6 * d).toInt())
         }
         row.addView(TextView(requireContext()).apply {
-            text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 13f
+            text = label; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
             layoutParams = LinearLayout.LayoutParams((50 * d).toInt(), LinearLayout.LayoutParams.WRAP_CONTENT)
         })
         val pctTv = TextView(requireContext()).apply {
