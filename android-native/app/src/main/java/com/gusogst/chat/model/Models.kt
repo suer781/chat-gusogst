@@ -151,13 +151,14 @@ enum class DisplayMode { compact, default, expanded }
 // ===== API 请求/响应 =====
 data class ChatRequest(
     val model: String,
-    val messages: List<ApiMessage>,
+    val messages: List<ApiRequestMessage>,
     val stream: Boolean = true,
     val temperature: Float = 0.7f,
     val max_tokens: Int? = null
 )
 
-data class ApiMessage(
+/** 发送给 API 的简单消息（无 tool_calls 等字段），与 AgentTypes.ApiMessage 区分 */
+data class ApiRequestMessage(
     val role: String,
     val content: String
 )

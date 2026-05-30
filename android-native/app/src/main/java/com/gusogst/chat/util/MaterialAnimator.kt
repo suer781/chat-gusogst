@@ -41,6 +41,10 @@ import android.widget.EdgeEffect
  *   - Spring via OvershootInterpolator (no JS physics engine) */
 object MaterialAnimator {
 
+    // 动画时长常量 (ms)
+    private const val PRESS_DURATION = 100L
+    private const val RELEASE_DURATION = 350L
+
     // ── M6: Spring easing curves (hardware-friendly) ──
     val SPRING: TimeInterpolator = OvershootInterpolator(1.0f)
     val SPRING_BOUNCE: TimeInterpolator = OvershootInterpolator(1.56f)
@@ -63,13 +67,13 @@ object MaterialAnimator {
                 MotionEvent.ACTION_DOWN -> {
                     v.animate()
                         .scaleX(0.94f).scaleY(0.94f)
-                        .setDuration(100).setInterpolator(SPRING)
+                        .setDuration(PRESS_DURATION).setInterpolator(SPRING)
                         .start()
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     v.animate()
                         .scaleX(1f).scaleY(1f)
-                        .setDuration(350).setInterpolator(SPRING_BOUNCE)
+                        .setDuration(RELEASE_DURATION).setInterpolator(SPRING_BOUNCE)
                         .start()
                 }
             }
@@ -102,14 +106,14 @@ object MaterialAnimator {
                     v.animate()
                         .scaleX(0.98f).scaleY(0.98f)
                         .translationY(-1 * v.resources.displayMetrics.density)
-                        .setDuration(100).setInterpolator(SPRING).start()
+                        .setDuration(PRESS_DURATION).setInterpolator(SPRING).start()
                     v.elevation = 8 * v.resources.displayMetrics.density
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     v.animate()
                         .scaleX(1f).scaleY(1f)
                         .translationY(0f)
-                        .setDuration(350).setInterpolator(SPRING_BOUNCE).start()
+                        .setDuration(RELEASE_DURATION).setInterpolator(SPRING_BOUNCE).start()
                     v.elevation = 2 * v.resources.displayMetrics.density
                 }
             }
@@ -189,37 +193,57 @@ object MaterialAnimator {
         val rightColor: Int   // 右下渐变颜色
     )
 
-    /** 根据主题获取环境光颜色（预乘 CSS opacity: 0.6） */
-    fun getAmbientConfig(themeName: String): AmbientConfig = when (themeName) {
-        // dark: bg=#0f0f23, opacity 0.6
-        // top: rgba(22,22,60,0.6) → A92          left: rgba(40,10,60,0.4)→A61
-        // right: rgba(10,25,60,0.3)→A46
-        "dark", "pureBlack" -> AmbientConfig(
-            topColor = Color.argb(92, 22, 22, 60),
-            leftColor = Color.argb(61, 40, 10, 60),
-            rightColor = Color.argb(46, 10, 25, 60)
-        )
-        // light: bg=#f5f5f5, opacity 0.6
-        // top: rgba(230,230,245,0.5)→A77          left: rgba(245,225,230,0.3)→A46
-        // right: rgba(225,235,250,0.3)→A46
-        "light" -> AmbientConfig(
-            topColor = Color.argb(77, 230, 230, 245),
-            leftColor = Color.argb(46, 245, 225, 230),
-            rightColor = Color.argb(46, 225, 235, 250)
-        )
-        // pureWhite: bg=#ffffff, opacity 0.6
-        // top: rgba(250,248,255,0.4)→A61          left: rgba(255,245,248,0.2)→A31
-        // right: rgba(245,250,255,0.2)→A31
-        "pureWhite" -> AmbientConfig(
-            topColor = Color.argb(61, 250, 248, 255),
-            leftColor = Color.argb(31, 255, 245, 248),
-            rightColor = Color.argb(31, 245, 250, 255)
-        )
-        else -> AmbientConfig(
-            topColor = Color.argb(77, 230, 230, 245),
-            leftColor = Color.argb(46, 245, 225, 230),
-            rightColor = Color.argb(46, 225, 235, 250)
-        )
+    /**
+     * 根据主题和环境获取环境光颜色（预乘 CSS opacity: 0.6）
+     *
+     * HDR 开启时 (Fix 11)：提升饱和度/色度，使环境光更鲜艳
+     * HDR 关闭时：降低透明度，减弱环境光
+     */
+    fun getAmbientConfig(themeName: String, hdrEnabled: Boolean = false): AmbientConfig {
+        // HDR 乘数：开启时提升颜色强度 ~30%
+        val hdrMul = if (hdrEnabled) 1.3f else 1.0f
+        return when (themeName) {
+            "dark", "pureBlack" -> {
+                val topAlpha = (92 * hdrMul).toInt().coerceIn(0, 255)
+                val leftAlpha = (61 * hdrMul).toInt().coerceIn(0, 255)
+                val rightAlpha = (46 * hdrMul).toInt().coerceIn(0, 255)
+                AmbientConfig(
+                    topColor = Color.argb(topAlpha, 22, 22, 60),
+                    leftColor = Color.argb(leftAlpha, 40, 10, 60),
+                    rightColor = Color.argb(rightAlpha, 10, 25, 60)
+                )
+            }
+            "light" -> {
+                val topAlpha = (77 * hdrMul).toInt().coerceIn(0, 255)
+                val leftAlpha = (46 * hdrMul).toInt().coerceIn(0, 255)
+                val rightAlpha = (46 * hdrMul).toInt().coerceIn(0, 255)
+                AmbientConfig(
+                    topColor = Color.argb(topAlpha, 230, 230, 245),
+                    leftColor = Color.argb(leftAlpha, 245, 225, 230),
+                    rightColor = Color.argb(rightAlpha, 225, 235, 250)
+                )
+            }
+            "pureWhite" -> {
+                val topAlpha = (61 * hdrMul).toInt().coerceIn(0, 255)
+                val leftAlpha = (31 * hdrMul).toInt().coerceIn(0, 255)
+                val rightAlpha = (31 * hdrMul).toInt().coerceIn(0, 255)
+                AmbientConfig(
+                    topColor = Color.argb(topAlpha, 250, 248, 255),
+                    leftColor = Color.argb(leftAlpha, 255, 245, 248),
+                    rightColor = Color.argb(rightAlpha, 245, 250, 255)
+                )
+            }
+            else -> {
+                val topAlpha = (77 * hdrMul).toInt().coerceIn(0, 255)
+                val leftAlpha = (46 * hdrMul).toInt().coerceIn(0, 255)
+                val rightAlpha = (46 * hdrMul).toInt().coerceIn(0, 255)
+                AmbientConfig(
+                    topColor = Color.argb(topAlpha, 230, 230, 245),
+                    leftColor = Color.argb(leftAlpha, 245, 225, 230),
+                    rightColor = Color.argb(rightAlpha, 225, 235, 250)
+                )
+            }
+        }
     }
 
     /**
@@ -272,13 +296,14 @@ object MaterialAnimator {
     }
 
     /**
-     * 设置/更新环境光叠加层
+     * 设置/更新环境光叠加层 (Fix 11: HDR 联动)
      * @param animate 是否启用 600ms 交叉淡入淡出（主题切换时用）
+     * @param hdrEnabled HDR 开启时提升环境光饱和度
      */
-    fun setAmbientBackground(rootView: View, themeName: String, animate: Boolean = false) {
+    fun setAmbientBackground(rootView: View, themeName: String, animate: Boolean = false, hdrEnabled: Boolean = false) {
         val w = rootView.width.coerceAtLeast(1).toFloat()
         val h = rootView.height.coerceAtLeast(1).toFloat()
-        val config = getAmbientConfig(themeName)
+        val config = getAmbientConfig(themeName, hdrEnabled)
 
         // 纯黑模式不需要环境光
         if (themeName == "pureBlack") {

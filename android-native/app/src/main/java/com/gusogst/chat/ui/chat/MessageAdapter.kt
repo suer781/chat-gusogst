@@ -89,12 +89,10 @@ class MessageAdapter(
             val fs = (itemView.tag as? MessageAdapter)?.fontSize ?: 14
             tvMessage.textSize = fs.toFloat()
 
-            // HDR 气泡辉光
+            // HDR 气泡辉光 (Fix 5: border + shadow on all bubbles; always call for cleanup)
             val isHdr = (itemView.tag as? MessageAdapter)?.hdrEnabled ?: false
             val isDark = (itemView.tag as? MessageAdapter)?.isDark ?: true
-            if (isHdr) {
-                HdrHelper.applyBubbleGlow(itemView, true, true, isDark)
-            }
+            HdrHelper.applyBubbleGlow(itemView, isHdr, true, isDark)
 
             // 长按显示操作
             tvMessage.setOnLongClickListener {
@@ -153,12 +151,10 @@ class MessageAdapter(
             tvMessage.alpha = if (msg.status == MessageStatus.streaming) 0.8f else 1f
             tvMessage.background?.alpha = if (glass) 80 else 255
 
-            // HDR 气泡辉光
+            // HDR 气泡辉光 (Fix 5: always call for proper cleanup on toggle)
             val isHdr = (itemView.tag as? MessageAdapter)?.hdrEnabled ?: false
             val isDark = (itemView.tag as? MessageAdapter)?.isDark ?: true
-            if (isHdr) {
-                HdrHelper.applyBubbleGlow(itemView, true, false, isDark)
-            }
+            HdrHelper.applyBubbleGlow(itemView, isHdr, false, isDark)
 
             // 思考折叠块
             if (!msg.thinking.isNullOrBlank()) {

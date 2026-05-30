@@ -129,6 +129,14 @@ class HapticsHelper(context: Context) {
         handler.postDelayed({ vibrate(5, 100) }, 50)
     }
 
+    /**
+     * 清理所有 pending 的 Handler postDelayed 回调。
+     * 在 Activity/Fragment onDestroy 中调用，防止内存泄漏。
+     */
+    fun destroy() {
+        handler.removeCallbacksAndMessages(null)
+    }
+
     // ── 底层 ──
     private fun vibrate(ms: Long, amplitude: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -141,4 +149,3 @@ class HapticsHelper(context: Context) {
         }
     }
 }
-// build test Wed May 27 10:12:52 UTC 2026

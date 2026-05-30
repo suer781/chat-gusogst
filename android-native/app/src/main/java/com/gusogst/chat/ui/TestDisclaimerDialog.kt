@@ -20,16 +20,16 @@ class TestDisclaimerDialog : DialogFragment() {
             setBackgroundColor(resources.getColor(R.color.bg_primary, null))
         }
         root.addView(TextView(requireContext()).apply {
-            text = "\u26A0 \u6D4B\u8BD5\u7248\u58F0\u660E"; textSize = 18f; setTextColor(Color.WHITE); gravity = Gravity.CENTER
+            text = getString(R.string.test_disclaimer_title); textSize = 18f; setTextColor(Color.WHITE); gravity = Gravity.CENTER
             setPadding(0, 0, 0, (12*dp).toInt())
         })
         root.addView(TextView(requireContext()).apply {
-            text = "\u672C\u5E94\u7528\u4E3A\u6D4B\u8BD5\u7248\u672C\uFF0C\u53EF\u80FD\u5B58\u5728 Bug\u3002\u6570\u636E\u4EC5\u4FDD\u5B58\u5728\u672C\u5730\uFF0C\u8BF7\u5B9A\u671F\u5907\u4EFD\u3002"
+            text = getString(R.string.test_disclaimer_msg)
             textSize = 14f; setTextColor(resources.getColor(R.color.text_tertiary, null)); gravity = Gravity.CENTER
             setPadding(0, 0, 0, (16*dp).toInt())
         })
         root.addView(TextView(requireContext()).apply {
-            text = "\u6211\u77E5\u9053\u4E86"; textSize = 14f; setTextColor(Color.WHITE); gravity = Gravity.CENTER
+            text = getString(R.string.test_disclaimer_ok); textSize = 14f; setTextColor(Color.WHITE); gravity = Gravity.CENTER
             setPadding((12*dp).toInt(), (10*dp).toInt(), (12*dp).toInt(), (10*dp).toInt())
             setBackgroundColor(resources.getColor(R.color.accent, null)); setOnClickListener { dismiss() }
         })

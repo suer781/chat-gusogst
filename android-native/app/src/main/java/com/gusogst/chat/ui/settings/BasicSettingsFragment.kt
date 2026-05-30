@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
+import com.gusogst.chat.util.HdrHelper
 import com.gusogst.chat.util.MaterialAnimator
 import com.gusogst.chat.viewmodel.ChatViewModel
 
@@ -23,12 +24,12 @@ class BasicSettingsFragment : Fragment() {
     private val viewModel: ChatViewModel by activityViewModels()
     private lateinit var root: LinearLayout
 
-    private val themeOptions = listOf(
-        Triple("system", "\u7CFB\u7EDF", "\u25C8"),
-        Triple("light", "\u6D45\u8272", "\u2600"),
-        Triple("dark", "\u6DF1\u8272", "\u263E"),
-        Triple("pureWhite", "\u7EAF\u767D", "\u25CB"),
-        Triple("pureBlack", "\u7EAF\u9ED1", "\u25CF")
+    private val themeOptions get() = listOf(
+        Triple("system", getString(R.string.basic_theme_system), "\u25C8"),
+        Triple("light", getString(R.string.basic_theme_light), "\u2600"),
+        Triple("dark", getString(R.string.basic_theme_dark), "\u263E"),
+        Triple("pureWhite", getString(R.string.basic_theme_pure_white), "\u25CB"),
+        Triple("pureBlack", getString(R.string.basic_theme_pure_black), "\u25CF")
     )
 
     private val fontSizes = listOf(12, 13, 14, 15, 16, 17, 18, 20, 22)
@@ -49,10 +50,10 @@ class BasicSettingsFragment : Fragment() {
 
     private fun buildUI(theme: String, fontSize: String, eyeCare: Boolean, eyeCareIntensity: Int, glass: Boolean, glassOpacity: Int, haptic: Boolean, hdr: Boolean) {
         root.removeAllViews()
-        addHeader("\u57FA\u672C\u8BBE\u7F6E")
+        addHeader(getString(R.string.basic_title))
 
         // Theme 5-grid
-        addSection("\u4E3B\u9898\u6A21\u5F0F", "\u2728") {
+        addSection(getString(R.string.basic_theme_mode), "\u2728") {
             val grid = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
             val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
             for ((key, label, icon) in themeOptions) {
@@ -75,7 +76,7 @@ class BasicSettingsFragment : Fragment() {
         }
 
         // Font size (navigate to subpage)
-        addSection("字号大小", "A") {
+        addSection(getString(R.string.basic_font_size), "A") {
             val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(16), dp(14), dp(16), dp(14)) }
             row.addView(TextView(requireContext()).apply { text = "A"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 16f; setPadding(0, 0, dp(12), 0) })
             row.addView(TextView(requireContext()).apply {
@@ -99,13 +100,13 @@ class BasicSettingsFragment : Fragment() {
         }
 
         // Eye care
-        addSection("护眼模式", "◉") {
+        addSection(getString(R.string.basic_eye_care), "◉") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            col.addView(createToggleRow("护眼模式", "降低蓝光，暖色调保护视力", eyeCare) { viewModel.updateSettings { s -> s.copy(eyeCareMode = it) } })
+            col.addView(createToggleRow(getString(R.string.basic_eye_care), getString(R.string.basic_eye_care_desc), eyeCare) { viewModel.updateSettings { s -> s.copy(eyeCareMode = it) } })
             if (eyeCare) {
                 // 暖色强度滑块
                 val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(8), 0, 0) }
-                row.addView(TextView(requireContext()).apply { text = "暖度"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
+                row.addView(TextView(requireContext()).apply { text = getString(R.string.basic_eye_warmth);; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
                 row.addView(SeekBar(requireContext()).apply {
                     max = 100; progress = eyeCareIntensity
                     progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
@@ -123,12 +124,12 @@ class BasicSettingsFragment : Fragment() {
         }
 
         // Glass
-        addSection("玻璃拟态", "●") {
+        addSection(getString(R.string.basic_glass_title), "●") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            col.addView(createToggleRow("毛玻璃效果", "背景模糊和透明效果", glass) { viewModel.updateSettings { s -> s.copy(glassEnabled = it) } })
+            col.addView(createToggleRow(getString(R.string.basic_glass_desc), getString(R.string.basic_glass_desc2), glass) { viewModel.updateSettings { s -> s.copy(glassEnabled = it) } })
             if (glass) {
                 val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(8), 0, 0) }
-                row.addView(TextView(requireContext()).apply { text = "透明度"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
+                row.addView(TextView(requireContext()).apply { text = getString(R.string.basic_glass_opacity);; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f; setPadding(0, 0, dp(8), 0) })
                 row.addView(SeekBar(requireContext()).apply {
                     max = 100; progress = glassOpacity
                     progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
@@ -146,13 +147,13 @@ class BasicSettingsFragment : Fragment() {
         }
 
         // Haptic
-        addSection("\u89E6\u89C9\u53CD\u9988", "\u25C9") {
-            return@addSection createToggleRow("\u9707\u52A8\u53CD\u9988", "\u6309\u94AE\u70B9\u51FB\u65F6\u7684\u7EBF\u6027\u9A6C\u8FBE\u89E6\u611F\u53CD\u9988", haptic) { viewModel.updateSettings { s -> s.copy(hapticEnabled = it) } }
+        addSection(getString(R.string.basic_haptic_title), "\u25C9") {
+            return@addSection createToggleRow(getString(R.string.basic_haptic_desc), getString(R.string.basic_haptic_desc2), haptic) { viewModel.updateSettings { s -> s.copy(hapticEnabled = it) } }
         }
 
         // HDR
-        addSection("HDR \u6E32\u67D3", "\u2600") {
-            return@addSection createToggleRow("HDR \u73BB\u7483\u8D28\u611F", "\u5229\u7528\u5C4F\u5E55\u9AD8\u4EAE\u5EA6\u6A21\u62DF\u771F\u5B9E\u73BB\u7483\u900F\u5149\u6548\u679C", hdr) { viewModel.updateSettings { s -> s.copy(hdrEnabled = it) } }
+        addSection(getString(R.string.basic_hdr_title), "\u2600") {
+            return@addSection createToggleRow(getString(R.string.basic_hdr_desc), getString(R.string.basic_hdr_desc2), hdr) { viewModel.updateSettings { s -> s.copy(hdrEnabled = it) } }
         }
     }
 
@@ -170,8 +171,8 @@ class BasicSettingsFragment : Fragment() {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
             background = GradientDrawable().apply {
-                setColor(if (isGlass) Color.parseColor("#08FFFFFF") else resources.getColor(R.color.bg_secondary, null))
-                setStroke(1, if (isGlass) Color.parseColor("#0AFFFFFF") else resources.getColor(R.color.border_color, null))
+                setColor(if (isGlass) resources.getColor(R.color.glass_overlay_white, null) else resources.getColor(R.color.bg_secondary, null))
+                setStroke(1, if (isGlass) resources.getColor(R.color.glass_stroke_white, null) else resources.getColor(R.color.border_color, null))
                 cornerRadius = dp(16).toFloat()
             }
             elevation = 1f * resources.displayMetrics.density
@@ -194,11 +195,22 @@ class BasicSettingsFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(dp(46), dp(26)).apply { marginStart = dp(12) }
             background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null)) }
         }
-        toggle.addView(View(requireContext()).apply {
+        val knob = View(requireContext()).apply {
             val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (checked) 22 else 2), dp(2), 0, 0); layoutParams = lp
             background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.text_primary, null)) }
-        })
+        }
+        toggle.addView(knob)
         row.addView(toggle)
+
+        // Fix 8: Apply HDR toggle glow when toggle is active
+        val isHdr = viewModel.settings.value?.hdrEnabled ?: false
+        val isDark = viewModel.settings.value?.let { s ->
+            when (s.theme) { "dark", "pureBlack" -> true; "light", "pureWhite" -> false; else -> true }
+        } ?: true
+        if (checked && isHdr) {
+            HdrHelper.applyToggleGlow(knob, true, isDark)
+        }
+
         return row
     }
 

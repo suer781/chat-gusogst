@@ -5,23 +5,30 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.gusogst.chat.agent.HermesBridge
+import com.gusogst.chat.agent.StreamEvent
 import com.gusogst.chat.data.ChatStore
-import com.gusogst.chat.data.memory.MemoryManager
+// MemoryManager replaced by HermesBridge memory system (holographic provider)
 import com.gusogst.chat.model.*
 import com.gusogst.chat.network.ApiClient
 import com.gusogst.chat.network.AutoRetryEngine
 import com.gusogst.chat.network.EndpointKB
 import com.gusogst.chat.network.StreamProcessor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
+    companion object {
+        private const val TITLE_MAX_LENGTH = 20
+    }
+
     private val store = ChatStore.getInstance(app)
     private val streamProcessor = StreamProcessor()
     private val retryEngine = AutoRetryEngine()
-    private val memoryManager = MemoryManager(app)
+    // Memory is managed by HermesBridge (holographic provider via Chaquopy)
 
     private val _conversations = MutableLiveData<List<Conversation>>(emptyList())
     val conversations: LiveData<List<Conversation>> = _conversations
@@ -120,7 +127,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         conv.updatedAt = System.currentTimeMillis()
         _messages.value = conv.messages.toList()
         if (conv.messages.size == 1) {
-            conv.title = content.take(20)
+            conv.title = content.take(TITLE_MAX_LENGTH)
             _conversations.value = _conversations.value
         }
         callAiApi(conv)
@@ -128,23 +135,175 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun callAiApi(conv: Conversation) {
+        // ── Try Hermes Agent first (Chaquopy Python runtime) ─────────
+        if (HermesBridge.isStarted()) {
+            callAiApiViaHermes(conv)
+            return
+        }
+        // ── Fallback: direct API via Retrofit/OkHttp ─────────────────
+        callAiApiDirect(conv)
+    }
+
+    /**
+     * AI 调用路径 1: 通过 Hermes Agent (Python via Chaquopy)
+     *
+     * HermesBridge.sendMessage() 会启动 Hermes Agent 的完整工具调用循环，
+     * 包括：prompt 构建 → LLM API 调用 → 工具执行 → 结果回传 → 继续推理。
+     * 流式输出通过 StreamEvent Flow 逐 delta 传递给 UI。
+     */
+    private fun callAiApiViaHermes(conv: Conversation) {
+        val providers = _providers.value.orEmpty().filter { it.enabled }
+        val primary = providers.firstOrNull() ?: return
+        val model = conv.modelId ?: primary.models.firstOrNull()?.id ?: return
+
+        // ── Build messages list as Map (for JSON → Python marshalling) ──
+        val messagesForAgent = mutableListOf<Map<String, Any>>()
+
+        // System prompt (persona)
+        conv.personaId?.let { pid ->
+            _personas.value?.find { it.id == pid }?.prompt
+        }?.let { prompt ->
+            messagesForAgent.add(mapOf("role" to "system", "content" to prompt))
+        }
+
+        // Memory context (Hermes holographic provider via Chaquopy)
+        val lastUserMsg = conv.messages.lastOrNull { it.role == Role.user }
+        if (lastUserMsg != null && HermesBridge.isStarted()) {
+            val memoryContext = HermesBridge.getMemoryContext(lastUserMsg.content, 5)
+            if (memoryContext.isNotEmpty()) {
+                messagesForAgent.add(mapOf(
+                    "role" to "system",
+                    "content" to ("以下是与用户相关的记忆，可用于个性化回复：\n" +
+                        memoryContext.joinToString("\n"))
+                ))
+            }
+        }
+
+        // Conversation history
+        conv.messages.filter { it.status != MessageStatus.error }.forEach {
+            messagesForAgent.add(mapOf("role" to it.role.name, "content" to it.content))
+        }
+
+        // Create AI message placeholder
+        val aiMsg = Message(
+            conversationId = conv.id,
+            role = Role.assistant,
+            content = "",
+            status = MessageStatus.streaming,
+            providerId = primary.id,
+            modelId = model
+        )
+        conv.messages.add(aiMsg)
+        _messages.value = conv.messages.toList()
+        _isStreaming.value = true
+
+        viewModelScope.launch {
+            try {
+                HermesBridge.sendMessage(
+                    providerId = primary.id,
+                    model = model,
+                    messages = messagesForAgent,
+                    tools = null,  // Hermes Agent auto-discovers tools from its registry
+                ).catch { e ->
+                    // Flow error — agent crash
+                    android.util.Log.e("ChatVM:Hermes", "Flow error", e)
+                    aiMsg.status = MessageStatus.error
+                    if (aiMsg.content.isBlank()) {
+                        aiMsg.content = "Hermes Agent 运行错误: ${e.message?.take(100)}"
+                    }
+                    _messages.postValue(conv.messages.toList())
+                    _isStreaming.postValue(false)
+                    store.saveConversations(_conversations.value.orEmpty())
+                }.collect { event ->
+                    when (event) {
+                        is StreamEvent.Delta -> {
+                            aiMsg.content += event.text
+                            _messages.postValue(conv.messages.toList())
+                        }
+                        is StreamEvent.Complete -> {
+                            val result = event.result
+                            if (result.ok) {
+                                aiMsg.status = MessageStatus.ready
+                                // If Hermes returned additional content beyond deltas
+                                if (aiMsg.content.isBlank() && result.content.isNotBlank()) {
+                                    aiMsg.content = result.content
+                                }
+                                // Record tool calls if any
+                                if (result.toolCalls.isNotEmpty()) {
+                                    aiMsg.content += "\n\n--- 工具调用 ---\n" +
+                                        result.toolCalls.joinToString("\n") { tc ->
+                                            "🔧 ${tc.name}: ${tc.arguments.take(200)}"
+                                        }
+                                }
+                            } else {
+                                aiMsg.status = MessageStatus.error
+                                if (aiMsg.content.isBlank()) {
+                                    aiMsg.content = result.error ?: "Agent 返回空响应"
+                                }
+                            }
+                            conv.updatedAt = System.currentTimeMillis()
+                            _messages.postValue(conv.messages.toList())
+                            _isStreaming.postValue(false)
+                            store.saveConversations(_conversations.value.orEmpty())
+
+                            // Auto-extract memories via Hermes holographic provider
+                            if (aiMsg.content.isNotBlank() && lastUserMsg != null
+                                && HermesBridge.isStarted()) {
+                                HermesBridge.extractMemories(lastUserMsg.content, aiMsg.content)
+                            }
+                        }
+                        is StreamEvent.Error -> {
+                            aiMsg.status = MessageStatus.error
+                            android.util.Log.e("ChatVM:Hermes", "Stream error: ${event.message}")
+                            // Only set error if we have no content yet
+                            if (aiMsg.content.isBlank()) {
+                                aiMsg.content = "Hermes Agent 错误: ${event.message}"
+                            } else {
+                                aiMsg.content += "\n\n[错误: ${event.message}]"
+                            }
+                            _messages.postValue(conv.messages.toList())
+                            _isStreaming.postValue(false)
+                            store.saveConversations(_conversations.value.orEmpty())
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ChatVM:Hermes", "sendMessage failed", e)
+                aiMsg.status = MessageStatus.error
+                if (aiMsg.content.isBlank()) {
+                    aiMsg.content = "Hermes Agent 初始化失败: ${e.message?.take(100)}"
+                }
+                _messages.postValue(conv.messages.toList())
+                _isStreaming.postValue(false)
+                store.saveConversations(_conversations.value.orEmpty())
+            }
+        }
+    }
+
+    /**
+     * AI 调用路径 2: 直接 HTTP API (Retrofit + OkHttp SSE stream)
+     *
+     * 保留作为 HermesBridge 不可用时的降级方案。
+     * 包含自动故障转移到备用端点。
+     */
+    private fun callAiApiDirect(conv: Conversation) {
         val providers = _providers.value.orEmpty().filter { it.enabled }
         val primary = providers.firstOrNull() ?: return
         val model = conv.modelId ?: primary.models.firstOrNull()?.id ?: return
 
         val systemMsg = conv.personaId?.let { pid ->
             _personas.value?.find { it.id == pid }?.prompt
-        }?.let { ApiMessage(role = "system", content = it) }
+        }?.let { ApiRequestMessage(role = "system", content = it) }
 
-        val apiMessages = mutableListOf<ApiMessage>()
+        val apiMessages = mutableListOf<ApiRequestMessage>()
         if (systemMsg != null) apiMessages.add(systemMsg)
 
-        // 注入记忆上下文（基于用户最近一条消息检索）
+        // 注入记忆上下文（基于用户最近一条消息检索，使用 Hermes holographic provider）
         val lastUserMsg = conv.messages.lastOrNull { it.role == Role.user }
-        if (lastUserMsg != null) {
-            val memoryContext = memoryManager.getContextStrings(lastUserMsg.content, 5)
+        if (lastUserMsg != null && HermesBridge.isStarted()) {
+            val memoryContext = HermesBridge.getMemoryContext(lastUserMsg.content, 5)
             if (memoryContext.isNotEmpty()) {
-                apiMessages.add(ApiMessage(
+                apiMessages.add(ApiRequestMessage(
                     role = "system",
                     content = "以下是与用户相关的记忆，可用于个性化回复：\n" +
                         memoryContext.joinToString("\n")
@@ -153,7 +312,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         }
 
         conv.messages.filter { it.status != MessageStatus.error }.forEach {
-            apiMessages.add(ApiMessage(role = it.role.name, content = it.content))
+            apiMessages.add(ApiRequestMessage(role = it.role.name, content = it.content))
         }
 
         val request = ChatRequest(model = model, messages = apiMessages, stream = true)
@@ -263,9 +422,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                             store.saveConversations(_conversations.value.orEmpty())
                             completed = true
                             retryEngine.recordSuccess(baseUrl, apiKey)
-                            // 自动提取记忆（基于关键字规则，不额外调用 API）
-                            if (aiMsg.content.isNotBlank() && userContent != null) {
-                                autoExtractMemories(userContent, aiMsg.content)
+                            // 自动提取记忆（Hermes holographic provider — LLM + regex）
+                            if (aiMsg.content.isNotBlank() && userContent != null
+                                && HermesBridge.isStarted()) {
+                                HermesBridge.extractMemories(userContent, aiMsg.content)
                             }
                         },
                         onError = { err ->
@@ -321,53 +481,17 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /**
-     * 自动提取记忆（基于关键字规则，不额外调用 API）
-     * 从对话中提取偏好、事实等值得记住的信息。
-     * 每次 AI 回复后调用，最多提取 3 条。
+     * 自动提取记忆 — 委托给 Hermes Agent 内存系统。
+     *
+     * HermesBridge.extractMemories() 使用 LLM 提取（若 Agent 可用）
+     * 或回退到正则匹配，并将结果持久化到 holographic 数据库。
+     * 调用方直接使用 HermesBridge.extractMemories()。
      */
+    @Deprecated("Use HermesBridge.extractMemories() directly",
+        ReplaceWith("HermesBridge.extractMemories(userContent, aiContent)"))
     private fun autoExtractMemories(userContent: String, aiContent: String) {
-        // 偏好提取：检测"I like/love/enjoy/hate/don't like"等模式
-        val preferencePatterns = listOf(
-            Regex("我喜欢([^，。！？]{2,30})", setOf(RegexOption.IGNORE_CASE)),
-            Regex("我不喜欢([^，。！？]{2,30})", setOf(RegexOption.IGNORE_CASE)),
-            Regex("我(?:最爱|讨厌|偏爱|喜欢用)([^，。！？]{2,30})", setOf(RegexOption.IGNORE_CASE))
-        )
-
-        for (pattern in preferencePatterns) {
-            val match = pattern.find(userContent)?.groupValues?.getOrNull(1)
-            if (match != null && match.length >= 2) {
-                memoryManager.addMemory(
-                    type = "preference",
-                    content = "用户$match",
-                    source = "conversation"
-                )
-            }
-        }
-
-        // 事实提取：检测用户自我介绍或给出个人信息
-        val factPatterns = listOf(
-            Regex("我(?:叫|是|在|住在|做|有)([^，。！？]{2,30})", setOf(RegexOption.IGNORE_CASE))
-        )
-        for (pattern in factPatterns) {
-            val match = pattern.find(userContent)?.groupValues?.getOrNull(1)
-            if (match != null && match.length >= 2) {
-                memoryManager.addMemory(
-                    type = "fact",
-                    content = "用户${match}",
-                    source = "conversation"
-                )
-            }
-        }
-
-        // 计划提取：检测用户提到计划或目标
-        val planPattern = Regex("我(?:要|打算|计划|想|准备)([^，。！？]{3,30})", setOf(RegexOption.IGNORE_CASE))
-        val planMatch = planPattern.find(userContent)?.groupValues?.getOrNull(1)
-        if (planMatch != null && planMatch.length >= 3) {
-            memoryManager.addMemory(
-                type = "plan",
-                content = "用户想$planMatch",
-                source = "conversation"
-            )
+        if (HermesBridge.isStarted()) {
+            HermesBridge.extractMemories(userContent, aiContent)
         }
     }
 

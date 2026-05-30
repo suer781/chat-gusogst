@@ -23,14 +23,15 @@ class SettingsFragment : Fragment() {
         val color: String
     )
 
-    private val settingsItems = listOf(
-        SettingItem("basic", "\uD83C\uDFA8", "\u5916\u89C2", "\u4E3B\u9898\u3001\u6BDB\u73BB\u7483\u3001HDR", "#E94560"),
-        SettingItem("model", "\uD83E\uDD16", "\u6A21\u578B", "\u53C2\u6570\u3001\u6E29\u5EA6\u3001\u4E0A\u4E0B\u6587", "#6C5CE7"),
-        SettingItem("platform", "\uD83D\uDD17", "\u5E73\u53F0", "MCP\u3001Agent\u3001\u5DE5\u5177", "#3498DB"),
-        SettingItem("memory", "\uD83E\uDDE0", "\u8BB0\u5FC6", "\u957F\u671F\u8BB0\u5FC6\u3001\u4E0A\u4E0B\u6587\u7BA1\u7406", "#FDCB6E"),
-        SettingItem("search", "\uD83D\uDD0D", "\u641C\u7D22", "\u8054\u7F51\u641C\u7D22\u3001\u641C\u7D22\u5F15\u64CE", "#FF9800"),
-        SettingItem("about", "\u2139\uFE0F", "\u5173\u4E8E", "\u7248\u672C\u3001\u5F00\u6E90\u8BB8\u53EF", "#8888A0")
-    )
+    private val settingsItems: List<SettingItem>
+        get() = listOf(
+            SettingItem("basic", "\uD83C\uDFA8", getString(R.string.settings_appearance), getString(R.string.settings_appearance_desc), "#E94560"),
+            SettingItem("model", "\uD83E\uDD16", getString(R.string.settings_model), getString(R.string.settings_model_desc), "#6C5CE7"),
+            SettingItem("platform", "\uD83D\uDD17", getString(R.string.settings_platform), getString(R.string.settings_platform_desc), "#3498DB"),
+            SettingItem("memory", "\uD83E\uDDE0", getString(R.string.settings_memory), getString(R.string.settings_memory_desc), "#FDCB6E"),
+            SettingItem("search", "\uD83D\uDD0D", getString(R.string.settings_search), getString(R.string.settings_search_desc), "#FF9800"),
+            SettingItem("about", "\u2139\uFE0F", getString(R.string.settings_about), getString(R.string.settings_about_desc), "#8888A0")
+        )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_settings, container, false)

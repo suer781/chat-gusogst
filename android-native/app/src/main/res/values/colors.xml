@@ -118,6 +118,47 @@
     <color name="nav_active">@color/accent</color>
     <color name="nav_inactive">@color/gray_400</color>
 
+    <!-- === Markdown Colors === -->
+    <color name="md_quote_border">#E94560</color>
+    <color name="md_quote_foreground">#A0A0B8</color>
+    <color name="md_code_bg">#1FFFFFFF</color>
+    <color name="md_code_inline_fg">#E94560</color>
+
+    <!-- === Basic Settings Glass Colors === -->
+    <color name="glass_overlay_white">#08FFFFFF</color>
+    <color name="glass_stroke_white">#0AFFFFFF</color>
+
+    <!-- === Search Settings Colors === -->
+    <color name="search_card_bg">#03FFFFFF</color>
+    <color name="search_card_stroke">#05FFFFFF</color>
+    <color name="search_toggle_off">#1AFFFFFF</color>
+
+    <!-- === Platform Colors === -->
+    <color name="platform_card_stroke">#05FFFFFF</color>
+    <color name="platform_status_connected">#00B894</color>
+    <color name="platform_btn_connected_bg">#2600B894</color>
+
+    <!-- === Platform Brand Colors === -->
+    <color name="brand_telegram">#0088CC</color>
+    <color name="brand_discord">#5865F2</color>
+    <color name="brand_qqbot">#12B7F5</color>
+    <color name="brand_weixin">#07C160</color>
+    <color name="brand_slack">#4A154B</color>
+    <color name="brand_whatsapp">#25D366</color>
+    <color name="brand_twitter">#1DA1F2</color>
+    <color name="brand_email">#EA4335</color>
+    <color name="brand_line">#00B900</color>
+    <color name="brand_irc">#CCCCCC</color>
+    <color name="brand_matrix">#0DBD8B</color>
+    <color name="brand_teams">#6264A7</color>
+    <color name="brand_wechat">#1AAD19</color>
+    <color name="brand_dingtalk">#0082EF</color>
+    <color name="brand_feishu">#3370FF</color>
+    <color name="brand_signal">#3A76F0</color>
+
+    <!-- === Status Bar === -->
+    <color name="status_bar_color">#0f0f23</color>
+
     <!-- === Common === -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>

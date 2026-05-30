@@ -21,10 +21,10 @@ import com.gusogst.chat.util.MaterialAnimator
 import com.gusogst.chat.viewmodel.ChatViewModel
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.lifecycle.lifecycleScope
 
 class ProvidersFragment : Fragment() {
 
@@ -44,24 +44,21 @@ class ProvidersFragment : Fragment() {
     private var liveModels = mutableMapOf<String, Boolean>() // providerId -> connected
     private var fetchingId: String? = null
 
+    companion object {
+        private const val FETCH_MODEL_TIMEOUT_MS = 10000
+    }
+
     data class Category(val id: String, val label: String)
 
     private val categories = listOf(
-        Category("recommended", "⭐ 推荐"),
-        Category("aggregator", "🔗 聚合"),
-        Category("domestic", "🇨🇳 国产"),
-        Category("overseas", "🌏 海外"),
-        Category("all", "📋 全部")
+        Category("recommended", getString(R.string.cat_recommended)),
+        Category("aggregator", getString(R.string.cat_aggregator)),
+        Category("domestic", getString(R.string.cat_domestic)),
+        Category("overseas", getString(R.string.cat_overseas)),
+        Category("all", getString(R.string.cat_all))
     )
 
     private val recommendedIds = ProviderClassifier.RECOMMENDED
-
-    private val exactCategoryMap = mapOf(
-        "nano-gpt" to "aggregator", "openrouter" to "aggregator",
-        "kuae-cloud-coding-plan" to "domestic", "tencent-tokenhub" to "domestic",
-        "xpersona" to "overseas", "abliteration-ai" to "overseas",
-        "claudinio" to "overseas", "firepass" to "overseas"
-    )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_providers, container, false)
@@ -176,7 +173,7 @@ class ProvidersFragment : Fragment() {
 
         if (filtered.isEmpty()) {
             val emptyTv = TextView(requireContext()).apply {
-                text = "没有匹配的供应商"
+                text = getString(R.string.providers_no_result)
                 setTextColor(resources.getColor(R.color.text_tertiary, null))
                 textSize = 14f
                 gravity = Gravity.CENTER
@@ -287,7 +284,7 @@ class ProvidersFragment : Fragment() {
         // LIVE badge
         if (hasLiveData && isConnected == true) {
             nameRow.addView(TextView(requireContext()).apply {
-                text = "\u5728\u7EBF"
+                text = getString(R.string.providers_online)
                 textSize = 9f
                 setTextColor(resources.getColor(R.color.accent, null))
                 setTypeface(null, Typeface.BOLD)
@@ -306,7 +303,7 @@ class ProvidersFragment : Fragment() {
 
         infoLayout.addView(nameRow)
         infoLayout.addView(TextView(requireContext()).apply {
-            text = "${provider.models.size} 模型${if (provider.apiKey.isNotEmpty()) " · 已配置" else ""}"
+            text = "${provider.models.size}" + " " + getString(R.string.providers_models_count) + (if (provider.apiKey.isNotEmpty()) " · " + getString(R.string.providers_configured) else "")
             setTextColor(resources.getColor(R.color.text_tertiary, null))
             textSize = 12f
             layoutParams = LinearLayout.LayoutParams(
@@ -547,7 +544,7 @@ class ProvidersFragment : Fragment() {
                 }
             } else {
                 expandedContent.addView(TextView(requireContext()).apply {
-                    text = "暂无模型，请先配置 API Key"
+                    text = getString(R.string.providers_no_models)
                     setTextColor(resources.getColor(R.color.text_tertiary, null))
                     textSize = 13f
                     gravity = Gravity.CENTER
@@ -565,7 +562,7 @@ class ProvidersFragment : Fragment() {
         fetchingId = provider.id
         buildList()
 
-        CoroutineScope(Dispatchers.IO).launch {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val baseUrl = provider.baseUrl.trimEnd('/')
             val key = provider.apiKey
             var success = false
@@ -573,8 +570,8 @@ class ProvidersFragment : Fragment() {
                 val url = URL("$baseUrl/models")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.setRequestProperty("Authorization", "Bearer $key")
-                conn.connectTimeout = 10000
-                conn.readTimeout = 10000
+                conn.connectTimeout = FETCH_MODEL_TIMEOUT_MS
+                conn.readTimeout = FETCH_MODEL_TIMEOUT_MS
                 val code = conn.responseCode
                 success = code in 200..299
                 conn.disconnect()

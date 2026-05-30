@@ -22,10 +22,14 @@ object ApiClient {
         level = HttpLoggingInterceptor.Level.HEADERS
     }
 
+    private const val TIMEOUT_CONNECT_SEC = 30L
+    private const val TIMEOUT_READ_SEC = 120L
+    private const val TIMEOUT_WRITE_SEC = 30L
+
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(120, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(TIMEOUT_CONNECT_SEC, TimeUnit.SECONDS)
+        .readTimeout(TIMEOUT_READ_SEC, TimeUnit.SECONDS)
+        .writeTimeout(TIMEOUT_WRITE_SEC, TimeUnit.SECONDS)
         .addInterceptor(logging)
         .build()
 

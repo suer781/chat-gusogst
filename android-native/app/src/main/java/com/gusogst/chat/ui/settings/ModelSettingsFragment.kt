@@ -23,11 +23,11 @@ class ModelSettingsFragment : Fragment() {
     private val viewModel: ChatViewModel by activityViewModels()
     private lateinit var root: LinearLayout
 
-    private val providers = listOf(
+    private val providers get() = listOf(
         Triple("openai", "OpenAI", "sk-..."),
         Triple("anthropic", "Anthropic", "sk-ant-..."),
         Triple("ollama", "Ollama", ""),
-        Triple("custom", "\u81EA\u5B9A\u4E49", "API \u5BC6\u94A5")
+        Triple("custom", getString(R.string.model_custom), getString(R.string.model_api_key))
     )
     private val tokenOptions = listOf(1024, 2048, 4096, 8192, 16384)
 
@@ -45,12 +45,12 @@ class ModelSettingsFragment : Fragment() {
 
     private fun buildUI(s: com.gusogst.chat.model.UISettings) {
         root.removeAllViews()
-        addHeader("AI \u6A21\u578B")
+        addHeader(getString(R.string.model_title))
 
         val currentProvider = viewModel.providers.value?.firstOrNull { it.enabled }?.name?.lowercase() ?: "openai"
 
         // Provider 4-grid - purple accent
-        addSection("\u6A21\u578B\u63D0\u4F9B\u5546", "\u2699") {
+        addSection(getString(R.string.model_provider), "\u2699") {
             val grid = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
             val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
             for ((id, label, _) in providers) {
@@ -70,37 +70,37 @@ class ModelSettingsFragment : Fragment() {
         }
 
         // Model name
-        addSection("\u6A21\u578B\u540D\u79F0", "") {
+        addSection(getString(R.string.model_name), "") {
             return@addSection createInput("gpt-4o / claude-3-opus / qwen2", "")
         }
 
         // API Key
-        addSection("API Key", "\u26BF") {
+        addSection(getString(R.string.model_api_key), "\u26BF") {
             return@addSection createInput("sk-xxx", "", true)
         }
 
         // API URL
-        addSection("API \u5730\u5740", "\u2641") {
+        addSection(getString(R.string.model_api_url), "\u2641") {
             return@addSection createInput("https://api.openai.com/v1", "")
         }
 
         // Temperature
-        addSection("\u521B\u610F\u5EA6", "\u2668") {
+        addSection(getString(R.string.model_temp_title), "\u2668") {
             val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-            row.addView(TextView(requireContext()).apply { text = "\u7CBE\u786E"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32) })
+            row.addView(TextView(requireContext()).apply { text = getString(R.string.model_temp_precise); setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32) })
             row.addView(SeekBar(requireContext()).apply {
                 max = 100; progress = 70
                 progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.purple, null))
                 thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.purple, null))
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             })
-            row.addView(TextView(requireContext()).apply { text = "\u968F\u673A"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32); gravity = Gravity.END })
+            row.addView(TextView(requireContext()).apply { text = getString(R.string.model_temp_random); setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32); gravity = Gravity.END })
             row.addView(TextView(requireContext()).apply { text = "0.70"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 14f; setTypeface(null, Typeface.BOLD); minWidth = dp(40); gravity = Gravity.END })
             return@addSection row
         }
 
         // Max Token buttons
-        addSection("\u6700\u5927 Token", "#") {
+        addSection(getString(R.string.model_max_tokens), "#") {
             val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
             val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
             for (t in tokenOptions) {
@@ -121,14 +121,14 @@ class ModelSettingsFragment : Fragment() {
         }
 
         // Auto understand
-        addSection("\u81EA\u4E3B\u7406\u89E3", "\u2728") {
+        addSection(getString(R.string.model_auto_title), "\u2728") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
             col.addView(TextView(requireContext()).apply {
-                text = "\u6839\u636E\u5F53\u524D\u7CFB\u7EDF\u63D0\u793A\u8BCD\u63CF\u8FF0\u7684\u6027\u683C\u60C5\u7EEA\uFF0C\u8C03\u7528\u6A21\u578B\u81EA\u52A8\u63A8\u8350\u6700\u4F73\u53C2\u6570"
+                text = getString(R.string.model_auto_desc)
                 setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, 0, 0, dp(12))
             })
             col.addView(TextView(requireContext()).apply {
-                text = "开始分析"; setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD)
+                text = getString(R.string.model_auto_btn); setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD)
                 gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
                 background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(resources.getColor(R.color.purple, null)) }
             })

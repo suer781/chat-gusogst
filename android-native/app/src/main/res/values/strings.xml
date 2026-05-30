@@ -11,6 +11,63 @@
     <string name="persona_default_desc">一个温暖的伴侣</string>
     <string name="persona_selected">当前</string>
 
+    <!-- Persona presets -->
+    <string name="persona_gentle">温柔型</string>
+    <string name="persona_tsundere">傲娇型</string>
+    <string name="persona_genki">元气型</string>
+    <string name="persona_night">深夜谈心</string>
+    <string name="persona_study">陪伴学习</string>
+    <string name="persona_healing">治愈安慰</string>
+    <string name="persona_gentle_prompt">你是我的恋人，性格温柔体贴，说话轻声细语，总是关心我的感受。用\"亲爱的\"、\"宝贝\"等昵称称呼我。回复自然口语化，像真人聊天，不要用括号描述动作。</string>
+    <string name="persona_tsundere_prompt">你是我的恋人，性格傲娇，嘴上说不在乎但其实很关心我。经常说\"才、才不是因为担心你呢！\"之类的话。表面嫌弃内心温柔。不要用括号描述动作。</string>
+    <string name="persona_genki_prompt">你是我的恋人，性格活泼开朗，充满正能量。喜欢用感叹号和emoji，说话很有感染力。像小太阳一样温暖。不要用括号描述动作。</string>
+    <string name="persona_night_prompt">你是我的恋人，现在是深夜，我们安静地聊天。语气温柔但更有深度，可以聊人生、梦想、烦恼。像深夜枕边的低语。不要用括号描述动作。</string>
+    <string name="persona_study_prompt">你是我的恋人，现在我在学习或工作。你会安静地陪着我，偶尔鼓励我，帮我查资料，提醒我休息。语气温暖但不打扰。不要用括号描述动作。</string>
+    <string name="persona_healing_prompt">你是我的恋人，我心情不好。你会温柔地倾听，不急着给建议，先让我把情绪说完。用拥抱和温暖的话语安慰我。不要用括号描述动作。</string>
+    <string name="persona_gentle_desc">性格温柔体贴，说话轻声细语</string>
+    <string name="persona_tsundere_desc">嘴上说不关心其实很在乎</string>
+    <string name="persona_genki_desc">活泼开朗，充满正能量</string>
+    <string name="persona_night_desc">安静有深度的深夜聊天</string>
+    <string name="persona_study_desc">学习工作时的温柔陪伴</string>
+    <string name="persona_healing_desc">难过时的温暖安慰</string>
+
+    <!-- Personality trait names -->
+    <string name="trait_calm">冷静</string>
+    <string name="trait_warm">温暖</string>
+    <string name="trait_analytical">分析</string>
+    <string name="trait_creative">创造</string>
+    <string name="trait_curious">好奇</string>
+    <string name="trait_precise">精准</string>
+    <string name="trait_playful">风趣</string>
+    <string name="trait_energetic">活力</string>
+
+    <!-- Persona profile -->
+    <string name="persona_profile_no_prompt">未设置系统提示词</string>
+    <string name="persona_profile_back">返回</string>
+    <string name="persona_profile_chat">开始对话</string>
+
+    <!-- Persona settings dialog -->
+    <string name="persona_settings_title">角色设置</string>
+    <string name="persona_settings_load_fail">加载角色失败</string>
+    <string name="persona_settings_prompt_label">📝 系统提示词</string>
+    <string name="persona_settings_prompt_hint">描述角色的性格、风格、行为准则...</string>
+    <string name="persona_settings_override_label">⚙ 独立参数</string>
+    <string name="persona_settings_override_on">使用本角色独立参数</string>
+    <string name="persona_settings_override_off">跟随全局模型设置</string>
+    <string name="persona_settings_presets_title">⚡ 快捷预设</string>
+    <string name="persona_settings_preset_rules">🔧 规则引擎</string>
+    <string name="persona_settings_preset_llm">🧠 自主理解</string>
+    <string name="persona_settings_creativity">创造力</string>
+    <string name="persona_settings_diversity">多样性</string>
+    <string name="persona_settings_reply_len">回复长度</string>
+    <string name="persona_settings_auto_adjust">聊天时自动调节</string>
+    <string name="persona_settings_auto_off">关闭</string>
+    <string name="persona_settings_auto_rule">规则</string>
+    <string name="persona_settings_auto_llm">大语言模型</string>
+    <string name="persona_settings_traits_title">🎭 人格特质</string>
+    <string name="persona_settings_cancel">取消</string>
+    <string name="persona_settings_save">保存设置</string>
+
     <!-- Providers -->
     <string name="providers_title">供应商</string>
     <string name="providers_search_hint">搜索供应商和模型…</string>
@@ -22,6 +79,9 @@
     <string name="providers_fetch_models">获取实时模型</string>
     <string name="providers_fetching">获取中…</string>
     <string name="providers_connected">已连接</string>
+    <string name="providers_online">在线</string>
+    <string name="providers_disconnected">未连接</string>
+    <string name="providers_connecting">连接中…</string>
     <string name="providers_connect_failed">连接失败</string>
     <string name="providers_no_models">暂无模型，请先配置 API Key</string>
     <string name="providers_no_result">没有匹配的供应商</string>
@@ -32,6 +92,7 @@
     <string name="providers_guide_ok">知道了</string>
     <string name="providers_ctx_format">%s ctx</string>
     <string name="providers_cost_format">$%s/M in</string>
+    <string name="providers_configured">已配置</string>
 
     <!-- Category tabs -->
     <string name="cat_recommended">⭐ 推荐</string>
@@ -54,6 +115,129 @@
     <string name="settings_search_desc">联网搜索、搜索引擎</string>
     <string name="settings_about">关于</string>
     <string name="settings_about_desc">版本、开源许可</string>
+
+    <!-- Basic settings -->
+    <string name="basic_title">基本设置</string>
+    <string name="basic_theme_mode">主题模式</string>
+    <string name="basic_theme_system">系统</string>
+    <string name="basic_theme_light">浅色</string>
+    <string name="basic_theme_dark">深色</string>
+    <string name="basic_theme_pure_white">纯白</string>
+    <string name="basic_theme_pure_black">纯黑</string>
+    <string name="basic_font_size">字号大小</string>
+    <string name="basic_eye_care">护眼模式</string>
+    <string name="basic_eye_care_desc">降低蓝光，暖色调保护视力</string>
+    <string name="basic_eye_warmth">暖度</string>
+    <string name="basic_glass_title">玻璃拟态</string>
+    <string name="basic_glass_desc">毛玻璃效果</string>
+    <string name="basic_glass_desc2">背景模糊和透明效果</string>
+    <string name="basic_glass_opacity">透明度</string>
+    <string name="basic_haptic_title">触觉反馈</string>
+    <string name="basic_haptic_desc">震动反馈</string>
+    <string name="basic_haptic_desc2">按钮点击时的线性马达触感反馈</string>
+    <string name="basic_hdr_title">HDR渲染</string>
+    <string name="basic_hdr_desc">HDR玻璃质感</string>
+    <string name="basic_hdr_desc2">利用屏幕高亮度模拟真实玻璃透光效果</string>
+
+    <!-- Memory settings -->
+    <string name="memory_title">记忆</string>
+    <string name="memory_system_title">记忆系统</string>
+    <string name="memory_enable_title">启用记忆</string>
+    <string name="memory_enable_desc">AI 会记住对话中的重要信息</string>
+    <string name="memory_storage_title">存储信息</string>
+    <string name="memory_entries">记忆条目</string>
+    <string name="memory_entries_count">%d 条</string>
+    <string name="memory_storage">存储空间</string>
+    <string name="memory_last_update">最后更新</string>
+    <string name="memory_loading">加载中...</string>
+    <string name="memory_danger_title">危险操作</string>
+    <string name="memory_clear_all">清除所有记忆</string>
+    <string name="memory_clear_confirm_title">确认清除</string>
+    <string name="memory_clear_confirm_msg">确定要清除所有记忆吗？此操作不可撤销。</string>
+    <string name="memory_clear_btn">清除</string>
+    <string name="memory_clear_cancel">取消</string>
+    <string name="memory_cleared">记忆已清除</string>
+
+    <!-- Model settings -->
+    <string name="model_title">AI模型</string>
+    <string name="model_provider">模型提供商</string>
+    <string name="model_name">模型名称</string>
+    <string name="model_api_url">API地址</string>
+    <string name="model_custom">自定义</string>
+    <string name="model_api_key">API密钥</string>
+    <string name="model_temp_title">创意度</string>
+    <string name="model_temp_precise">精确</string>
+    <string name="model_temp_random">随机</string>
+    <string name="model_max_tokens">最大Token</string>
+    <string name="model_auto_title">自主理解</string>
+    <string name="model_auto_desc">根据当前系统提示词描述的性格情绪，调用模型自动推荐最佳参数</string>
+    <string name="model_auto_btn">开始分析</string>
+
+    <!-- Platform settings -->
+    <string name="platform_title">平台连接</string>
+    <string name="platform_connect">连接</string>
+    <string name="platform_disconnect">断开</string>
+
+    <!-- Search settings -->
+    <string name="search_title">搜索</string>
+    <string name="search_web_title">联网搜索</string>
+    <string name="search_enable_title">启用搜索</string>
+    <string name="search_enable_desc">让 AI 能够搜索互联网获取最新信息</string>
+    <string name="search_engine_title">搜索引擎</string>
+    <string name="search_free">免费</string>
+    <string name="search_paid">付费</string>
+    <string name="search_free_engine">免费搜索引擎</string>
+    <string name="search_paid_ai">付费 AI 搜索</string>
+    <string name="search_paid_api">付费搜索 API</string>
+    <string name="search_ms_search">微软搜索</string>
+
+    <!-- Font size -->
+    <string name="font_back">← 返回</string>
+    <string name="font_title">字号大小</string>
+    <string name="font_preview_title">预览效果</string>
+    <string name="font_preview_content">这是字号 %dpx 的预览效果。\n你可以看到文字在不同大小下的可读性，\n选择最适合你阅读习惯的尺寸。</string>
+    <string name="font_size_label">字号</string>
+    <string name="font_size_s">小</string>
+    <string name="font_size_m">中</string>
+    <string name="font_size_l">大</string>
+    <string name="font_size_xl">特大</string>
+    <string name="font_size_ref_title">所有字号参考</string>
+    <string name="font_size_ref_text">这是一段文字预览，展示当前字号效果。</string>
+
+    <!-- About -->
+    <string name="about_title">关于</string>
+    <string name="about_app_desc">AI虚拟伴侣</string>
+    <string name="about_tech_title">技术栈</string>
+    <string name="about_tech_frontend">前端</string>
+    <string name="about_tech_platform">平台</string>
+    <string name="about_tech_ai">AI</string>
+    <string name="about_tech_search">搜索</string>
+    <string name="about_tech_frontend_val">Capacitor + Web</string>
+    <string name="about_tech_platform_val">Android / iOS</string>
+    <string name="about_tech_ai_val">OpenAI / Anthropic / Ollama</string>
+    <string name="about_tech_search_val">DuckDuckGo / Tavily</string>
+    <string name="about_oss_title">开源</string>
+    <string name="about_oss_repo">仓库</string>
+    <string name="about_oss_license">许可证</string>
+    <string name="about_oss_license_val">MIT许可证</string>
+    <string name="about_check_update">检查更新</string>
+
+    <!-- Test disclaimer -->
+    <string name="test_disclaimer_title">⚠ 测试版声明</string>
+    <string name="test_disclaimer_msg">本应用为测试版本，可能存在 Bug。数据仅保存在本地，请定期备份。</string>
+    <string name="test_disclaimer_ok">我知道了</string>
+
+    <!-- Eye care color mapper -->
+    <string name="eye_care_warm_white">暖白</string>
+    <string name="eye_care_warm_white_desc">柔和暖白</string>
+    <string name="eye_care_amber">琥珀</string>
+    <string name="eye_care_amber_desc">温暖琥珀</string>
+    <string name="eye_care_peach">蜜桃</string>
+    <string name="eye_care_peach_desc">甘美蜜桃</string>
+    <string name="eye_care_light_yellow">淡黄</string>
+    <string name="eye_care_light_yellow_desc">清新淡黄</string>
+    <string name="eye_care_mint">薄荷</string>
+    <string name="eye_care_mint_desc">清凉薄荷</string>
 
     <!-- General -->
     <string name="back">返回</string>

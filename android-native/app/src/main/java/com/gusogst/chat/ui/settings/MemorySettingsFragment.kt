@@ -16,20 +16,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
-import com.gusogst.chat.data.memory.MemoryManager
+import com.gusogst.chat.agent.HermesBridge
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MemorySettingsFragment : Fragment() {
     private lateinit var root: LinearLayout
-    private lateinit var memoryManager: MemoryManager
     private lateinit var statsSection: LinearLayout
     private lateinit var tvTotalEntries: LinearLayout
     private lateinit var tvStorage: LinearLayout
     private lateinit var tvLastUpdate: LinearLayout
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        memoryManager = MemoryManager(requireContext())
         val sv = ScrollView(requireContext()).apply { setBackgroundColor(resources.getColor(R.color.bg_primary, null)) }
         root = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, dp(100)) }
         sv.addView(root)
@@ -45,26 +43,26 @@ class MemorySettingsFragment : Fragment() {
 
     private fun buildUI() {
         root.removeAllViews()
-        addHeader("\u8BB0\u5FC6")
+        addHeader(getString(R.string.memory_title))
 
-        addSection("\u8BB0\u5FC6\u7CFB\u7EDF", "\uD83E\uDDE0") {
+        addSection(getString(R.string.memory_system_title), "\uD83E\uDDE0") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            col.addView(createToggle("\u542F\u7528\u8BB0\u5FC6", "AI \u4F1A\u8BB0\u4F4F\u5BF9\u8BDD\u4E2D\u7684\u91CD\u8981\u4FE1\u606F", true) {})
+            col.addView(createToggle(getString(R.string.memory_enable_title), getString(R.string.memory_enable_desc), true) {})
             return@addSection col
         }
 
-        addSection("\u5B58\u50A8\u4FE1\u606F", "\uD83E\uDDA0") {
+        addSection(getString(R.string.memory_storage_title), "\uD83E\uDDA0") {
             statsSection = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            tvTotalEntries = createInfo("\u8BB0\u5FC6\u6761\u76EE", "\u52A0\u8F7D\u4E2D...").also { statsSection.addView(it) }
-            tvStorage = createInfo("\u5B58\u50A8\u7A7A\u95F4", "\u52A0\u8F7D\u4E2D...").also { statsSection.addView(it) }
-            tvLastUpdate = createInfo("\u6700\u540E\u66F4\u65B0", "\u52A0\u8F7D\u4E2D...").also { statsSection.addView(it) }
+            tvTotalEntries = createInfo(getString(R.string.memory_entries), getString(R.string.memory_loading)).also { statsSection.addView(it) }
+            tvStorage = createInfo(getString(R.string.memory_storage), getString(R.string.memory_loading)).also { statsSection.addView(it) }
+            tvLastUpdate = createInfo(getString(R.string.memory_last_update), getString(R.string.memory_loading)).also { statsSection.addView(it) }
             refreshStats()
             return@addSection statsSection
         }
 
-        addSection("\u5371\u9669\u64CD\u4F5C", "\u26A0") {
+        addSection(getString(R.string.memory_danger_title), "\u26A0") {
             return@addSection TextView(requireContext()).apply {
-                text = "\u6E05\u9664\u6240\u6709\u8BB0\u5FC6"; setTextColor(resources.getColor(R.color.danger, null)); textSize = 14f
+                text = getString(R.string.memory_clear_all); setTextColor(resources.getColor(R.color.danger, null)); textSize = 14f
                 setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
                 background = GradientDrawable().apply { setColor(resources.getColor(R.color.danger_soft, null)); setStroke(1, resources.getColor(R.color.danger, null)); cornerRadius = dp(10).toFloat() }
                 setOnClickListener { showClearConfirm() }
@@ -73,15 +71,17 @@ class MemorySettingsFragment : Fragment() {
     }
 
     private fun refreshStats() {
-        val stats = memoryManager.getStats()
-        setValueText(tvTotalEntries, "${stats.totalEntries} \u6761")
+        // Get stats from HermesBridge (holographic memory provider via Chaquopy)
+        val stats = HermesBridge.getMemoryStats()
+        setValueText(tvTotalEntries, resources.getString(R.string.memory_entries_count, stats.totalEntries))
 
-        // 估算存储大小
-        val json = memoryManager.exportMemories()
-        val bytes = json.toByteArray(Charsets.UTF_8).size
-        setValueText(tvStorage, if (bytes < 1024) "$bytes B" else "%.1f KB".format(bytes / 1024f))
+        // Storage size from SQLite database
+        val bytes = stats.totalSizeBytes
+        setValueText(tvStorage, if (bytes < 1024) "$bytes B"
+        else if (bytes < 1024 * 1024) "%.1f KB".format(bytes / 1024f)
+        else "%.1f MB".format(bytes / (1024f * 1024f)))
 
-        // 最后更新时间
+        // Last update timestamp
         setValueText(tvLastUpdate, SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date()))
     }
 
@@ -92,14 +92,14 @@ class MemorySettingsFragment : Fragment() {
 
     private fun showClearConfirm() {
         AlertDialog.Builder(requireContext())
-            .setTitle("\u786E\u8BA4\u6E05\u9664")
-            .setMessage("\u786E\u5B9A\u8981\u6E05\u9664\u6240\u6709\u8BB0\u5FC6\u5417\uFF1F\u6B64\u64CD\u4F5C\u4E0D\u53EF\u64A4\u9500\u3002")
-            .setPositiveButton("\u6E05\u9664") { _, _ ->
-                memoryManager.clear()
+            .setTitle(getString(R.string.memory_clear_confirm_title))
+            .setMessage(getString(R.string.memory_clear_confirm_msg))
+            .setPositiveButton(getString(R.string.memory_clear_btn)) { _, _ ->
+                HermesBridge.clearMemories()
                 refreshStats()
-                Toast.makeText(requireContext(), "\u8BB0\u5FC6\u5DF2\u6E05\u9664", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.memory_cleared), Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("\u53D6\u6D88", null)
+            .setNegativeButton(getString(R.string.memory_clear_cancel), null)
             .show()
     }
 

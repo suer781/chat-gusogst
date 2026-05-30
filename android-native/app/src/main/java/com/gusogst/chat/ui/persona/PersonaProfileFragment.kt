@@ -117,9 +117,11 @@ class PersonaProfileFragment : Fragment() {
 
         // 人格特质行（Web: 一行显示 top 特质）
         val traitNames = mapOf(
-            "冷静" to traits.calm, "温暖" to traits.warm, "分析" to traits.analytical,
-            "创造" to traits.creative, "好奇" to traits.curious, "精准" to traits.precise,
-            "风趣" to traits.playful, "活力" to traits.energetic
+            getString(R.string.trait_calm) to traits.calm, getString(R.string.trait_warm) to traits.warm,
+            getString(R.string.trait_analytical) to traits.analytical,
+            getString(R.string.trait_creative) to traits.creative,
+            getString(R.string.trait_curious) to traits.curious, getString(R.string.trait_precise) to traits.precise,
+            getString(R.string.trait_playful) to traits.playful, getString(R.string.trait_energetic) to traits.energetic
         ).toList().sortedByDescending { it.second }.take(4)
 
         if (traitNames.isNotEmpty()) {
@@ -169,7 +171,7 @@ class PersonaProfileFragment : Fragment() {
 
         // ═══ 系统提示词卡片（Web: flex:1 bg-secondary card）═══
         val promptCard = TextView(requireContext()).apply {
-            text = prompt.ifEmpty { "未设置系统提示词" }
+            text = prompt.ifEmpty { getString(R.string.persona_profile_no_prompt) }
             setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f
             setLineSpacing(0f, 1.6f)
             setPadding(dp(16), dp(16), dp(16), dp(16))
@@ -186,7 +188,7 @@ class PersonaProfileFragment : Fragment() {
         // ═══ 底部按钮（Web: Back + Start Chat）═══
         val btnRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
         btnRow.addView(TextView(requireContext()).apply {
-            text = "返回"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 14f
+            text = getString(R.string.persona_profile_back); setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 14f
             gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
             background = GradientDrawable().apply {
                 setColor(Color.TRANSPARENT)
@@ -196,7 +198,7 @@ class PersonaProfileFragment : Fragment() {
             setOnClickListener { parentFragmentManager.popBackStack() }
         })
         btnRow.addView(TextView(requireContext()).apply {
-            text = "开始对话"; setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD)
+            text = getString(R.string.persona_profile_chat); setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD)
             gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
             background = GradientDrawable().apply {
                 setColor(resources.getColor(R.color.accent, null)); cornerRadius = dp(10).toFloat()

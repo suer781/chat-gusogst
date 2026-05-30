@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
 import com.gusogst.chat.viewmodel.ChatViewModel
+import com.gusogst.chat.util.HdrHelper
 import com.gusogst.chat.util.MaterialAnimator
 import com.gusogst.chat.util.HapticsHelper
 
@@ -27,6 +28,10 @@ class ChatFragment : Fragment() {
     private lateinit var btnSend: MaterialTextView
     private lateinit var adapter: MessageAdapter
     private lateinit var haptics: HapticsHelper
+
+    companion object {
+        private const val EXIT_DURATION_MS = 80L
+    }
 
     // Grok 风格流式震动：记录上一个消息长度，检测增量
     private var _lastStreamingLength = 0
@@ -51,7 +56,18 @@ class ChatFragment : Fragment() {
         rvMessages.adapter = adapter
 
         btnSend.setOnClickListener { sendMessage() }
+        // Fix 6: Apply button effects (ripple + press animation) + HDR glow via observer below
         MaterialAnimator.applyButtonEffects(btnSend)
+
+        // Fix 7: Input focus listener for dynamic HDR glow
+        etInput.setOnFocusChangeListener { _, hasFocus ->
+            val isHdr = viewModel.settings.value?.hdrEnabled ?: false
+            val isDark = when (viewModel.settings.value?.theme) {
+                "dark", "pureBlack" -> true; "light", "pureWhite" -> false
+                else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            }
+            HdrHelper.applyInputGlow(etInput, isHdr, hasFocus, isDark)
+        }
 
         viewModel.messages.observe(viewLifecycleOwner) { msgs ->
             adapter.submitList(msgs)
@@ -77,14 +93,21 @@ class ChatFragment : Fragment() {
         }
 
         viewModel.settings.observe(viewLifecycleOwner) { s ->
-            adapter.glassEnabled = s.glassEnabled
-            adapter.hdrEnabled = s.hdrEnabled
-            adapter.isDark = when (s.theme) {
+            val isDark = when (s.theme) {
                 "dark", "pureBlack" -> true
                 "light", "pureWhite" -> false
                 else -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
             }
+            adapter.glassEnabled = s.glassEnabled
+            adapter.hdrEnabled = s.hdrEnabled
+            adapter.isDark = isDark
             adapter.fontSize = try { s.fontSize.toInt() } catch (_: Exception) { 14 }
+
+            // Fix 6: Apply HDR button glow to send button
+            HdrHelper.applyButtonGlow(btnSend, s.hdrEnabled, isDark)
+
+            // Fix 7: Apply HDR input glow to edit text (check current focus)
+            HdrHelper.applyInputGlow(etInput, s.hdrEnabled, etInput.hasFocus(), isDark)
         }
 
         MaterialAnimator.viewEnter(view)

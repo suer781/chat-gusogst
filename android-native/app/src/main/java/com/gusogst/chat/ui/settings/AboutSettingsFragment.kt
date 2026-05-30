@@ -33,7 +33,7 @@ class AboutSettingsFragment : Fragment() {
 
     private fun buildUI() {
         root.removeAllViews()
-        addHeader("\u5173\u4E8E")
+        addHeader(getString(R.string.about_title))
 
         // Logo + version card with gradient
         val logoCard = LinearLayout(requireContext()).apply {
@@ -57,7 +57,7 @@ class AboutSettingsFragment : Fragment() {
             setPadding(0, dp(12), 0, dp(4))
         })
         logoCard.addView(TextView(requireContext()).apply {
-            text = "AI \u865A\u62DF\u4F34\u4FA3"; textSize = 14f
+            text = getString(R.string.about_app_desc); textSize = 14f
             setTextColor(resources.getColor(R.color.text_secondary, null)); gravity = Gravity.CENTER
         })
         logoCard.addView(TextView(requireContext()).apply {
@@ -68,21 +68,21 @@ class AboutSettingsFragment : Fragment() {
         root.addView(logoCard)
 
         // Info sections
-        addInfoCard("\u6280\u672F\u6808", listOf(
-            "\u524D\u7AEF" to "Capacitor + Web",
-            "\u5E73\u53F0" to "Android / iOS",
-            "AI" to "OpenAI / Anthropic / Ollama",
-            "\u641C\u7D22" to "DuckDuckGo / Tavily"
+        addInfoCard(getString(R.string.about_tech_title), listOf(
+            getString(R.string.about_tech_frontend) to getString(R.string.about_tech_frontend_val),
+            getString(R.string.about_tech_platform) to getString(R.string.about_tech_platform_val),
+            getString(R.string.about_tech_ai) to getString(R.string.about_tech_ai_val),
+            getString(R.string.about_tech_search) to getString(R.string.about_tech_search_val)
         ))
 
-        addInfoCard("\u5F00\u6E90", listOf(
-            "\u4ED3\u5E93" to "github.com/suer781/chat-gusogst",
-            "\u8BB8\u53EF\u8BC1" to "MIT \u8BB8\u53EF\u8BC1"
+        addInfoCard(getString(R.string.about_oss_title), listOf(
+            getString(R.string.about_oss_repo) to "github.com/suer781/chat-gusogst",
+            getString(R.string.about_oss_license) to getString(R.string.about_oss_license_val)
         ))
 
         // Version check button
         val checkBtn = TextView(requireContext()).apply {
-            text = "\u68C0\u67E5\u66F4\u65B0"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 14f
+            text = getString(R.string.about_check_update); setTextColor(resources.getColor(R.color.accent, null)); textSize = 14f
             gravity = Gravity.CENTER; setPadding(dp(12), dp(14), dp(12), dp(14))
             background = GradientDrawable().apply {
                 setColor(Color.TRANSPARENT); setStroke(1, resources.getColor(R.color.accent, null)); cornerRadius = dp(10).toFloat()

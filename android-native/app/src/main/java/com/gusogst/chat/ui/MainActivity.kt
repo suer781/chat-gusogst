@@ -38,12 +38,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var haptics: HapticsHelper
 
     private lateinit var tvHeaderTitle: TextView
-    private var currentTheme: String = "system"
+    private var currentTheme: String = ChatApplication.cachedTheme
     private var settingsFirstFire = true
     private var isNavAnimating = false
+    private var bottomNavLayoutListener: View.OnLayoutChangeListener? = null
 
-    /** 从 SharedPreferences 读取当前保存的主题名 */
-    private fun readCurrentTheme(): String = ChatApplication.cachedTheme
+    // 动画时长常量 (ms)
+    companion object {
+        private const val ENTRY_HEADER_DURATION = 350L
+        private const val ENTRY_FRAGMENT_DURATION = 400L
+        private const val ENTRY_NAV_DURATION = 350L
+        private const val ENTRY_INDICATOR_DURATION = 200L
+        private const val ENTRY_FRAGMENT_DELAY = 50L
+        private const val ENTRY_NAV_DELAY = 100L
+        private const val ENTRY_INDICATOR_DELAY = 250L
+        private const val RESUME_FADE_DURATION = 250L
+    }
 
     private data class NavItem(
         val container: LinearLayout,
@@ -60,13 +70,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        // 使用 Application 缓存的主题（避免重复读 SharedPreferences）
-        val themeName = ChatApplication.cachedTheme
-        currentTheme = themeName
-        // pureBlack 需要额外的 Amoled 主题覆盖
-        if (themeName == "pureBlack") {
-            setTheme(R.style.Theme_ChatGusogst_Amoled)
-        }
+        // 主题设置已移至 ChatApplication.onCreate()，避免双重重建
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
@@ -77,8 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         // 推后非关键效果到首帧之后（环境光、入场动画）
         findViewById<View>(android.R.id.content).post {
-            currentTheme = readCurrentTheme()
-            MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content), currentTheme)
+            MaterialAnimator.setAmbientBackground(findViewById(android.R.id.content), currentTheme, hdrEnabled = viewModel.settings.value?.hdrEnabled ?: false)
             if (savedInstanceState == null) {
                 playEntryAnimation()
             }
@@ -92,20 +95,24 @@ class MainActivity : AppCompatActivity() {
                     applyTheme(s.theme)
                 }
                 val isDark = isDarkTheme(s.theme)
-                HdrHelper.applyGlassWithHdr(
+                // Fix 2: properly pass all params; Fix 3: glassEnabled for header combined effect
+                HdrHelper.applyHeaderGlow(
                     findViewById(R.id.header),
-                    s.hdrEnabled, s.glassEnabled, isDark
+                    s.hdrEnabled, isDark, s.glassEnabled
                 )
                 HdrHelper.applyGlassWithHdr(
                     findViewById(android.R.id.content),
                     s.hdrEnabled, s.glassEnabled, isDark
                 )
                 HdrHelper.applyNavGlow(bottomNav, s.hdrEnabled, isDark)
-                HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark)
+                // Fix 4: pass glassEnabled for backdrop-filter simulation on indicator
+                HdrHelper.applyIndicatorGlow(navIndicator, s.hdrEnabled, isDark, s.glassEnabled)
+                // Fix 11: pass hdrEnabled for ambient light saturation
                 MaterialAnimator.setAmbientBackground(
                     findViewById(android.R.id.content),
                     s.theme,
-                    animate = themeChanged
+                    animate = themeChanged,
+                    hdrEnabled = s.hdrEnabled
                 )
                 applyEyeCare(s.eyeCareMode, s.eyeCareIntensity)
             }
@@ -136,16 +143,16 @@ class MainActivity : AppCompatActivity() {
 
         header.post {
             // 并行触发，交错 50ms，600ms 内完成
-            header.animate().translationY(0f).alpha(1f).setDuration(350).setInterpolator(DecelerateInterpolator()).start()
+            header.animate().translationY(0f).alpha(1f).setDuration(ENTRY_HEADER_DURATION).setInterpolator(DecelerateInterpolator()).start()
             fragmentContainer.postDelayed({
-                fragmentContainer.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(400).setInterpolator(DecelerateInterpolator()).start()
-            }, 50)
+                fragmentContainer.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(ENTRY_FRAGMENT_DURATION).setInterpolator(DecelerateInterpolator()).start()
+            }, ENTRY_FRAGMENT_DELAY)
             bNav.postDelayed({
-                bNav.animate().translationY(0f).alpha(1f).setDuration(350).setInterpolator(DecelerateInterpolator()).start()
-            }, 100)
+                bNav.animate().translationY(0f).alpha(1f).setDuration(ENTRY_NAV_DURATION).setInterpolator(DecelerateInterpolator()).start()
+            }, ENTRY_NAV_DELAY)
             navInd.postDelayed({
-                navInd.animate().alpha(1f).setDuration(200).start()
-            }, 250)
+                navInd.animate().alpha(1f).setDuration(ENTRY_INDICATOR_DURATION).start()
+            }, ENTRY_INDICATOR_DELAY)
         }
     }
 
@@ -155,7 +162,7 @@ class MainActivity : AppCompatActivity() {
         root.alpha = 0.85f
         root.animate()
             .alpha(1f)
-            .setDuration(250)
+            .setDuration(RESUME_FADE_DURATION)
             .setInterpolator(DecelerateInterpolator())
             .start()
     }
@@ -252,12 +259,21 @@ class MainActivity : AppCompatActivity() {
         bottomNav = findViewById(R.id.bottomNav)
         navIndicator = findViewById(R.id.navIndicator)
         navIndicator.post { moveIndicator(0, false) }
-        bottomNav.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+        bottomNavLayoutListener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             if (navItems.isNotEmpty()) {
                 val idx = navItems.indexOf(currentNavItem).coerceAtLeast(0)
                 moveIndicator(idx, false)
             }
         }
+        bottomNav.removeOnLayoutChangeListener(bottomNavLayoutListener)
+        bottomNav.addOnLayoutChangeListener(bottomNavLayoutListener)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        bottomNavLayoutListener?.let { bottomNav.removeOnLayoutChangeListener(it) }
+        bottomNavLayoutListener = null
+        haptics.destroy()
     }
 
     private fun selectNav(item: NavItem) {

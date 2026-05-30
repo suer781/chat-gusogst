@@ -75,10 +75,10 @@ object ProviderRegistry {
         ProviderDef("together", "Together", "https://api.together.xyz/v1", models = listOf("llama-3-70b","mixtral-8x7b")),
         ProviderDef("moonshot", "Moonshot", "https://api.moonshot.cn/v1", models = listOf("moonshot-v1-128k")),
         ProviderDef("groq", "Groq", "https://api.groq.com/openai/v1", models = listOf("llama3-70b")),
-        ProviderDef("ollama", "Ollama", "http://localhost:11434/v1", models = listOf("llama3")),
+        ProviderDef("ollama", "Ollama", "http://localhost:11434/v1", models = listOf("llama3")),  // local-only, no HTTPS
         ProviderDef("google", "Google", "https://generativelanguage.googleapis.com/v1", models = listOf("gemini-pro")),
-        ProviderDef("lmstudio", "LM Studio", "http://localhost:1234/v1"),
-        ProviderDef("custom", "自定义", "")
+        ProviderDef("lmstudio", "LM Studio", "http://localhost:1234/v1"),  // local-only, no HTTPS
+        ProviderDef("custom", "自定义", "https://your-api-endpoint.com/v1")  // 占位 URL，用户需自行替换
     )
 
     val PROVIDERS: List<ProviderDef> get() = cached ?: emptyList()

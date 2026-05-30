@@ -2,8 +2,10 @@ package com.gusogst.chat
 
 import android.app.Activity
 import android.os.Build
-import android.view.View
 import android.view.WindowInsetsController
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 /**
  * App initialization - mirrors Web ui/init.ts
@@ -16,18 +18,11 @@ object AppInitializer {
         initSplashScreen(activity)
     }
 
-    @Suppress("DEPRECATION")
     private fun initStatusBar(activity: Activity) {
-        activity.window.statusBarColor = android.graphics.Color.parseColor("#0f0f23")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            activity.window.insetsController?.setSystemBarsAppearance(
-                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        }
+        // Use color resource instead of hardcoded value
+        activity.window.statusBarColor = activity.resources.getColor(R.color.status_bar_color, null)
+        val controller = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
+        controller.isAppearanceLightStatusBars = true
     }
 
     private fun initSplashScreen(activity: Activity) {

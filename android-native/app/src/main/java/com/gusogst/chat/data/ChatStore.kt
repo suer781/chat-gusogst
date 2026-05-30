@@ -2,6 +2,7 @@ package com.gusogst.chat.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Base64
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.gusogst.chat.model.*
@@ -10,6 +11,15 @@ class ChatStore(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("chat_gusogst", Context.MODE_PRIVATE)
     private val gson = Gson()
+
+    // ===== API Key 简单混淆（Base64 编码，非加密但防明文暴露）=====
+    private fun obfuscate(key: String): String =
+        if (key.isBlank()) key else Base64.encodeToString(key.toByteArray(), Base64.NO_WRAP)
+
+    private fun deobfuscate(key: String): String =
+        if (key.isBlank()) key else try {
+            String(Base64.decode(key, Base64.NO_WRAP))
+        } catch (_: Exception) { key }
 
     init {
         ProviderRegistry.load(context)
@@ -78,9 +88,9 @@ class ChatStore(context: Context) {
     }
 
     // ===== 服务商 =====
-    // ===== 服务商 =====
     fun saveProviders(list: List<UIProvider>) {
-        prefs.edit().putString("providers", gson.toJson(list)).apply()
+        val obfuscated = list.map { it.copy(apiKey = obfuscate(it.apiKey)) }
+        prefs.edit().putString("providers", gson.toJson(obfuscated)).apply()
     }
 
     fun loadProviders(): List<UIProvider> {
@@ -91,7 +101,7 @@ class ChatStore(context: Context) {
         return try {
             val type = object : TypeToken<List<UIProvider>>() {}.type
             val list: List<UIProvider> = gson.fromJson(json, type)
-            list
+            list.map { it.copy(apiKey = deobfuscate(it.apiKey)) }
         } catch (_: Exception) { seedDefaultProviders() }
     }
 
