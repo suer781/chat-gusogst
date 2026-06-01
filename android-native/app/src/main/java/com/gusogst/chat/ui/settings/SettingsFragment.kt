@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
+import com.gusogst.chat.ui.settings.BasicSettingsFragment
+import com.gusogst.chat.ui.settings.PlatformSettingsFragment
 
 class SettingsFragment : Fragment() {
 
@@ -19,16 +21,16 @@ class SettingsFragment : Fragment() {
         val icon: String,
         val label: String,
         val desc: String,
-        val color: Int
+        val color: String
     )
 
     private val settingsItems = listOf(
-        SettingItem("basic", "🎨", "外观", "主题、毛玻璃、HDR", resources.getColor(R.color.accent, null)),
-        SettingItem("model", "🤖", "模型", "参数、温度、上下文", resources.getColor(R.color.purple, null)),
-        SettingItem("platform", "🔗", "平台", "MCP、Agent、工具", resources.getColor(R.color.blue, null)),
-        SettingItem("memory", "🧠", "记忆", "长期记忆、上下文管理", resources.getColor(R.color.yellow, null)),
-        SettingItem("search", "🔍", "搜索", "联网搜索、搜索引擎", resources.getColor(R.color.orange, null)),
-        SettingItem("about", "ℹ️", "关于", "版本、开源许可", resources.getColor(R.color.gray_400, null))
+        SettingItem("basic", "🎨", "外观", "主题、毛玻璃、HDR", "#E94560"),
+        SettingItem("model", "🤖", "模型", "参数、温度、上下文", "#6C5CE7"),
+        SettingItem("platform", "🔗", "平台", "MCP、Agent、工具", "#3498DB"),
+        SettingItem("memory", "🧠", "记忆", "长期记忆、上下文管理", "#FDCB6E"),
+        SettingItem("search", "🔍", "搜索", "联网搜索、搜索引擎", "#FF9800"),
+        SettingItem("about", "ℹ️", "关于", "版本、开源许可", "#8888A0")
     )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
