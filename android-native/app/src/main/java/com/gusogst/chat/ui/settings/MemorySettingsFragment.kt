@@ -1,6 +1,7 @@
 package com.gusogst.chat.ui.settings
 
 import android.graphics.Color
+import androidx.core.content.ContextCompat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
