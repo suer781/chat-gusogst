@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.gusogst.chat.agent.HermesBridge
 import com.gusogst.chat.agent.StreamEvent
+import com.gusogst.chat.data.ApiRequestMessage
 import com.gusogst.chat.data.ChatStore
 // MemoryManager replaced by HermesBridge memory system (holographic provider)
 import com.gusogst.chat.model.*
