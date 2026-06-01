@@ -19,7 +19,7 @@ class SettingsFragment : Fragment() {
         val icon: String,
         val label: String,
         val desc: String,
-        val color: String
+        val color: Int
     )
 
     private val settingsItems = listOf(
