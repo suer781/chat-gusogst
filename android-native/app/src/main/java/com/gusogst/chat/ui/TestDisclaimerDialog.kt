@@ -1,15 +1,25 @@
 package com.gusogst.chat.ui
 
+import androidx.core.content.ContextCompat
 import android.app.AlertDialog
+import androidx.core.content.ContextCompat
 import android.app.Dialog
+import androidx.core.content.ContextCompat
 import android.graphics.Color
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat
 import com.gusogst.chat.R
+import androidx.core.content.ContextCompat
 import android.graphics.drawable.ColorDrawable
+import androidx.core.content.ContextCompat
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import android.view.Gravity
+import androidx.core.content.ContextCompat
 import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 
 class TestDisclaimerDialog : DialogFragment() {
