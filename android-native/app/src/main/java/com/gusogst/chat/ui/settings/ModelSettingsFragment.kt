@@ -23,11 +23,11 @@ class ModelSettingsFragment : Fragment() {
     private val viewModel: ChatViewModel by activityViewModels()
     private lateinit var root: LinearLayout
 
-    private val providers get() = listOf(
+    private val providers = listOf(
         Triple("openai", "OpenAI", "sk-..."),
         Triple("anthropic", "Anthropic", "sk-ant-..."),
         Triple("ollama", "Ollama", ""),
-        Triple("custom", getString(R.string.model_custom), getString(R.string.model_api_key))
+        Triple("custom", "\u81EA\u5B9A\u4E49", "API Key")
     )
     private val tokenOptions = listOf(1024, 2048, 4096, 8192, 16384)
 
@@ -45,23 +45,23 @@ class ModelSettingsFragment : Fragment() {
 
     private fun buildUI(s: com.gusogst.chat.model.UISettings) {
         root.removeAllViews()
-        addHeader(getString(R.string.model_title))
+        addHeader("AI \u6A21\u578B")
 
         val currentProvider = viewModel.providers.value?.firstOrNull { it.enabled }?.name?.lowercase() ?: "openai"
 
         // Provider 4-grid - purple accent
-        addSection(getString(R.string.model_provider), "\u2699") {
+        addSection("\u6A21\u578B\u63D0\u4F9B\u5546", "\u2699") {
             val grid = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
             val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
             for ((id, label, _) in providers) {
                 val isActive = id == currentProvider
                 grid.addView(TextView(requireContext()).apply {
                     text = label; textSize = 14f; gravity = Gravity.CENTER; setPadding(dp(4), dp(12), dp(4), dp(12))
-                    setTextColor(if (isActive) resources.getColor(R.color.purple, null) else resources.getColor(R.color.gray_300, null))
+                    setTextColor(if (isActive) ContextCompat.getColor(requireContext(), R.color.purple) else resources.getColor(R.color.gray_300, null))
                     setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
                     background = GradientDrawable().apply {
-                        setColor(if (isActive) resources.getColor(R.color.purple_soft, null) else resources.getColor(R.color.bg_tertiary, null))
-                        setStroke(if (isActive) 2 else 1, if (isActive) resources.getColor(R.color.purple_soft, null) else Color.TRANSPARENT)
+                        setColor(if (isActive) ContextCompat.getColor(requireContext(), R.color.purple_soft) else resources.getColor(R.color.overlay_light_0A, null))
+                        setStroke(if (isActive) 2 else 1, if (isActive) ContextCompat.getColor(requireContext(), R.color.purple_soft_80) else resources.getColor(R.color.transparent, null))
                         cornerRadius = dp(10).toFloat()
                     }
                 }, lp)
@@ -70,37 +70,37 @@ class ModelSettingsFragment : Fragment() {
         }
 
         // Model name
-        addSection(getString(R.string.model_name), "") {
+        addSection("\u6A21\u578B\u540D\u79F0", "") {
             return@addSection createInput("gpt-4o / claude-3-opus / qwen2", "")
         }
 
         // API Key
-        addSection(getString(R.string.model_api_key), "\u26BF") {
+        addSection("API Key", "\u26BF") {
             return@addSection createInput("sk-xxx", "", true)
         }
 
         // API URL
-        addSection(getString(R.string.model_api_url), "\u2641") {
+        addSection("API \u5730\u5740", "\u2641") {
             return@addSection createInput("https://api.openai.com/v1", "")
         }
 
         // Temperature
-        addSection(getString(R.string.model_temp_title), "\u2668") {
+        addSection("\u521B\u610F\u5EA6", "\u2668") {
             val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-            row.addView(TextView(requireContext()).apply { text = getString(R.string.model_temp_precise); setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32) })
+            row.addView(TextView(requireContext()).apply { text = "\u7CBE\u786E"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32) })
             row.addView(SeekBar(requireContext()).apply {
                 max = 100; progress = 70
-                progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.purple, null))
-                thumbTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.purple, null))
+                progressTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.purple))
+                thumbTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.purple))
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             })
-            row.addView(TextView(requireContext()).apply { text = getString(R.string.model_temp_random); setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32); gravity = Gravity.END })
+            row.addView(TextView(requireContext()).apply { text = "\u968F\u673A"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; minWidth = dp(32); gravity = Gravity.END })
             row.addView(TextView(requireContext()).apply { text = "0.70"; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 14f; setTypeface(null, Typeface.BOLD); minWidth = dp(40); gravity = Gravity.END })
             return@addSection row
         }
 
         // Max Token buttons
-        addSection(getString(R.string.model_max_tokens), "#") {
+        addSection("\u6700\u5927 Token", "#") {
             val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL }
             val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
             for (t in tokenOptions) {
@@ -108,11 +108,11 @@ class ModelSettingsFragment : Fragment() {
                 row.addView(TextView(requireContext()).apply {
                     text = if (t >= 1024) "${t / 1024}K" else t.toString()
                     textSize = 12f; gravity = Gravity.CENTER; setPadding(dp(8), dp(8), dp(8), dp(8))
-                    setTextColor(if (isActive) resources.getColor(R.color.purple, null) else resources.getColor(R.color.gray_400, null))
+                    setTextColor(if (isActive) ContextCompat.getColor(requireContext(), R.color.purple) else resources.getColor(R.color.gray_400, null))
                     setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
                     background = GradientDrawable().apply {
-                        setColor(if (isActive) resources.getColor(R.color.purple_soft, null) else resources.getColor(R.color.bg_tertiary, null))
-                        setStroke(if (isActive) 1 else 0, if (isActive) resources.getColor(R.color.purple_soft, null) else Color.TRANSPARENT)
+                        setColor(if (isActive) ContextCompat.getColor(requireContext(), R.color.purple_soft) else resources.getColor(R.color.overlay_light_0A, null))
+                        setStroke(if (isActive) 1 else 0, if (isActive) ContextCompat.getColor(requireContext(), R.color.purple_soft_66) else resources.getColor(R.color.transparent, null))
                         cornerRadius = dp(10).toFloat()
                     }
                 }, lp)
@@ -121,16 +121,16 @@ class ModelSettingsFragment : Fragment() {
         }
 
         // Auto understand
-        addSection(getString(R.string.model_auto_title), "\u2728") {
+        addSection("\u81EA\u4E3B\u7406\u89E3", "\u2728") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
             col.addView(TextView(requireContext()).apply {
-                text = getString(R.string.model_auto_desc)
+                text = "\u6839\u636E\u5F53\u524D\u7CFB\u7EDF\u63D0\u793A\u8BCD\u63CF\u8FF0\u7684\u6027\u683C\u60C5\u7EEA\uFF0C\u8C03\u7528\u6A21\u578B\u81EA\u52A8\u63A8\u8350\u6700\u4F73\u53C2\u6570"
                 setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, 0, 0, dp(12))
             })
             col.addView(TextView(requireContext()).apply {
-                text = getString(R.string.model_auto_btn); setTextColor(Color.WHITE); textSize = 14f; setTypeface(null, Typeface.BOLD)
+                text = "\u5F00\u59CB\u5206\u6790"; setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD)
                 gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
-                background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(resources.getColor(R.color.purple, null)) }
+                background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(ContextCompat.getColor(requireContext(), R.color.purple)) }
             })
             return@addSection col
         }
@@ -148,8 +148,7 @@ class ModelSettingsFragment : Fragment() {
     private fun addSection(title: String, icon: String, content: () -> View) {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
-            background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_secondary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(16).toFloat() }
-            elevation = 1f * resources.displayMetrics.density
+            background = GradientDrawable().apply { setColor(ContextCompat.getColor(requireContext(), R.color.overlay_light_03)); setStroke(1, ContextCompat.getColor(requireContext(), R.color.overlay_light_05)); cornerRadius = dp(16).toFloat() }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
         if (title.isNotEmpty()) {

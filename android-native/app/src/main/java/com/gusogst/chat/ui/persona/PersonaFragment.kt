@@ -1,6 +1,7 @@
 package com.gusogst.chat.ui.persona
 
 import android.graphics.Color
+import androidx.core.content.ContextCompat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -26,16 +27,39 @@ class PersonaFragment : Fragment() {
 
     private var searchQuery: String = ""
 
-    /** 从 Persona.id 获取对应描述（预设角色使用 strings.xml，自定义角色留空） */
-    private fun getPersonaDescription(id: String): String = when (id) {
-        "gentle" -> getString(R.string.persona_gentle_desc)
-        "tsundere" -> getString(R.string.persona_tsundere_desc)
-        "genki" -> getString(R.string.persona_genki_desc)
-        "night" -> getString(R.string.persona_night_desc)
-        "study" -> getString(R.string.persona_study_desc)
-        "healing" -> getString(R.string.persona_healing_desc)
-        else -> ""
-    }
+    // 预设角色（同步 Web 主分支）
+    data class PresetPersona(
+        val id: String, val name: String, val emoji: String,
+        val description: String, val tags: List<String>,
+        val personality: PersonalityTraits
+    )
+
+    private val presets = listOf(
+        PresetPersona("default", "Hermes", "🌿",
+            "Calm, warm, and analytical — your everyday companion",
+            listOf("general"),
+            PersonalityTraits(calm = 0.8f, warm = 0.6f, analytical = 0.5f)),
+        PresetPersona("creative", "Muse", "🎨",
+            "Creative and curious, perfect for brainstorming",
+            listOf("creative", "writing"),
+            PersonalityTraits(creative = 0.9f, curious = 0.7f, playful = 0.5f)),
+        PresetPersona("coder", "Hephaestus", "⚒️",
+            "Precise and technical, your coding partner",
+            listOf("coding", "technical"),
+            PersonalityTraits(precise = 0.9f, analytical = 0.8f, calm = 0.6f)),
+        PresetPersona("analyst", "Athena", "🦉",
+            "Analytical and strategic, deep thinking partner",
+            listOf("analysis", "strategy"),
+            PersonalityTraits(analytical = 0.9f, precise = 0.7f, calm = 0.7f)),
+        PresetPersona("tutor", "Socrates", "📚",
+            "Curious and warm, great for learning",
+            listOf("education", "learning"),
+            PersonalityTraits(curious = 0.9f, warm = 0.7f, calm = 0.6f)),
+        PresetPersona("friend", "Companion", "💛",
+            "Warm and playful, your casual friend",
+            listOf("casual", "support"),
+            PersonalityTraits(warm = 0.9f, playful = 0.6f, energetic = 0.5f))
+    )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_persona, container, false)
@@ -46,10 +70,8 @@ class PersonaFragment : Fragment() {
         personaList = view.findViewById(R.id.personaList)
         etSearch = view.findViewById(R.id.etSearch)
 
-        view.findViewById<ImageButton>(R.id.btnBack).apply {
-            // 有返回栈时才显示返回按钮（从其他页面进来时），底部导航 Tab 时隐藏
-            visibility = if (parentFragmentManager.backStackEntryCount > 0) View.VISIBLE else View.GONE
-            setOnClickListener { parentFragmentManager.popBackStack() }
+        view.findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
+            parentFragmentManager.popBackStack()
         }
 
         etSearch.addTextChangedListener(object : TextWatcher {
@@ -67,10 +89,8 @@ class PersonaFragment : Fragment() {
     private fun buildCards() {
         personaList.removeAllViews()
 
-        val allPersonas = viewModel.personas.value.orEmpty()
-        val filtered = allPersonas.filter { p ->
-            val desc = getPersonaDescription(p.id)
-            val text = "${p.name} ${p.avatar} ${p.tags.joinToString(" ")} $desc".lowercase()
+        val filtered = presets.filter { p ->
+            val text = "${p.name} ${p.emoji} ${p.tags.joinToString(" ")} ${p.description}".lowercase()
             searchQuery.isEmpty() || text.contains(searchQuery)
         }
 
@@ -83,8 +103,7 @@ class PersonaFragment : Fragment() {
     }
 
     /** 渲染单张角色卡片（含人格特质条） */
-    private fun addPersonaCard(persona: Persona) {
-        val desc = getPersonaDescription(persona.id)
+    private fun addPersonaCard(preset: PresetPersona) {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(14), dp(16), dp(14))
@@ -97,9 +116,9 @@ class PersonaFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(8) }
             isClickable = true
             isFocusable = true
-            elevation = 2f * resources.displayMetrics.density
         }
 
+        // === 上部分：头像 + 名称 + 描述 ===
         val topRow = LinearLayout(requireContext()).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -107,12 +126,12 @@ class PersonaFragment : Fragment() {
 
         // Emoji 头像
         val avatarSize = dp(48)
-        val avatarBg = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.accent, null)) }
+        val avatarBg = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(ContextCompat.getColor(requireContext(), R.color.accent)) }
         topRow.addView(FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(avatarSize, avatarSize)
             background = avatarBg
             addView(TextView(requireContext()).apply {
-                text = persona.avatar; textSize = 22f; gravity = Gravity.CENTER
+                text = preset.emoji; textSize = 22f; gravity = Gravity.CENTER
                 layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
             })
         })
@@ -123,10 +142,10 @@ class PersonaFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginStart = dp(14) }
         }
         textCol.addView(TextView(requireContext()).apply {
-            text = persona.name; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 16f; setTypeface(null, Typeface.BOLD)
+            text = preset.name; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 16f; setTypeface(null, Typeface.BOLD)
         })
         textCol.addView(TextView(requireContext()).apply {
-            text = desc; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f; maxLines = 1
+            text = preset.description; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f; maxLines = 1
         })
         topRow.addView(textCol)
         // 箭头 >
@@ -147,7 +166,7 @@ class PersonaFragment : Fragment() {
             orientation = HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
         }
-        for (tag in persona.tags.take(2)) {
+        for (tag in preset.tags.take(2)) {
             tagRow.addView(TextView(requireContext()).apply {
                 text = tag; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 11f
                 setPadding(dp(8), dp(2), dp(8), dp(2))
@@ -158,7 +177,7 @@ class PersonaFragment : Fragment() {
         bottomRow.addView(tagRow)
 
         // 右侧人格特质迷你条（取前 2 个最高 trait）
-        val topTraits = getTopTraits(persona.personality, 2)
+        val topTraits = getTopTraits(preset.personality, 2)
         for ((traitName, value) in topTraits) {
             val traitChip = LinearLayout(requireContext()).apply {
                 orientation = HORIZONTAL
@@ -182,7 +201,7 @@ class PersonaFragment : Fragment() {
             })
             traitChip.addView(TextView(requireContext()).apply {
                 text = "${(value * 100).toInt()}%"
-                setTextColor(resources.getColor(R.color.accent, null)); textSize = 10f; setTypeface(null, Typeface.BOLD)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.accent)); textSize = 10f; setTypeface(null, Typeface.BOLD)
                 layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginStart = dp(2) }
             })
             bottomRow.addView(traitChip)
@@ -192,6 +211,11 @@ class PersonaFragment : Fragment() {
 
         // === 点击事件：打开详情页 ===
         card.setOnClickListener {
+            val persona = Persona(
+                id = preset.id, name = preset.name, avatar = preset.emoji,
+                prompt = "You are ${preset.name}. ${preset.description}",
+                tags = preset.tags, personality = preset.personality
+            )
             parentFragmentManager.beginTransaction()
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                 .replace(R.id.fragmentContainer, PersonaProfileFragment.newInstance(persona))
@@ -205,13 +229,9 @@ class PersonaFragment : Fragment() {
     /** 取人格特质中 Top N（按值排序） */
     private fun getTopTraits(t: PersonalityTraits, n: Int): List<Pair<String, Float>> {
         return listOf(
-            getString(R.string.trait_calm) to t.calm, getString(R.string.trait_warm) to t.warm,
-            getString(R.string.trait_analytical) to t.analytical,
-            getString(R.string.trait_creative) to t.creative,
-            getString(R.string.trait_curious) to t.curious,
-            getString(R.string.trait_precise) to t.precise,
-            getString(R.string.trait_playful) to t.playful,
-            getString(R.string.trait_energetic) to t.energetic
+            "冷静" to t.calm, "温暖" to t.warm, "分析" to t.analytical,
+            "创造" to t.creative, "好奇" to t.curious, "精准" to t.precise,
+            "风趣" to t.playful, "活力" to t.energetic
         ).sortedByDescending { it.second }.take(n)
     }
 
@@ -220,25 +240,25 @@ class PersonaFragment : Fragment() {
             orientation = HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(16), dp(14), dp(16), dp(14))
             background = GradientDrawable().apply {
-                cornerRadius = dp(16).toFloat(); setColor(Color.TRANSPARENT)
+                cornerRadius = dp(16).toFloat(); setColor(resources.getColor(R.color.transparent, null))
                 setStroke(1, resources.getColor(R.color.text_tertiary, null))
             }
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { topMargin = dp(4) }
         }
         card.addView(TextView(requireContext()).apply {
-            text = "＋"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 24f; gravity = Gravity.CENTER
+            text = "＋"; setTextColor(ContextCompat.getColor(requireContext(), R.color.accent)); textSize = 24f; gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.accent_soft, null)) }
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(ContextCompat.getColor(requireContext(), R.color.accent_soft)) }
         })
         val textLayout = LinearLayout(requireContext()).apply {
             orientation = VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginStart = dp(14) }
         }
         textLayout.addView(TextView(requireContext()).apply {
-            text = getString(R.string.persona_create); setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 16f; setTypeface(null, Typeface.BOLD)
+            text = "创建角色"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 16f; setTypeface(null, Typeface.BOLD)
         })
         textLayout.addView(TextView(requireContext()).apply {
-            text = getString(R.string.persona_create_desc); setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
+            text = "自定义你的AI伙伴"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
         })
         card.addView(textLayout)
         card.addView(TextView(requireContext()).apply {

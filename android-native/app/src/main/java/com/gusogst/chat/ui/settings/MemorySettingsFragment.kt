@@ -1,5 +1,6 @@
 package com.gusogst.chat.ui.settings
 
+import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -13,7 +14,6 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
 import com.gusogst.chat.data.memory.MemoryManager
@@ -30,7 +30,7 @@ class MemorySettingsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         memoryManager = MemoryManager(requireContext())
-        val sv = ScrollView(requireContext()).apply { setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.bg_primary)) }
+        val sv = ScrollView(requireContext()).apply { setBackgroundColor(resources.getColor(R.color.bg_primary, null)) }
         root = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, dp(100)) }
         sv.addView(root)
         return sv
@@ -38,7 +38,10 @@ class MemorySettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) { super.onViewCreated(view, savedInstanceState); buildUI() }
 
-    override fun onResume() { super.onResume(); refreshStats() }
+    override fun onResume() {
+        super.onResume()
+        refreshStats()
+    }
 
     private fun buildUI() {
         root.removeAllViews()
@@ -61,9 +64,9 @@ class MemorySettingsFragment : Fragment() {
 
         addSection("\u5371\u9669\u64CD\u4F5C", "\u26A0") {
             return@addSection TextView(requireContext()).apply {
-                text = "\u6E05\u9664\u6240\u6709\u8BB0\u5FC6"; setTextColor(ContextCompat.getColor(requireContext(), R.color.danger)); textSize = 14f
+                text = "\u6E05\u9664\u6240\u6709\u8BB0\u5FC6"; setTextColor(resources.getColor(R.color.danger, null)); textSize = 14f
                 setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
-                background = GradientDrawable().apply { setColor(ContextCompat.getColor(requireContext(), R.color.danger_soft_1A)); setStroke(1, ContextCompat.getColor(requireContext(), R.color.danger)); cornerRadius = dp(10).toFloat() }
+                background = GradientDrawable().apply { setColor(ContextCompat.getColor(requireContext(), R.color.danger_soft_1A)); setStroke(1, resources.getColor(R.color.danger, null)); cornerRadius = dp(10).toFloat() }
                 setOnClickListener { showClearConfirm() }
             }
         }
@@ -72,9 +75,13 @@ class MemorySettingsFragment : Fragment() {
     private fun refreshStats() {
         val stats = memoryManager.getStats()
         setValueText(tvTotalEntries, "${stats.totalEntries} \u6761")
+
+        // 估算存储大小
         val json = memoryManager.exportMemories()
         val bytes = json.toByteArray(Charsets.UTF_8).size
         setValueText(tvStorage, if (bytes < 1024) "$bytes B" else "%.1f KB".format(bytes / 1024f))
+
+        // 最后更新时间
         setValueText(tvLastUpdate, SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date()))
     }
 
@@ -99,8 +106,8 @@ class MemorySettingsFragment : Fragment() {
     private fun addHeader(title: String) {
         root.addView(LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(20), dp(16), dp(20), dp(12))
-            addView(TextView(requireContext()).apply { text = "\u2190"; setTextColor(ContextCompat.getColor(requireContext(), R.color.accent)); textSize = 20f; setPadding(dp(4), dp(4), dp(12), dp(4)); setOnClickListener { parentFragmentManager.popBackStack() } })
-            addView(TextView(requireContext()).apply { text = title; setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary)); textSize = 18f; setTypeface(null, Typeface.BOLD) })
+            addView(TextView(requireContext()).apply { text = "\u2190"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 20f; setPadding(dp(4), dp(4), dp(12), dp(4)); setOnClickListener { parentFragmentManager.popBackStack() } })
+            addView(TextView(requireContext()).apply { text = title; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f; setTypeface(null, Typeface.BOLD) })
         })
     }
 
@@ -112,38 +119,33 @@ class MemorySettingsFragment : Fragment() {
         }
         val header = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, 0, dp(14)) }
         header.addView(TextView(requireContext()).apply { text = icon; textSize = 18f; setPadding(0, 0, dp(8), 0) })
-        header.addView(TextView(requireContext()).apply { text = title; setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary)); textSize = 14f; setTypeface(null, Typeface.BOLD) })
-        card.addView(header)
-        card.addView(content())
-        root.addView(card)
+        header.addView(TextView(requireContext()).apply { text = title; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f; setTypeface(null, Typeface.BOLD) })
+        card.addView(header); card.addView(content()); root.addView(card)
     }
 
     private fun createToggle(label: String, desc: String, checked: Boolean, onChange: (Boolean) -> Unit): LinearLayout {
-        return LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(10), 0, dp(10))
-            setOnClickListener { onChange(!checked) }
-            val textCol = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
-            textCol.addView(TextView(requireContext()).apply { text = label; setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_100)); textSize = 14f })
-            textCol.addView(TextView(requireContext()).apply { text = desc; setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_400)); textSize = 12f; setPadding(0, dp(2), 0, 0) })
-            addView(textCol)
-            addView(FrameLayout(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(dp(46), dp(26)).apply { marginStart = dp(12) }
-                background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) ContextCompat.getColor(requireContext(), R.color.yellow) else ContextCompat.getColor(requireContext(), R.color.overlay_light_1A)) }
-                addView(View(requireContext()).apply {
-                    layoutParams = FrameLayout.LayoutParams(dp(22), dp(22)).apply { setMargins(dp(if (checked) 22 else 2), dp(2), 0, 0) }
-                    background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(ContextCompat.getColor(requireContext(), R.color.text_primary)) }
-                })
-            })
+        val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(10), 0, dp(10)); setOnClickListener { onChange(!checked) } }
+        val textCol = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
+        textCol.addView(TextView(requireContext()).apply { text = label; setTextColor(resources.getColor(R.color.gray_100, null)); textSize = 14f })
+        textCol.addView(TextView(requireContext()).apply { text = desc; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 12f; setPadding(0, dp(2), 0, 0) })
+        row.addView(textCol)
+        val toggle = FrameLayout(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(46), dp(26)).apply { marginStart = dp(12) }
+            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.yellow, null) else ContextCompat.getColor(requireContext(), R.color.overlay_light_1A)) }
         }
+        toggle.addView(View(requireContext()).apply {
+            val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (checked) 22 else 2), dp(2), 0, 0); layoutParams = lp
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.text_primary, null)) }
+        })
+        row.addView(toggle); return row
     }
 
     private fun createInfo(label: String, value: String): LinearLayout {
-        return LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(6), 0, dp(6))
-            addView(TextView(requireContext()).apply { text = label; setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_400)); textSize = 13f; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
-            addView(TextView(requireContext()).apply { text = value; setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_200)); textSize = 13f })
-        }
+        val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(6), 0, dp(6)) }
+        row.addView(TextView(requireContext()).apply { text = label; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 13f; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
+        val tvValue = TextView(requireContext()).apply { text = value; setTextColor(resources.getColor(R.color.gray_200, null)); textSize = 13f }
+        row.addView(tvValue)
+        return row
     }
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()

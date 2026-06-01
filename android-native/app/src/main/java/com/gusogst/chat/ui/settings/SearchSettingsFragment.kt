@@ -21,13 +21,19 @@ class SearchSettingsFragment : Fragment() {
     private val viewModel: ChatViewModel by activityViewModels()
     private lateinit var root: LinearLayout
 
-    data class SearchEngine(val id: String, val name: String, val desc: String, val free: Boolean, val color: Int)
+    data class SearchEngine(val id: String, val name: String, val desc: String, val free: Boolean)
 
-    private val engines get() = listOf(
-        SearchEngine("duckduckgo", "DuckDuckGo", getString(R.string.search_free_engine), true, Color.parseColor("#DE5833")),
-        SearchEngine("tavily", "Tavily", getString(R.string.search_paid_ai), false, Color.parseColor("#6C5CE7")),
-        SearchEngine("serpapi", "SerpAPI", getString(R.string.search_paid_api), false, Color.parseColor("#3498DB")),
-        SearchEngine("bing", "Bing", getString(R.string.search_ms_search), false, Color.parseColor("#00809D"))
+    private val engineColorMap by lazy { mapOf(
+        "duckduckgo" to resources.getColor(R.color.search_duckduckgo, null),
+        "tavily" to resources.getColor(R.color.search_tavily, null),
+        "serpapi" to resources.getColor(R.color.search_serpapi, null),
+        "bing" to resources.getColor(R.color.search_bing, null)
+    ) }
+    private val engines = listOf(
+        SearchEngine("duckduckgo", "DuckDuckGo", "\u514D\u8D39\u641C\u7D22\u5F15\u64CE", true),
+        SearchEngine("tavily", "Tavily", "\u4ED8\u8D39 AI \u641C\u7D22", false),
+        SearchEngine("serpapi", "SerpAPI", "\u4ED8\u8D39\u641C\u7D22 API", false),
+        SearchEngine("bing", "Bing", "\u5FAE\u8F6F\u641C\u7D22", false)
     )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -44,12 +50,12 @@ class SearchSettingsFragment : Fragment() {
 
     private fun buildUI(enabled: Boolean, activeEngine: String) {
         root.removeAllViews()
-        addHeader(getString(R.string.search_title))
+        addHeader("\u641C\u7D22")
 
         // Toggle
-        addSection(getString(R.string.search_web_title), "\uD83D\uDD0D") {
+        addSection("\u8054\u7F51\u641C\u7D22", "\uD83D\uDD0D") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            col.addView(createToggle(getString(R.string.search_enable_title), getString(R.string.search_enable_desc), enabled) {
+            col.addView(createToggle("\u542F\u7528\u641C\u7D22", "\u8BA9 AI \u80FD\u591F\u641C\u7D22\u4E92\u8054\u7F51\u83B7\u53D6\u6700\u65B0\u4FE1\u606F", enabled) {
                 viewModel.updateSettings { s -> s.copy(searchEnabled = it) }
             })
             return@addSection col
@@ -57,7 +63,7 @@ class SearchSettingsFragment : Fragment() {
 
         // Engine list
         if (enabled) {
-            addSection(getString(R.string.search_engine_title), "\u2699") {
+            addSection("\u641C\u7D22\u5F15\u64CE", "\u2699") {
                 val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
                 for ((i, eng) in engines.withIndex()) {
                     val isActive = eng.id == activeEngine
@@ -65,15 +71,15 @@ class SearchSettingsFragment : Fragment() {
                         orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
                         setPadding(dp(14), dp(12), dp(14), dp(12))
                         background = GradientDrawable().apply {
-                            setColor(if (isActive) (eng.color and 0x00FFFFFF) or 0x1A000000 else Color.TRANSPARENT)
-                            setStroke(if (isActive) 1 else 0, if (isActive) eng.color else Color.TRANSPARENT)
+                            setColor(if (isActive) Color.parseColor("#1A" + String.format("%06X", engineColorMap[eng.id]!! and 0xFFFFFF)) else resources.getColor(R.color.transparent, null))
+                            setStroke(if (isActive) 1 else 0, if (isActive) engineColorMap[eng.id]!! else resources.getColor(R.color.transparent, null))
                             cornerRadius = dp(10).toFloat()
                         }
                         if (i > 0) (layoutParams as? LinearLayout.LayoutParams)?.topMargin = dp(6)
                     }
                     // Icon
                     row.addView(TextView(requireContext()).apply {
-                        text = "\u25CF"; setTextColor(eng.color); textSize = 16f
+                        text = "\u25CF"; setTextColor(engineColorMap[eng.id]!!); textSize = 16f
                         layoutParams = LinearLayout.LayoutParams(dp(30), dp(30)).apply { marginEnd = dp(12) }
                         gravity = Gravity.CENTER
                     })
@@ -84,7 +90,7 @@ class SearchSettingsFragment : Fragment() {
                         setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
                     })
                     textCol.addView(TextView(requireContext()).apply {
-                        text = eng.desc + if (eng.free) " (" + getString(R.string.search_free) + ")" else " (" + getString(R.string.search_paid) + ")"
+                        text = eng.desc + if (eng.free) " (\u514D\u8D39)" else " (\u4ED8\u8D39)"
                         setTextColor(if (eng.free) resources.getColor(R.color.teal, null) else resources.getColor(R.color.gray_400, null))
                         textSize = 12f
                     })
@@ -92,7 +98,7 @@ class SearchSettingsFragment : Fragment() {
                     // Active indicator
                     if (isActive) {
                         row.addView(TextView(requireContext()).apply {
-                            text = "\u2713"; setTextColor(eng.color); textSize = 16f; setTypeface(null, Typeface.BOLD)
+                            text = "\u2713"; setTextColor(engineColorMap[eng.id]!!); textSize = 16f; setTypeface(null, Typeface.BOLD)
                         })
                     }
                     row.setOnClickListener { viewModel.updateSettings { s -> s.copy(activeSearchEngine = eng.id) } }
@@ -115,8 +121,7 @@ class SearchSettingsFragment : Fragment() {
     private fun addSection(title: String, icon: String, content: () -> View) {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(18), dp(16), dp(18))
-            background = GradientDrawable().apply { setColor(resources.getColor(R.color.search_card_bg, null)); setStroke(1, resources.getColor(R.color.search_card_stroke, null)); cornerRadius = dp(16).toFloat() }
-            elevation = 1f * resources.displayMetrics.density
+            background = GradientDrawable().apply { setColor(ContextCompat.getColor(requireContext(), R.color.overlay_light_03)); setStroke(1, ContextCompat.getColor(requireContext(), R.color.overlay_light_05)); cornerRadius = dp(16).toFloat() }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
         val header = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, 0, dp(14)) }
@@ -133,7 +138,7 @@ class SearchSettingsFragment : Fragment() {
         row.addView(textCol)
         val toggle = FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(dp(46), dp(26)).apply { marginStart = dp(12) }
-            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.accent, null) else resources.getColor(R.color.search_toggle_off, null)) }
+            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (checked) resources.getColor(R.color.accent, null) else ContextCompat.getColor(requireContext(), R.color.overlay_light_1A)) }
         }
         toggle.addView(View(requireContext()).apply {
             val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (checked) 22 else 2), dp(2), 0, 0); layoutParams = lp

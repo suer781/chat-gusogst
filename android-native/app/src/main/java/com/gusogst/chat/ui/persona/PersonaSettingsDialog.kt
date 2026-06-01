@@ -43,7 +43,7 @@ class PersonaSettingsDialog : DialogFragment() {
     private fun createEmptyDialog(): Dialog {
         return Dialog(requireContext()).apply {
             setContentView(TextView(requireContext()).apply {
-                text = getString(R.string.persona_settings_load_fail); setPadding(40, 40, 40, 40)
+                text = "Error loading persona"; setPadding(40, 40, 40, 40)
             })
         }
     }
@@ -85,7 +85,7 @@ class PersonaSettingsDialog : DialogFragment() {
 
         val root = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(resources.getColor(R.color.bg_primary, null))
+            setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.dialog_bg))
             setPadding(dp(20), dp(16), dp(20), dp(16))
         }
 
@@ -95,11 +95,11 @@ class PersonaSettingsDialog : DialogFragment() {
             setPadding(0, 0, 0, dp(16))
         }
         header.addView(TextView(requireContext()).apply {
-            text = getString(R.string.persona_settings_title); setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f; setTypeface(null, Typeface.BOLD)
+            text = "角色设置"; setTextColor(resources.getColor(R.color.white, null)); textSize = 18f; setTypeface(null, Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         header.addView(TextView(requireContext()).apply {
-            text = "✕"; setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 18f
+            text = "✕"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 18f
             setPadding(dp(8), dp(8), dp(8), dp(8)); setOnClickListener { dismiss() }
         })
         root.addView(header)
@@ -110,10 +110,10 @@ class PersonaSettingsDialog : DialogFragment() {
         val content = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, dp(8)) }
 
         // Prompt editor
-        content.addView(sectionLabel(getString(R.string.persona_settings_prompt_label)))
+        content.addView(sectionLabel("📝 系统提示词"))
         val promptInput = EditText(requireContext()).apply {
-            setText(prompt); setTextColor(resources.getColor(R.color.text_primary, null))
-            setHintTextColor(resources.getColor(R.color.text_tertiary, null)); hint = getString(R.string.persona_settings_prompt_hint)
+            setText(prompt); setTextColor(resources.getColor(R.color.gray_100, null))
+            setHintTextColor(resources.getColor(R.color.gray_500, null)); hint = "描述角色的性格、风格、行为准则..."
             textSize = 14f; setPadding(dp(14), dp(12), dp(14), dp(12)); minLines = 4; maxLines = 8
             background = GradientDrawable().apply {
                 setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(8).toFloat()
@@ -127,37 +127,37 @@ class PersonaSettingsDialog : DialogFragment() {
         content.addView(promptInput)
 
         // Override global toggle
-        content.addView(sectionLabel(getString(R.string.persona_settings_override_label)))
+        content.addView(sectionLabel("⚙ 独立参数"))
         val overrideRow = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(8), 0, dp(8))
             setOnClickListener { overrideGlobal = !overrideGlobal; dismiss(); showSettingsAgain() }
         }
         overrideRow.addView(TextView(requireContext()).apply {
-            text = if (overrideGlobal) getString(R.string.persona_settings_override_on) else getString(R.string.persona_settings_override_off)
-            setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 14f
+            text = if (overrideGlobal) "使用本角色独立参数" else "跟随全局模型设置"
+            setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 14f
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         val toggle = FrameLayout(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(dp(46), dp(26))
-            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (overrideGlobal) resources.getColor(R.color.accent, null) else resources.getColor(R.color.bg_tertiary, null)) }
+            background = GradientDrawable().apply { cornerRadius = dp(13).toFloat(); setColor(if (overrideGlobal) resources.getColor(R.color.accent, null) else ContextCompat.getColor(requireContext(), R.color.overlay_light_1A)) }
         }
         toggle.addView(View(requireContext()).apply {
             val lp = FrameLayout.LayoutParams(dp(22), dp(22)); lp.setMargins(dp(if (overrideGlobal) 22 else 2), dp(2), 0, 0); layoutParams = lp
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.text_primary, null)) }
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(resources.getColor(R.color.white, null)) }
         })
         overrideRow.addView(toggle)
         content.addView(overrideRow)
 
         // Quick presets
-        content.addView(sectionLabel(getString(R.string.persona_settings_presets_title)))
+        content.addView(sectionLabel("⚡ 快捷预设"))
         val presetRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(8), 0, dp(8)) }
-        presetRow.addView(createPresetBtn(getString(R.string.persona_settings_preset_rules)) {
+        presetRow.addView(createPresetBtn("🔧 规则引擎") {
             val adj = analyzeWithRules(prompt)
             temperature = (temperature + adj[0]).coerceIn(0f, 2f)
             topP = (topP + adj[1]).coerceIn(0f, 1f)
             maxTokens = (maxTokens + adj[2].toInt()).coerceIn(100, 8000)
         })
-        presetRow.addView(createPresetBtn(getString(R.string.persona_settings_preset_llm)) {
+        presetRow.addView(createPresetBtn("🧠 自主理解") {
             val fallback = analyzeWithLLM(prompt)
             temperature = fallback[0]; topP = fallback[1]; maxTokens = fallback[2].toInt()
             autoMode = "llm"
@@ -165,24 +165,24 @@ class PersonaSettingsDialog : DialogFragment() {
         content.addView(presetRow)
 
         // Sliders
-        content.addView(createSlider(getString(R.string.persona_settings_creativity), temperature, 0f, 2f, 0.1f) { temperature = it })
-        content.addView(createSlider(getString(R.string.persona_settings_diversity), topP, 0f, 1f, 0.05f) { topP = it })
-        content.addView(createSlider(getString(R.string.persona_settings_reply_len), maxTokens.toFloat(), 100f, 8000f, 100f) { maxTokens = it.toInt() })
+        content.addView(createSlider("创造力", temperature, 0f, 2f, 0.1f) { temperature = it })
+        content.addView(createSlider("多样性", topP, 0f, 1f, 0.05f) { topP = it })
+        content.addView(createSlider("回复长度", maxTokens.toFloat(), 100f, 8000f, 100f) { maxTokens = it.toInt() })
 
         // Auto mode
-        content.addView(sectionLabel(getString(R.string.persona_settings_auto_adjust)))
+        content.addView(sectionLabel("聊天时自动调节"))
         val modeRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(8), 0, dp(8)) }
-        for ((key, label) in listOf("off" to "\u5173\u95ED", "rule" to "\u89C4\u5219", "llm" to "\u5927\u8BED\u8A00\u6A21\u578B")) {
+        for ((key, label) in listOf("off" to "关闭", "rule" to "规则", "llm" to "LLM")) {
             modeRow.addView(createModeBtn(label, key == autoMode) { autoMode = key })
         }
         content.addView(modeRow)
 
         // Personality traits
-        content.addView(sectionLabel(getString(R.string.persona_settings_traits_title)))
+        content.addView(sectionLabel("🎭 人格特质"))
         val traitDefs = listOf(
-            getString(R.string.trait_calm) to traits.calm, getString(R.string.trait_warm) to traits.warm, getString(R.string.trait_analytical) to traits.analytical,
-            getString(R.string.trait_creative) to traits.creative, getString(R.string.trait_curious) to traits.curious, getString(R.string.trait_precise) to traits.precise,
-            getString(R.string.trait_playful) to traits.playful, getString(R.string.trait_energetic) to traits.energetic
+            "冷静" to traits.calm, "温暖" to traits.warm, "分析" to traits.analytical,
+            "创造" to traits.creative, "好奇" to traits.curious, "精准" to traits.precise,
+            "风趣" to traits.playful, "活力" to traits.energetic
         )
         val traitVals = traitDefs.map { it.second }.toMutableList()
         for ((i, pair) in traitDefs.withIndex()) {
@@ -196,14 +196,14 @@ class PersonaSettingsDialog : DialogFragment() {
         // Buttons
         val btnRow = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(16), 0, 0) }
         btnRow.addView(TextView(requireContext()).apply {
-            text = getString(R.string.persona_settings_cancel); setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 14f; gravity = Gravity.CENTER
+            text = "取消"; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 14f; gravity = Gravity.CENTER
             setPadding(dp(12), dp(12), dp(12), dp(12))
-            background = GradientDrawable().apply { setColor(Color.TRANSPARENT); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat() }
+            background = GradientDrawable().apply { setColor(resources.getColor(R.color.transparent, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = dp(10).toFloat() }
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(10) }
             setOnClickListener { dismiss() }
         })
         btnRow.addView(TextView(requireContext()).apply {
-            text = getString(R.string.persona_settings_save); setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
+            text = "保存设置"; setTextColor(resources.getColor(R.color.white, null)); textSize = 14f; setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
             setPadding(dp(12), dp(12), dp(12), dp(12))
             background = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(resources.getColor(R.color.accent, null)) }
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 2f)
@@ -228,7 +228,7 @@ class PersonaSettingsDialog : DialogFragment() {
         val dlg = Dialog(requireContext())
         dlg.setContentView(root)
         dlg.window?.apply {
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.transparent, null)))
             setLayout((resources.displayMetrics.widthPixels * 0.9).toInt(), (resources.displayMetrics.heightPixels * 0.85).toInt())
             addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             setDimAmount(0.5f)
@@ -252,7 +252,7 @@ class PersonaSettingsDialog : DialogFragment() {
     private fun sectionLabel(text: String): TextView {
         val d = resources.displayMetrics.density
         return TextView(requireContext()).apply {
-            this.text = text; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f
+            this.text = text; setTextColor(resources.getColor(R.color.gray_100, null)); textSize = 14f
             setTypeface(null, Typeface.BOLD); setPadding(0, (16 * d).toInt(), 0, (8 * d).toInt())
         }
     }
@@ -260,7 +260,7 @@ class PersonaSettingsDialog : DialogFragment() {
     private fun createPresetBtn(label: String, onClick: () -> Unit): TextView {
         val d = resources.displayMetrics.density
         return TextView(requireContext()).apply {
-            text = label; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
+            text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 13f
             gravity = Gravity.CENTER; setPadding((8 * d).toInt(), (10 * d).toInt(), (8 * d).toInt(), (10 * d).toInt())
             background = GradientDrawable().apply { setColor(resources.getColor(R.color.bg_tertiary, null)); setStroke(1, resources.getColor(R.color.border_color, null)); cornerRadius = (8 * d).toFloat() }
             setOnClickListener { onClick() }
@@ -271,11 +271,11 @@ class PersonaSettingsDialog : DialogFragment() {
         val d = resources.displayMetrics.density
         val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, (8 * d).toInt(), 0, (8 * d).toInt()) }
         col.addView(TextView(requireContext()).apply {
-            this.text = label; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 14f
+            this.text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 14f
             setPadding(0, 0, 0, (6 * d).toInt())
         })
         val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", min); setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 11f; minWidth = (32 * d).toInt() })
+        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", min); setTextColor(resources.getColor(R.color.gray_500, null)); textSize = 11f; minWidth = (32 * d).toInt() })
         row.addView(SeekBar(requireContext()).apply {
             setMax(((max - min) / step).toInt()); progress = ((value - min) / step).toInt()
             progressTintList = android.content.res.ColorStateList.valueOf(resources.getColor(R.color.accent, null))
@@ -286,10 +286,10 @@ class PersonaSettingsDialog : DialogFragment() {
                 override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
             })
         })
-        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", max); setTextColor(resources.getColor(R.color.text_tertiary, null)); textSize = 11f; minWidth = (32 * d).toInt(); gravity = Gravity.END })
+        row.addView(TextView(requireContext()).apply { text = String.format("%.2f", max); setTextColor(resources.getColor(R.color.gray_500, null)); textSize = 11f; minWidth = (32 * d).toInt(); gravity = Gravity.END })
         col.addView(row)
         col.addView(TextView(requireContext()).apply {
-            text = String.format("%.2f", value); setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f; gravity = Gravity.CENTER; setPadding(0, (4 * d).toInt(), 0, 0)
+            text = String.format("%.2f", value); setTextColor(resources.getColor(R.color.gray_200, null)); textSize = 13f; gravity = Gravity.CENTER; setPadding(0, (4 * d).toInt(), 0, 0)
         })
         return col
     }
@@ -299,10 +299,10 @@ class PersonaSettingsDialog : DialogFragment() {
         return TextView(requireContext()).apply {
             text = label; textSize = 13f; gravity = Gravity.CENTER
             setPadding((12 * d).toInt(), (8 * d).toInt(), (12 * d).toInt(), (8 * d).toInt())
-            setTextColor(if (active) resources.getColor(R.color.accent, null) else resources.getColor(R.color.text_tertiary, null))
+            setTextColor(if (active) resources.getColor(R.color.accent, null) else resources.getColor(R.color.gray_400, null))
             background = GradientDrawable().apply {
-                setColor(if (active) resources.getColor(R.color.accent_soft, null) else resources.getColor(R.color.bg_tertiary, null))
-                setStroke(if (active) 1 else 0, if (active) resources.getColor(R.color.accent, null) else Color.TRANSPARENT)
+                setColor(if (active) ContextCompat.getColor(requireContext(), R.color.accent_soft) else resources.getColor(R.color.bg_tertiary, null))
+                setStroke(if (active) 1 else 0, if (active) resources.getColor(R.color.accent, null) else resources.getColor(R.color.transparent, null))
                 cornerRadius = (8 * d).toFloat()
             }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { marginEnd = (6 * d).toInt() }
@@ -317,7 +317,7 @@ class PersonaSettingsDialog : DialogFragment() {
             setPadding(0, (6 * d).toInt(), 0, (6 * d).toInt())
         }
         row.addView(TextView(requireContext()).apply {
-            text = label; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 13f
+            text = label; setTextColor(resources.getColor(R.color.gray_300, null)); textSize = 13f
             layoutParams = LinearLayout.LayoutParams((50 * d).toInt(), LinearLayout.LayoutParams.WRAP_CONTENT)
         })
         val pctTv = TextView(requireContext()).apply {

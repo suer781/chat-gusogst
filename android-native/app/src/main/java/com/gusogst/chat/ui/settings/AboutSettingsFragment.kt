@@ -1,5 +1,6 @@
 package com.gusogst.chat.ui.settings
 
+import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -10,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
 
@@ -23,7 +23,7 @@ class AboutSettingsFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val sv = ScrollView(requireContext()).apply { setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.bg_primary)) }
+        val sv = ScrollView(requireContext()).apply { setBackgroundColor(resources.getColor(R.color.bg_primary, null)) }
         root = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, dp(100)) }
         sv.addView(root)
         return sv
@@ -35,6 +35,7 @@ class AboutSettingsFragment : Fragment() {
         root.removeAllViews()
         addHeader("\u5173\u4E8E")
 
+        // Logo + version card with gradient
         val logoCard = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
             setPadding(dp(24), dp(32), dp(24), dp(32))
@@ -45,26 +46,28 @@ class AboutSettingsFragment : Fragment() {
             }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(12), dp(16), dp(0)) }
         }
+        // App icon placeholder
         logoCard.addView(TextView(requireContext()).apply {
             text = "\u2764"; textSize = 48f; gravity = Gravity.CENTER
-            setTextColor(ContextCompat.getColor(requireContext(), R.color.accent))
+            setTextColor(resources.getColor(R.color.accent, null))
         })
         logoCard.addView(TextView(requireContext()).apply {
             text = "gusogst"; textSize = 24f; setTypeface(null, Typeface.BOLD)
-            setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary)); gravity = Gravity.CENTER
+            setTextColor(resources.getColor(R.color.text_primary, null)); gravity = Gravity.CENTER
             setPadding(0, dp(12), 0, dp(4))
         })
         logoCard.addView(TextView(requireContext()).apply {
             text = "AI Virtual Companion"; textSize = 14f
-            setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary)); gravity = Gravity.CENTER
+            setTextColor(resources.getColor(R.color.text_secondary, null)); gravity = Gravity.CENTER
         })
         logoCard.addView(TextView(requireContext()).apply {
             text = "v$VERSION \u00b7 $BUILD"; textSize = 12f
-            setTextColor(ContextCompat.getColor(requireContext(), R.color.text_tertiary)); gravity = Gravity.CENTER
+            setTextColor(resources.getColor(R.color.text_tertiary, null)); gravity = Gravity.CENTER
             setPadding(0, dp(8), 0, 0)
         })
         root.addView(logoCard)
 
+        // Info sections
         addInfoCard("\u6280\u672F\u6808", listOf(
             "\u524D\u7AEF" to "Capacitor + Web",
             "\u5E73\u53F0" to "Android / iOS",
@@ -77,11 +80,12 @@ class AboutSettingsFragment : Fragment() {
             "\u8BB8\u53EF\u8BC1" to "MIT License"
         ))
 
+        // Version check button
         val checkBtn = TextView(requireContext()).apply {
-            text = "\u68C0\u67E5\u66F4\u65B0"; setTextColor(ContextCompat.getColor(requireContext(), R.color.accent)); textSize = 14f
+            text = "\u68C0\u67E5\u66F4\u65B0"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 14f
             gravity = Gravity.CENTER; setPadding(dp(12), dp(14), dp(12), dp(14))
             background = GradientDrawable().apply {
-                setColor(ContextCompat.getColor(requireContext(), R.color.transparent)); setStroke(1, ContextCompat.getColor(requireContext(), R.color.accent)); cornerRadius = dp(10).toFloat()
+                setColor(resources.getColor(R.color.transparent, null)); setStroke(1, resources.getColor(R.color.accent, null)); cornerRadius = dp(10).toFloat()
             }
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(16), dp(16), dp(0)) }
         }
@@ -95,17 +99,17 @@ class AboutSettingsFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(16), dp(8), dp(16), dp(0)) }
         }
         card.addView(TextView(requireContext()).apply {
-            text = title; setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary)); textSize = 14f
+            text = title; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 14f
             setTypeface(null, Typeface.BOLD); setPadding(0, 0, 0, dp(10))
         })
         for ((label, value) in items) {
             val row = LinearLayout(requireContext()).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(4), 0, dp(4)) }
             row.addView(TextView(requireContext()).apply {
-                text = label; setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_400)); textSize = 13f
+                text = label; setTextColor(resources.getColor(R.color.gray_400, null)); textSize = 13f
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             })
             row.addView(TextView(requireContext()).apply {
-                text = value; setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_200)); textSize = 13f
+                text = value; setTextColor(resources.getColor(R.color.gray_200, null)); textSize = 13f
             })
             card.addView(row)
         }
@@ -115,8 +119,8 @@ class AboutSettingsFragment : Fragment() {
     private fun addHeader(title: String) {
         root.addView(LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(20), dp(16), dp(20), dp(12))
-            addView(TextView(requireContext()).apply { text = "\u2190"; setTextColor(ContextCompat.getColor(requireContext(), R.color.accent)); textSize = 20f; setPadding(dp(4), dp(4), dp(12), dp(4)); setOnClickListener { parentFragmentManager.popBackStack() } })
-            addView(TextView(requireContext()).apply { text = title; setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary)); textSize = 18f; setTypeface(null, Typeface.BOLD) })
+            addView(TextView(requireContext()).apply { text = "\u2190"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 20f; setPadding(dp(4), dp(4), dp(12), dp(4)); setOnClickListener { parentFragmentManager.popBackStack() } })
+            addView(TextView(requireContext()).apply { text = title; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f; setTypeface(null, Typeface.BOLD) })
         })
     }
 

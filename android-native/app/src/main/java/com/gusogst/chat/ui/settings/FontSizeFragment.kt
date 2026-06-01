@@ -32,12 +32,12 @@ class FontSizeFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(20) }
         }
         header.addView(TextView(requireContext()).apply {
-            text = getString(R.string.font_back); setTextColor(resources.getColor(R.color.accent, null)); textSize = 14f
+            text = "← 返回"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 14f
             setPadding(dp(8), dp(8), dp(8), dp(8))
             setOnClickListener { parentFragmentManager.popBackStack() }
         })
         header.addView(TextView(requireContext()).apply {
-            text = getString(R.string.font_title); setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f
+            text = "字号大小"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f
             setTypeface(null, Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginStart = dp(8) }
         })
@@ -56,7 +56,7 @@ class FontSizeFragment : Fragment() {
             elevation = 2f * resources.displayMetrics.density
         }
         previewCard.addView(TextView(requireContext()).apply {
-            text = getString(R.string.font_preview_title); setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f
+            text = "预览效果"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(8) }
         })
         val previewTv = TextView(requireContext())
@@ -69,7 +69,7 @@ class FontSizeFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(8) }
         }
         sliderLabel.addView(TextView(requireContext()).apply {
-            text = getString(R.string.font_size_label); setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 15f
+            text = "字号"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 15f
             setTypeface(null, Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
         })
@@ -93,7 +93,7 @@ class FontSizeFragment : Fragment() {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(24) }
         }
-        val labels = listOf(getString(R.string.font_size_s), getString(R.string.font_size_m), getString(R.string.font_size_l), getString(R.string.font_size_xl))
+        val labels = listOf("小", "中", "大", "特大")
         val indices = listOf(0, 2, 5, 8)
         for (i in indices.indices) {
             val idx = indices[i]
@@ -118,7 +118,7 @@ class FontSizeFragment : Fragment() {
 
         // Size matrix - show all sizes
         root.addView(TextView(requireContext()).apply {
-            text = getString(R.string.font_size_ref_title); setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f
+            text = "所有字号参考"; setTextColor(resources.getColor(R.color.text_secondary, null)); textSize = 12f
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(8) }
         })
         for (size in fontSizes) {
@@ -126,7 +126,7 @@ class FontSizeFragment : Fragment() {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(8), dp(4), dp(8), dp(4))
                 background = if (size == currentSize) GradientDrawable().apply {
-                    cornerRadius = dp(6).toFloat(); setColor(resources.getColor(R.color.accent_soft, null))
+                    cornerRadius = dp(6).toFloat(); setColor(ContextCompat.getColor(requireContext(), R.color.accent_soft))
                 } else null
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(2) }
                 setOnClickListener {
@@ -140,7 +140,7 @@ class FontSizeFragment : Fragment() {
                 layoutParams = LinearLayout.LayoutParams(dp(50), WRAP_CONTENT)
             })
             refRow.addView(TextView(requireContext()).apply {
-                text = getString(R.string.font_size_ref_text); setTextColor(resources.getColor(R.color.text_primary, null)); textSize = size.toFloat()
+                text = "这是一段文字预览，展示当前字号效果。"; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = size.toFloat()
                 layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
             })
             root.addView(refRow)
@@ -178,7 +178,7 @@ class FontSizeFragment : Fragment() {
     }
 
     private fun updatePreview(tv: TextView, label: TextView, size: Int) {
-        tv.text = getString(R.string.font_preview_content, size)
+        tv.text = "这是字号 ${size}px 的预览效果。\n你可以看到文字在不同大小下的可读性，\n选择最适合你阅读习惯的尺寸。"
         tv.setTextColor(resources.getColor(R.color.text_primary, null))
         tv.textSize = size.toFloat()
         label.text = "${size}px"
