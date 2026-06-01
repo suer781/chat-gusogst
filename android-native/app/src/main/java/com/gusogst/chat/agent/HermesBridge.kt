@@ -274,11 +274,11 @@ object HermesBridge {
             }
 
             // ── Emit collected deltas ───────────────────────────────
-            synchronized(deltas) {
-                for (delta in deltas) {
-                    emit(StreamEvent.Delta(delta))
-                }
-                deltas.clear()
+            val deltasCopy = synchronized(deltas) {
+                deltas.toList().also { deltas.clear() }
+            }
+            for (delta in deltasCopy) {
+                emit(StreamEvent.Delta(delta))
             }
 
             // ── Parse and emit result ──────────────────────────────
@@ -288,11 +288,11 @@ object HermesBridge {
         } catch (e: Exception) {
             Log.e(TAG, "sendMessage failed", e)
             // Emit any collected deltas before the error
-            synchronized(deltas) {
-                for (delta in deltas) {
-                    emit(StreamEvent.Delta(delta))
-                }
-                deltas.clear()
+            val errDeltas = synchronized(deltas) {
+                deltas.toList().also { deltas.clear() }
+            }
+            for (delta in errDeltas) {
+                emit(StreamEvent.Delta(delta))
             }
             emit(StreamEvent.Error(e.message ?: "Unknown error"))
 
