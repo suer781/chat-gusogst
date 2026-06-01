@@ -1,5 +1,7 @@
 package com.gusogst.chat.model
 
+import com.gusogst.chat.data.ApiMessage
+
 import com.google.gson.annotations.SerializedName
 
 // ===== 消息 =====
@@ -160,4 +162,17 @@ data class Delta(
     val role: String? = null,
     val content: String? = null,
     val reasoning_content: String? = null
+)
+
+
+data class ChatResponse(
+    val id: String? = null,
+    val choices: List<Choice>? = null
+)
+
+data class Choice(
+    val index: Int = 0,
+    val delta: Delta? = null,
+    val message: ApiMessage? = null,
+    val finish_reason: String? = null
 )
