@@ -122,7 +122,8 @@ data class UIProvider(
     var baseUrl: String = "",
     var apiKey: String = "",
     val models: MutableList<ModelInfo> = mutableListOf(),
-    var enabled: Boolean = true
+    var enabled: Boolean = true,
+    var lastUpdated: Long = System.currentTimeMillis()
 )
 
 // ===== 设置 =====
