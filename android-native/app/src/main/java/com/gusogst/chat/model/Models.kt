@@ -120,8 +120,7 @@ data class UIProvider(
     var baseUrl: String = "",
     var apiKey: String = "",
     val models: MutableList<ModelInfo> = mutableListOf(),
-    var enabled: Boolean = true,
-    var lastUpdated: Long = 0L  // 隐藏更新时间戳，用于检测数据是否过时
+    var enabled: Boolean = true
 )
 
 // ===== 设置 =====
@@ -151,27 +150,10 @@ enum class DisplayMode { compact, default, expanded }
 // ===== API 请求/响应 =====
 data class ChatRequest(
     val model: String,
-    val messages: List<ApiRequestMessage>,
+    val messages: List<ApiMessage>,
     val stream: Boolean = true,
     val temperature: Float = 0.7f,
     val max_tokens: Int? = null
-)
-
-/** 发送给 API 的简单消息（无 tool_calls 等字段），与 AgentTypes.ApiMessage 区分 */
-data class ApiRequestMessage(
-    val role: String,
-    val content: String
-)
-
-data class ChatResponse(
-    val id: String = "",
-    val choices: List<Choice> = emptyList()
-)
-
-data class Choice(
-    val index: Int = 0,
-    val delta: Delta? = null,
-    val message: ApiMessage? = null
 )
 
 data class Delta(
