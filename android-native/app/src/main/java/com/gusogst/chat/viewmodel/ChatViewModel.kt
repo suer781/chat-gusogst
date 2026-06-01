@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.gusogst.chat.agent.HermesBridge
 import com.gusogst.chat.agent.StreamEvent
-import com.gusogst.chat.data.ApiRequestMessage
 import com.gusogst.chat.data.ChatStore
 // MemoryManager replaced by HermesBridge memory system (holographic provider)
 import com.gusogst.chat.model.*
@@ -294,9 +293,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
         val systemMsg = conv.personaId?.let { pid ->
             _personas.value?.find { it.id == pid }?.prompt
-        }?.let { ApiRequestMessage(role = "system", content = it) }
+        }?.let { ApiMessage(role = "system", content = it) }
 
-        val apiMessages = mutableListOf<ApiRequestMessage>()
+        val apiMessages = mutableListOf<ApiMessage>()
         if (systemMsg != null) apiMessages.add(systemMsg)
 
         // 注入记忆上下文（基于用户最近一条消息检索，使用 Hermes holographic provider）
@@ -313,7 +312,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         }
 
         conv.messages.filter { it.status != MessageStatus.error }.forEach {
-            apiMessages.add(ApiRequestMessage(role = it.role.name, content = it.content))
+            apiMessages.add(ApiMessage(role = it.role.name, content = it.content))
         }
 
         val request = ChatRequest(model = model, messages = apiMessages, stream = true)
