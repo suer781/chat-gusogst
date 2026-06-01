@@ -1,3 +1,4 @@
+import com.gusogst.chat.R
 package com.gusogst.chat.util
 
 import android.graphics.Color
