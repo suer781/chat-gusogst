@@ -25,6 +25,7 @@ import com.gusogst.chat.model.ModelParamsConfig
 import com.gusogst.chat.model.Persona
 import com.gusogst.chat.model.PersonalityTraits
 import com.gusogst.chat.viewmodel.ChatViewModel
+import androidx.core.content.ContextCompat
 
 class PersonaSettingsDialog : DialogFragment() {
     private val viewModel: ChatViewModel by activityViewModels()

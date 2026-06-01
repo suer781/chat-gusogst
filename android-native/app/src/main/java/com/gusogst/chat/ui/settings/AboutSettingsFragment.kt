@@ -13,6 +13,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
+import androidx.core.content.ContextCompat
 
 class AboutSettingsFragment : Fragment() {
     private lateinit var root: LinearLayout

@@ -16,6 +16,7 @@ import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
 import com.gusogst.chat.model.UIProvider
 import com.gusogst.chat.viewmodel.ChatViewModel
+import androidx.core.content.ContextCompat
 
 class ProvidersFragment : Fragment() {
 
