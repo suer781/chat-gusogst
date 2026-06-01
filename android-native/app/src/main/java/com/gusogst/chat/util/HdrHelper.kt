@@ -1,5 +1,5 @@
-import com.gusogst.chat.R
 package com.gusogst.chat.util
+import com.gusogst.chat.R
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
