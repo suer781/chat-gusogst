@@ -158,7 +158,6 @@
     <color name="overlay_light_1A">#1AFFFFFF</color>
     <color name="danger_soft_1A">#1AFF5252</color>
     <color name="teal_soft_26">#2600B894</color>
-</resources>
 
     <!-- ═══ Search Engine Brand Colors ═══ -->
     <color name="search_duckduckgo">#DE5833</color>
@@ -193,3 +192,4 @@
     <color name="eyecare_honey">#FFCC80</color>
     <color name="eyecare_pale_yellow">#FFF9C4</color>
     <color name="eyecare_mint">#E0F2F1</color>
+</resources>
