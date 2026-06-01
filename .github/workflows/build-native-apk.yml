@@ -32,6 +32,15 @@ jobs:
           sdkmanager 'platforms;android-35' 'build-tools;35.0.0' --sdk_root=$ANDROID_HOME
           yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME || true
 
+      - name: Setup Python for Chaquopy
+        run: |
+          mkdir -p /opt/hermes/.venv/bin
+          PYTHON_BIN=$(which python3)
+          ln -sf "$PYTHON_BIN" /opt/hermes/.venv/bin/python
+          ln -sf "$PYTHON_BIN" /opt/hermes/.venv/bin/python3
+          /opt/hermes/.venv/bin/python --version
+        shell: bash
+
       - name: Make gradlew executable
         run: chmod +x gradlew
 
