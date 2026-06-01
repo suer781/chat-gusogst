@@ -205,7 +205,6 @@ class MainActivity : AppCompatActivity() {
                     else -> R.color.bg_primary_dark
                 }
             )
-            overridePendingTransition(R.anim.theme_enter, R.anim.theme_exit)
             AppCompatDelegate.setDefaultNightMode(mode)
         }
     }
