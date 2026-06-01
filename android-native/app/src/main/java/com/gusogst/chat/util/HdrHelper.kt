@@ -80,8 +80,8 @@ object HdrHelper {
         val bgGradient = GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
             intArrayOf(
-                if (glassEnabled) 0x23FFFFFF else resources.getColor(R.color.transparent, null),
-                if (enabled) c.headerBg else resources.getColor(R.color.transparent, null)
+                if (glassEnabled) 0x23FFFFFF else view.resources.getColor(R.color.transparent, null),
+                if (enabled) c.headerBg else view.resources.getColor(R.color.transparent, null)
             )
         )
         bgGradient.cornerRadius = 0f
@@ -92,7 +92,7 @@ object HdrHelper {
                 GradientDrawable.Orientation.TL_BR,
                 intArrayOf(
                     c.reflectionHighlight,
-                    resources.getColor(R.color.transparent, null)
+                    view.resources.getColor(R.color.transparent, null)
                 )
             )
 
@@ -113,25 +113,25 @@ object HdrHelper {
     }
 
     fun applyHeaderGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
-        if (!enabled) { view.setBackgroundColor(resources.getColor(R.color.transparent, null)); return }
+        if (!enabled) { view.setBackgroundColor(view.resources.getColor(R.color.transparent, null)); return }
         val c = if (isDark) DARK else LIGHT
         // HDR 头部：底色 + 反光层
         val bottom = ColorDrawable(c.headerBg)
         val reflection = GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
-            intArrayOf(c.reflectionHighlight, resources.getColor(R.color.transparent, null))
+            intArrayOf(c.reflectionHighlight, view.resources.getColor(R.color.transparent, null))
         )
         view.background = LayerDrawable(arrayOf(bottom, reflection))
         view.elevation = 2f * view.resources.displayMetrics.density
     }
 
     fun applyNavGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
-        if (!enabled) { view.setBackgroundColor(resources.getColor(R.color.transparent, null)); return }
+        if (!enabled) { view.setBackgroundColor(view.resources.getColor(R.color.transparent, null)); return }
         val c = if (isDark) DARK else LIGHT
         val bottom = ColorDrawable(c.navBg)
         val reflection = GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
-            intArrayOf(resources.getColor(R.color.transparent, null), c.reflectionHighlight)
+            intArrayOf(view.resources.getColor(R.color.transparent, null), c.reflectionHighlight)
         )
         view.background = LayerDrawable(arrayOf(bottom, reflection))
     }
