@@ -1,15 +1,26 @@
 package com.gusogst.chat.ui.settings
 
+import androidx.core.content.ContextCompat
 import android.graphics.Color
+import androidx.core.content.ContextCompat
 import android.graphics.Typeface
+import androidx.core.content.ContextCompat
 import android.graphics.drawable.GradientDrawable
+import androidx.core.content.ContextCompat
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import android.view.Gravity
+import androidx.core.content.ContextCompat
 import android.view.LayoutInflater
+import androidx.core.content.ContextCompat
 import android.view.View
+import androidx.core.content.ContextCompat
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import android.widget.*
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import com.gusogst.chat.R
 import com.gusogst.chat.viewmodel.ChatViewModel
