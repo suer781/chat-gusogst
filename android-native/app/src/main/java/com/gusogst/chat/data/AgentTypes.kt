@@ -74,3 +74,10 @@ sealed class StreamEvent {
     data class Error(val data: String) : StreamEvent()
     data class Done(val message: ApiMessage? = null) : StreamEvent()
 }
+
+
+// --- 简化的 API 请求消息 ---
+data class ApiRequestMessage(
+    val role: String,
+    val content: String
+)
