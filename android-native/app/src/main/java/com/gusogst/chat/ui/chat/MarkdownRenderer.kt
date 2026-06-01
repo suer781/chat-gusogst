@@ -1,5 +1,7 @@
 package com.gusogst.chat.ui.chat
 
+import com.gusogst.chat.R
+
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -34,10 +36,8 @@ object MarkdownRenderer {
                 }
                 line.startsWith("> ") -> {
                     ssb.append(line.removePrefix("> "))
-                    val quoteColor = tv.resources.getColor(R.color.md_quote_border, null)
-                    val quoteFg = tv.resources.getColor(R.color.md_quote_foreground, null)
-                    ssb.setSpan(QuoteSpan(quoteColor), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    ssb.setSpan(ForegroundColorSpan(quoteFg), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    ssb.setSpan(QuoteSpan(0xFFE94560.toInt()), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    ssb.setSpan(ForegroundColorSpan(0xFFA0A0B8.toInt()), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
                 line.startsWith("- ") || line.startsWith("* ") -> {
                     ssb.append("  • ")
@@ -58,7 +58,7 @@ object MarkdownRenderer {
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                     ssb.setSpan(
-                        BackgroundColorSpan(tv.resources.getColor(R.color.md_code_bg, null)), start, ssb.length,
+                        BackgroundColorSpan(0x1FFFFFFF), start, ssb.length,
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
@@ -79,11 +79,11 @@ object MarkdownRenderer {
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             ssb.setSpan(
-                BackgroundColorSpan(tv.resources.getColor(R.color.md_code_bg, null)), matcher.start(), matcher.end(),
+                BackgroundColorSpan(0x1FFFFFFF), matcher.start(), matcher.end(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             ssb.setSpan(
-                ForegroundColorSpan(tv.resources.getColor(R.color.md_code_inline_fg, null)), matcher.start(), matcher.end(),
+                ForegroundColorSpan(0xFFE94560.toInt()), matcher.start(), matcher.end(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         }
