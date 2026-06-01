@@ -30,7 +30,7 @@ class MemorySettingsFragment : Fragment() {
     private lateinit var tvLastUpdate: LinearLayout
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        memoryManager = MemoryManager(requireContext())
+        memoryManager = MemoryManager()
         val sv = ScrollView(requireContext()).apply { setBackgroundColor(resources.getColor(R.color.bg_primary, null)) }
         root = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, dp(100)) }
         sv.addView(root)
@@ -75,7 +75,7 @@ class MemorySettingsFragment : Fragment() {
 
     private fun refreshStats() {
         val stats = memoryManager.getStats()
-        setValueText(tvTotalEntries, "${stats.totalEntries} \u6761")
+        setValueText(tvTotalEntries, "${stats.totalMemories} \u6761")
 
         // 估算存储大小
         val json = memoryManager.exportMemories()
