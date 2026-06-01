@@ -28,7 +28,7 @@ class StreamProcessor {
                     if (data == "[DONE]") break
                     try {
                         val chunk = gson.fromJson(data, ChatResponse::class.java)
-                        val delta = chunk.choices.firstOrNull()?.delta ?: continue
+                        val delta = chunk.choices?.firstOrNull()?.delta ?: continue
                         // 思考内容
                         delta.reasoning_content?.let { if (it.isNotEmpty()) onThinking(it) }
                         // 正文内容
