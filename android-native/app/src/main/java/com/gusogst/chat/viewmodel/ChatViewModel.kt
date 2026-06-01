@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.gusogst.chat.agent.HermesBridge
 import com.gusogst.chat.agent.StreamEvent
+import com.gusogst.chat.data.ApiMessage
 import com.gusogst.chat.data.ChatStore
 // MemoryManager replaced by HermesBridge memory system (holographic provider)
 import com.gusogst.chat.model.*
@@ -303,7 +304,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         if (lastUserMsg != null && HermesBridge.isStarted()) {
             val memoryContext = HermesBridge.getMemoryContext(lastUserMsg.content, 5)
             if (memoryContext.isNotEmpty()) {
-                apiMessages.add(ApiRequestMessage(
+                apiMessages.add(ApiMessage(
                     role = "system",
                     content = "以下是与用户相关的记忆，可用于个性化回复：\n" +
                         memoryContext.joinToString("\n")
