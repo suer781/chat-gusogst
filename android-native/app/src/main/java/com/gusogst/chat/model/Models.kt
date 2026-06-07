@@ -292,3 +292,22 @@ data class UISettings(
     val temperature: Float = 0.7f,
     val topP: Float = 0.9f
 )
+
+// ===== Provider UI 模型 =====
+
+data class ModelInfo(
+    val id: String,
+    val name: String = ""
+)
+
+data class UIProvider(
+    val id: String = "",
+    val name: String,
+    val type: String = "custom",     // "anthropic" | "openai" | "gemini" | "deepseek" | "custom"
+    val baseUrl: String = "",
+    val apiKey: String = "",
+    val models: List<ModelInfo> = emptyList(),
+    val selectedModelId: String? = null,
+    val enabled: Boolean = true,
+    val lastUpdated: Long = 0L
+)

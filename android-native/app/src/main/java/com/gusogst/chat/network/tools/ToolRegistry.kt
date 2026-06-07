@@ -116,7 +116,7 @@ class ToolRegistry(
             return if (mcpResult.isSuccess) {
                 val result = mcpResult.getOrNull()!!
                 val text = result.content.joinToString("\n") { it.text ?: it.data ?: "" }
-                ToolResult(!result.isError, text)
+                val err = result.component2(); ToolResult(!err, text)
             } else {
                 ToolResult(false, "MCP tool error: ${mcpResult.exceptionOrNull()?.message}")
             }

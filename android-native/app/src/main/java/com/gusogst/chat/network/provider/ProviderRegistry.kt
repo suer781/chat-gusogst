@@ -49,10 +49,10 @@ class ProviderRegistry(context: Context) {
         val host = extractHost(url).lowercase()
 
         // 1. 精确域名匹配
-        for ((domain, type) in domainToType) {
-            if (host == domain || host.endsWith(".$domain")) {
-                Log.d(TAG, "Domain match: $host → $type")
-                return type
+        for (entry in domainToType.entries) {
+            if (host == entry.key || host.endsWith(".${entry.key}")) {
+                Log.d(TAG, "Domain match: $host → ${entry.value}")
+                return entry.value
             }
         }
 
