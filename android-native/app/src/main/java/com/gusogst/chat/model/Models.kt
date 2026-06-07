@@ -17,21 +17,38 @@ enum class MessageRole {
     @SerializedName("tool") TOOL
 }
 
+enum class MessageStatus {
+    SENT, STREAMING, ERROR, PENDING
+}
+
+enum class Role {
+    USER, ASSISTANT, SYSTEM, TOOL
+}
+
 data class Message(
+    val id: String = java.util.UUID.randomUUID().toString(),
     val role: MessageRole,
     val content: String,
     @SerializedName("tool_calls") val toolCalls: List<ToolCall>? = null,
     @SerializedName("tool_call_id") val toolCallId: String? = null,
     val name: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
-    val thinking: String? = null  // 思考内容 (Claude/OpenRouter)
+    val thinking: String? = null,  // 思考内容 (Claude/OpenRouter)
+    val status: MessageStatus = MessageStatus.SENT,
+    val thinkingCollapsed: Boolean = true
 )
 
 data class ToolCall(
     val id: String,
     val type: String = "function",
     val function: ToolCallFunction
-)
+) {
+    val name: String get() = function.name
+    val arguments: String get() = function.arguments
+} {
+    val name: String get() = function.name
+    val arguments: String get() = function.arguments
+}
 
 data class ToolCallFunction(
     val name: String,
@@ -42,7 +59,8 @@ data class ToolResult(
     @SerializedName("tool_call_id") val toolCallId: String,
     val name: String,
     val content: String,
-    @SerializedName("is_error") val isError: Boolean = false
+    @SerializedName("is_error") val isError: Boolean = false,
+    val result: String? = null
 )
 
 // ───────── 配置 ─────────
@@ -128,9 +146,13 @@ data class Persona(
     val tags: List<String>? = null,
     @SerializedName("is_default") val isDefault: Boolean = false,
     @SerializedName("built_in") val builtIn: Boolean = false,
-    val personality: String? = null,
+    val personality: PersonalityTraits = PersonalityTraits(),
     @SerializedName("model_params_config") val modelParamsConfig: ModelParamsConfig? = null
-)
+) {
+    val prompt: String get() = systemPrompt
+} {
+    val prompt: String get() = systemPrompt
+}
 
 data class ModelParamsConfig(
     val temperature: Float? = null,
@@ -218,7 +240,8 @@ data class AIGenerationOptions(
 
 data class MCPToolResult(
     val content: String,
-    @SerializedName("is_error") val isError: Boolean = false
+    @SerializedName("is_error") val isError: Boolean = false,
+    val result: String? = null
 )
 
 data class MCPToolDef(
@@ -256,21 +279,24 @@ data class Conversation(
 )
 
 data class PersonalityTraits(
-    val calm: Int = 50,
-    val warm: Int = 50,
-    val analytical: Int = 50,
-    val creative: Int = 50,
-    val curious: Int = 50,
-    val precise: Int = 50,
-    val playful: Int = 50,
-    val energetic: Int = 50
+    val calm: Float = 0.5f,
+    val warm: Float = 0.5f,
+    val analytical: Float = 0.5f,
+    val creative: Float = 0.5f,
+    val curious: Float = 0.5f,
+    val precise: Float = 0.5f,
+    val playful: Float = 0.5f,
+    val energetic: Float = 0.5f
 )
 
 /** UI 设置 */
 data class UISettings(
     // 基础
     val enabled: Boolean = true,
+    val theme: String = "dark",
     val themeMode: String = "dark",
+    val hdrEnabled: Boolean = false,
+    val glassEnabled: Boolean = false,
     val themeColor: String = "#6200EE",
     val accentColor: String = "#03DAC6",
     val fontSize: Float = 1.0f,
