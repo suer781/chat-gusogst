@@ -75,10 +75,11 @@ class MemorySettingsFragment : Fragment() {
 
     private fun refreshStats() {
         val stats = memoryManager.getStats()
-        setValueText(tvTotalEntries, "${stats.totalMemories} \u6761")
+        setValueText(tvTotalEntries, "${getAll().size} \u6761")
 
         // 估算存储大小
-        val json = memoryManager.exportMemories()
+        val json = memoryManager.getAll().joinToString("
+") { it.content }
         val bytes = json.toByteArray(Charsets.UTF_8).size
         setValueText(tvStorage, if (bytes < 1024) "$bytes B" else "%.1f KB".format(bytes / 1024f))
 
