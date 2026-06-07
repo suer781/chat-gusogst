@@ -154,7 +154,12 @@ class AnthropicProvider : ProviderAdapter {
                     val textBlock = JsonObject()
                     textBlock.addProperty("type", "text")
                     textBlock.addProperty("text", msg.content)
-                    contentArray.add(0, textBlock)
+                    val reordered = JsonArray()
+reordered.add(textBlock)
+for (el in contentArray) reordered.add(el)
+msgObj.add("content", reordered)
+msgs.add(msgObj)
+continue
                 }
                 msgObj.add("content", contentArray)
             } else {

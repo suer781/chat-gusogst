@@ -236,3 +236,15 @@ enum class AgentState {
     TOOL_CALLING,
     ERROR
 }
+
+/** 人设性格特质（滑块值 0-100） */
+data class PersonalityTraits(
+    val calm: Int = 50,
+    val warm: Int = 50,
+    val analytical: Int = 50,
+    val creative: Int = 50,
+    val curious: Int = 50,
+    val precise: Int = 50,
+    val playful: Int = 50,
+    val energetic: Int = 50
+)
