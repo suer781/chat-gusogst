@@ -238,6 +238,23 @@ enum class AgentState {
 }
 
 /** 人设性格特质（滑块值 0-100） */
+
+// ───────── 会话管理 ─────────
+
+enum class AvatarType {
+    emoji, url, builtin
+}
+
+data class Conversation(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val title: String = "",
+    @SerializedName("persona_id") val personaId: String? = null,
+    @SerializedName("created_at") val createdAt: Long = System.currentTimeMillis(),
+    @SerializedName("updated_at") val updatedAt: Long = System.currentTimeMillis(),
+    val pinned: Boolean = false,
+    val archived: Boolean = false
+)
+
 data class PersonalityTraits(
     val calm: Int = 50,
     val warm: Int = 50,
@@ -248,3 +265,9 @@ data class PersonalityTraits(
     val playful: Int = 50,
     val energetic: Int = 50
 )
+
+/** UI 设置 */
+data class UISettings(
+    val enabled: Boolean = true
+)
+EOF && echo 'done'
