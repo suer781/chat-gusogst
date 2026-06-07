@@ -268,5 +268,27 @@ data class PersonalityTraits(
 
 /** UI 设置 */
 data class UISettings(
-    val enabled: Boolean = true
+    // 基础
+    val enabled: Boolean = true,
+    val themeMode: String = "dark",
+    val themeColor: String = "#6200EE",
+    val accentColor: String = "#03DAC6",
+    val fontSize: Float = 1.0f,
+    // 消息显示
+    val useBubbles: Boolean = true,
+    val quoteAsBubble: Boolean = false,
+    val markdownRendering: Boolean = true,
+    val markdownRenderingMode: String = "full",
+    val longMessageThreshold: Int = 2000,
+    val messageCounterEnabled: Boolean = true,
+    val resourcePreviewEnabled: Boolean = true,
+    // 轮询
+    val pollingIntervalSeconds: Int = 10,
+    // Agent
+    val agentName: String = "助手",
+    val systemPrompt: String = "",
+    val agentTone: String = "default",
+    val agentResponseLength: String = "auto",
+    val temperature: Float = 0.7f,
+    val topP: Float = 0.9f
 )
