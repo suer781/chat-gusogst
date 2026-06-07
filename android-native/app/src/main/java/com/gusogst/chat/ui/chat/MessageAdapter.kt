@@ -52,7 +52,7 @@ class MessageAdapter(
 
     override fun getItemViewType(position: Int): Int =
         when (getItem(position).role) {
-            Role.user -> TYPE_USER
+            Role.USER -> TYPE_USER
             else -> TYPE_ASSISTANT
         }
 
@@ -140,7 +140,7 @@ class MessageAdapter(
         private val btnDelete: TextView = view.findViewById(R.id.btnDelete)
 
         fun bind(msg: Message, onRegen: ((Message) -> Unit)?, onDelete: ((Message) -> Unit)?, glass: Boolean = false) {
-            if (msg.content.isEmpty() && msg.status == MessageStatus.streaming) {
+            if (msg.content.isEmpty() && msg.status == MessageStatus.STREAMING) {
                 tvMessage.text = "..."
             } else {
                 MarkdownRenderer.render(msg.content, tvMessage)
@@ -148,7 +148,7 @@ class MessageAdapter(
             // 字号
             val fs = (itemView.tag as? MessageAdapter)?.fontSize ?: 14
             tvMessage.textSize = fs.toFloat()
-            tvMessage.alpha = if (msg.status == MessageStatus.streaming) 0.8f else 1f
+            tvMessage.alpha = if (msg.status == MessageStatus.STREAMING) 0.8f else 1f
             tvMessage.background?.alpha = if (glass) 80 else 255
 
             // HDR 气泡辉光 (Fix 5: always call for proper cleanup on toggle)

@@ -73,7 +73,7 @@ class PersonaProfileFragment : Fragment() {
             curious = b.getFloat("pcurious", 0.5f), precise = b.getFloat("pprecise", 0.5f),
             playful = b.getFloat("pplayful", 0.5f), energetic = b.getFloat("penergetic", 0.5f)
         )
-        val persona = Persona(id = id, name = name, avatar = avatar, prompt = prompt,
+        val persona = Persona(id = id, name = name, avatar = avatar, systemPrompt = prompt,
             tags = tags, personality = traits)
 
         // Header

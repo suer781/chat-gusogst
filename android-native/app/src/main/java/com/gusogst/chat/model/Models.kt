@@ -45,9 +45,7 @@ data class ToolCall(
 ) {
     val name: String get() = function.name
     val arguments: String get() = function.arguments
-} {
-    val name: String get() = function.name
-    val arguments: String get() = function.arguments
+    val result: String? = null
 }
 
 data class ToolCallFunction(
@@ -149,8 +147,6 @@ data class Persona(
     val personality: PersonalityTraits = PersonalityTraits(),
     @SerializedName("model_params_config") val modelParamsConfig: ModelParamsConfig? = null
 ) {
-    val prompt: String get() = systemPrompt
-} {
     val prompt: String get() = systemPrompt
 }
 
@@ -330,13 +326,16 @@ data class UIProvider(
     val id: String = "",
     val name: String,
     val type: String = "custom",     // "anthropic" | "openai" | "gemini" | "deepseek" | "custom"
-    val baseUrl: String = "",
-    val apiKey: String = "",
+    var baseUrl: String = "",
+    var apiKey: String = "",
     val models: List<ModelInfo> = emptyList(),
     val selectedModelId: String? = null,
+    val contextLength: Int = 4096,
     val enabled: Boolean = true,
     val lastUpdated: Long = 0L
-)
+) {
+    val modelId: String get() = selectedModelId ?: ""
+}
 
 // ===== API 通信模型 =====
 
