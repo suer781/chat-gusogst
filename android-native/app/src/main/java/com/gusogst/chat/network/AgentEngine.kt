@@ -24,7 +24,7 @@ private fun estimateTokens(text: String): Int {
 }
 
 class AgentEngine(
-    private val memoryManager: MemoryManager,
+    private val memoryManager: MemoryManager? = null,
     private val toolRegistry: ToolRegistry,
     private val mcpManager: MCPManager = MCPManager()
 ) {
@@ -326,7 +326,7 @@ class AgentEngine(
             .joinToString("\n") { it.content }
 
         if (recentUserMessages.isNotEmpty()) {
-            memoryManager.extractAndSave(recentUserMessages)
+            memoryManager?.extractAndSave(recentUserMessages)
         }
     }
 
@@ -335,6 +335,6 @@ class AgentEngine(
     // ═══════════════════════════════════════════
 
     suspend fun queryMemory(query: String, limit: Int = 3): List<String> {
-        return memoryManager.searchMemory(query, limit).map { it.content }
+        return memoryManager?.searchMemory(query, limit)?.map { it.content } ?: emptyList()
     }
 }

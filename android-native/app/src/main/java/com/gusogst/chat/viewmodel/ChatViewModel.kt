@@ -1,4 +1,12 @@
 package com.gusogst.chat.viewmodel
+nimport com.gusogst.chat.network.AgentEngine
+import com.gusogst.chat.network.OpenAIProvider
+import com.gusogst.chat.network.AnthropicProvider
+import com.gusogst.chat.data.PersonaManager
+import com.gusogst.chat.data.ToolRegistry
+import com.gusogst.chat.model.MessageRole
+import com.gusogst.chat.model.ModelConfig
+import com.gusogst.chat.model.AgentEvent
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -27,6 +35,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private val store = ChatStore.getInstance(app)
+    private val toolRegistry = ToolRegistry()
+    private val agentEngine by lazy { AgentEngine(toolRegistry) }
     private val streamProcessor = StreamProcessor()
     private val retryEngine = AutoRetryEngine()
     // Memory is managed by HermesBridge (holographic provider via Chaquopy)
@@ -142,7 +152,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         // ── Fallback: direct API via Retrofit/OkHttp ─────────────────
-        callAiApiDirect(conv)
+        callAiApiViaAgent(conv)
     }
 
     /**
@@ -287,6 +297,105 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
      * 保留作为 HermesBridge 不可用时的降级方案。
      * 包含自动故障转移到备用端点。
      */
+    private fun callAiApiViaAgent(conv: Conversation) {
+        activeConversationId = conv.id
+        val lastUserMsg = messages.lastOrNull { it.role == "user" && it.status == "ready" }
+        if (lastUserMsg == null) {
+            val errorMsg = Message(role = "assistant", content = "No user message found", status = "error")
+            messages = messages + errorMsg
+            _messages.value = messages
+            return
+        }
+
+        val modelConfig = ModelConfig(
+            provider = providerId,
+            model = selectedModel,
+            apiKey = apiKey,
+            apiHost = resolveEndpointPath(baseUrl),
+            temperature = 0.7f,
+            maxTokens = 1024
+        )
+
+        viewModelScope.launch {
+            var aiMsg = Message(role = "assistant", content = "", model = selectedModel)
+            messages = messages + aiMsg
+            _messages.value = messages
+            _isStreaming.value = true
+            var currentConversation = conversations.find { it.id == conv.id }
+
+            val history = messages.filter { it.status != "error" }.map {
+                com.gusogst.chat.model.Message(
+                    role = when (it.role) {
+                        "user" -> MessageRole.USER
+                        "assistant" -> MessageRole.ASSISTANT
+                        "tool" -> MessageRole.TOOL
+                        else -> MessageRole.SYSTEM
+                    },
+                    content = it.content,
+                    toolCallId = it.toolCallId
+                )
+            }.toMutableList()
+
+            try {
+                agentEngine.sendMessageStream(
+                    content = lastUserMsg.content,
+                    history = history,
+                    config = modelConfig,
+                    personaId = currentConversation?.personaId
+                ).collect { event ->
+                    when (event) {
+                        is AgentEvent.Token -> {
+                            aiMsg = aiMsg.copy(content = aiMsg.content + event.content)
+                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
+                            _messages.value = messages
+                        }
+                        is AgentEvent.Done -> {
+                            aiMsg = aiMsg.copy(
+                                content = event.message.content,
+                                status = "ready",
+                                thinking = event.message.thinking
+                            )
+                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
+                            _messages.value = messages
+                            currentConversation = currentConversation?.copy(updatedAt = System.currentTimeMillis())
+                            currentConversation?.let { c ->
+                                conversations = conversations.map { if (it.id == c.id) c else it }
+                                store.saveConversations(conversations)
+                            }
+                            _isStreaming.value = false
+                        }
+                        is AgentEvent.Error -> {
+                            val retryTimes = retryTimes
+                            if (retryTimes < 2) {
+                                this@ChatViewModel.retryTimes = retryTimes + 1
+                                delay(1500L)
+                                callAiApiViaAgent(conv)
+                                return@collect
+                            }
+                            aiMsg = aiMsg.copy(content = event.message, status = "error")
+                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
+                            _messages.value = messages
+                            _isStreaming.value = false
+                        }
+                        is AgentEvent.ToolCall -> {
+                            aiMsg = aiMsg.copy(content = aiMsg.content + "\n\\ud83d\\udd27 ${event.name}...")
+                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
+                            _messages.value = messages
+                        }
+                        is AgentEvent.ToolResult -> { /* no-op */ }
+                        is AgentEvent.Thinking -> {
+                            aiMsg = aiMsg.copy(thinking = (aiMsg.thinking ?: "") + event.content)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                aiMsg = aiMsg.copy(content = e.message ?: "Agent error", status = "error")
+                messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
+                _messages.value = messages
+                _isStreaming.value = false
+            }
+        }
+    }
     private fun callAiApiDirect(conv: Conversation) {
         val providers = _providers.value.orEmpty().filter { it.enabled }
         val primary = providers.firstOrNull() ?: return
