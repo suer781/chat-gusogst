@@ -152,7 +152,7 @@ object PersonaManager {
         personas.add(persona)
         saveCustomPersonas()
         return persona
-n    }
+    }
 
     // ─── 更新 ───
     fun update(

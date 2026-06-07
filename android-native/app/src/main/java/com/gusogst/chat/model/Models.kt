@@ -311,3 +311,29 @@ data class UIProvider(
     val enabled: Boolean = true,
     val lastUpdated: Long = 0L
 )
+
+// ===== API 通信模型 =====
+
+data class ChatRequest(
+    val message: String,
+    val conversationId: String = "",
+    val stream: Boolean = true,
+    val model: String? = null,
+    val temperature: Double = 0.7,
+    val maxTokens: Int = 4096
+)
+
+data class ChatResponse(
+    val content: String = "",
+    val role: String = "assistant",
+    val model: String = "",
+    val done: Boolean = false,
+    val error: String? = null,
+    val usage: TokenUsage? = null
+)
+
+data class TokenUsage(
+    val promptTokens: Int = 0,
+    val completionTokens: Int = 0,
+    val totalTokens: Int = 0
+)
