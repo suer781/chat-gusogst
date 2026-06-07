@@ -270,4 +270,3 @@ data class PersonalityTraits(
 data class UISettings(
     val enabled: Boolean = true
 )
-EOF && echo 'done'
