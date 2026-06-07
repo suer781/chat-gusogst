@@ -6,6 +6,7 @@ import com.gusogst.chat.data.PersonaManager
 import com.gusogst.chat.data.ToolRegistry
 import com.gusogst.chat.model.MessageRole
 import com.gusogst.chat.model.ModelConfig
+import com.gusogst.chat.data.memory.MemoryManager
 import com.gusogst.chat.model.AgentEvent
 
 import android.app.Application
@@ -36,7 +37,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private val store = ChatStore.getInstance(app)
     private val toolRegistry = ToolRegistry()
-    private val agentEngine by lazy { AgentEngine(toolRegistry) }
+    private val agentEngine by lazy { AgentEngine(toolRegistry, memoryManager) }
+    private val memoryManager by lazy { MemoryManager(app) }
     private val streamProcessor = StreamProcessor()
     private val retryEngine = AutoRetryEngine()
     // Memory is managed by HermesBridge (holographic provider via Chaquopy)
