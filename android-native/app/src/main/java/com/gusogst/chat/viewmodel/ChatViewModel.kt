@@ -1,5 +1,5 @@
 package com.gusogst.chat.viewmodel
-nimport com.gusogst.chat.network.AgentEngine
+import com.gusogst.chat.network.AgentEngine
 import com.gusogst.chat.network.OpenAIProvider
 import com.gusogst.chat.network.AnthropicProvider
 import com.gusogst.chat.data.PersonaManager
