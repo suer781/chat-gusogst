@@ -1,179 +1,238 @@
 package com.gusogst.chat.model
 
-import com.gusogst.chat.data.ApiMessage
+// ═══════════════════════════════════════════════
+// gusogst Android - 完整类型系统
+// 移植自 main 分支 agent-types.ts + shared/types.ts
+// ═══════════════════════════════════════════════
 
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 
-// ===== 消息 =====
-// [NOTE] AgentBridge 内部也有 Message 类（API 数据层），这里用 typealias 避免命名冲突，删除会导致 AgentBridge 编译失败（2026-05-22）
+// ───────── 消息相关 ─────────
+
+enum class MessageRole {
+    @SerializedName("system") SYSTEM,
+    @SerializedName("user") USER,
+    @SerializedName("assistant") ASSISTANT,
+    @SerializedName("tool") TOOL
+}
 
 data class Message(
-    val id: String = java.util.UUID.randomUUID().toString(),
-    val conversationId: String = "",
-    val role: Role = Role.user,
-    var content: String = "",
+    val role: MessageRole,
+    val content: String,
+    @SerializedName("tool_calls") val toolCalls: List<ToolCall>? = null,
+    @SerializedName("tool_call_id") val toolCallId: String? = null,
+    val name: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
-    var status: MessageStatus = MessageStatus.ready,
-    var thinking: String? = null,
-    val thinkingCollapsed: Boolean = true,
-    var providerId: String? = null,
-    var modelId: String? = null,
-    val toolCalls: List<ToolCall>? = null,
-    val attachments: List<Attachment>? = null
+    val thinking: String? = null  // 思考内容 (Claude/OpenRouter)
 )
-
-// [NOTE] enum 值曾因大写引用（Role.USER）导致 CI 编译失败，改 enum 定义时务必同步更新所有引用（2026-05-22）
-enum class Role { system, user, assistant }
-// [NOTE] 同 Role，大小写必须严格匹配，CI 不容错（2026-05-22）
-enum class MessageStatus { streaming, ready, error }
 
 data class ToolCall(
+    val id: String,
+    val type: String = "function",
+    val function: ToolCallFunction
+)
+
+data class ToolCallFunction(
+    val name: String,
+    val arguments: String
+)
+
+data class ToolResult(
+    @SerializedName("tool_call_id") val toolCallId: String,
+    val name: String,
+    val content: String,
+    @SerializedName("is_error") val isError: Boolean = false
+)
+
+// ───────── 配置 ─────────
+
+data class ModelConfig(
+    val provider: String,
+    val model: String,
+    @SerializedName("api_key") val apiKey: String,
+    @SerializedName("api_host") val apiHost: String = "",
+    val temperature: Float = 0.7f,
+    @SerializedName("max_tokens") val maxTokens: Int = 1024,
+    @SerializedName("top_p") val topP: Float? = null
+)
+
+data class AgentConfig(
+    val model: ModelConfig,
+    val persona: PersonaConfig? = null,
+    val provider: String? = null,
+    val memory: MemoryConfig = MemoryConfig(),
+    @SerializedName("mcp_servers") val mcpServers: Map<String, MCPServerConfig>? = null,
+    val search: SearchConfig = SearchConfig(),
+    @SerializedName("max_history_tokens") val maxHistoryTokens: Int = 32000
+)
+
+data class SearchConfig(
+    val engine: String = "builtin",
+    @SerializedName("tavily_api_key") val tavilyApiKey: String? = null
+)
+
+data class MemoryConfig(
+    val enabled: Boolean = true
+)
+
+data class MCPServerConfig(
+    val name: String = "",
+    val url: String,
+    val headers: Map<String, String>? = null,
+    val enabled: Boolean = true,
+    val timeout: Int = 30
+)
+
+data class PersonaConfig(
     val id: String = "",
     val name: String = "",
-    val arguments: String = "",
-    var result: String? = null
+    @SerializedName("system_prompt") val systemPrompt: String = "",
+    val avatar: String? = null,
+    val emoji: String? = null,
+    val tags: List<String>? = null
 )
 
-data class Attachment(
-    val type: String = "",  // "image"
-    val url: String = "",
-    val name: String? = null,
-    val mimeType: String? = null,
-    val size: Long? = null
+// ───────── Agent 事件流 ─────────
+
+sealed class AgentEvent {
+    data class Token(val content: String) : AgentEvent()
+    data class Thinking(val content: String) : AgentEvent()
+    data class ToolCall(val id: String, val name: String, val arguments: String) : AgentEvent()
+    data class ToolResult(val toolCallId: String, val name: String, val content: String) : AgentEvent()
+    data class Error(val message: String, val provider: String? = null) : AgentEvent()
+    data class Done(val message: Message) : AgentEvent()
+}
+
+// ───────── Provider 适配器 ─────────
+
+data class ToolDefinition(
+    val type: String = "function",
+    val function: ToolFunctionDef
 )
 
-// ===== 对话 =====
-
-data class ModelParamsConfig(
-    val temperature: Float = 0.7f,
-    val topP: Float = 0.9f,
-    val maxTokens: Int = 2048,
-    val overrideGlobal: Boolean = false,
-    val autoMode: String = "off"
+data class ToolFunctionDef(
+    val name: String,
+    val description: String,
+    val parameters: JsonObject
 )
 
-data class Conversation(
-    val id: String = java.util.UUID.randomUUID().toString(),
-    var title: String = "新对话",
-    val messages: MutableList<Message> = mutableListOf(),
-    val createdAt: Long = System.currentTimeMillis(),
-    var updatedAt: Long = System.currentTimeMillis(),
-    var personaId: String? = null,
-    var providerId: String? = null,
-    var modelId: String? = null,
-    var lastProviderId: String? = null,
-    var lastModelId: String? = null,
-    var settings: ConversationSettings? = null
-)
-
-data class ConversationSettings(
-    val fontSize: String? = null,
-    val enableThinking: Boolean? = null,
-    val thinkingAutoExpand: Boolean? = null,
-    val toolCallAutoExpand: Boolean? = null
-)
-
-// ===== 角色 =====
-data class PersonalityTraits(
-    val calm: Float = 0.5f,
-    val warm: Float = 0.5f,
-    val analytical: Float = 0.5f,
-    val creative: Float = 0.5f,
-    val curious: Float = 0.5f,
-    val precise: Float = 0.5f,
-    val playful: Float = 0.5f,
-    val energetic: Float = 0.5f
-)
+// ───────── Persona ─────────
 
 data class Persona(
-    val id: String = java.util.UUID.randomUUID().toString(),
-    val name: String = "",
-    val avatar: String = "",
-    val avatarType: AvatarType = AvatarType.emoji,
-    val prompt: String = "",
-    var bgColor: String = "",
-    var textColor: String = "",
-    val tags: List<String> = emptyList(),
-    val personality: PersonalityTraits = PersonalityTraits(),
-    val modelParamsConfig: ModelParamsConfig? = null
-)
-
-// [NOTE] 同上
-enum class AvatarType { url, blob, base64, emoji }
-
-data class PresetPersona(
-    val persona: Persona,
-    val category: String = ""
-)
-
-
-// ===== Model =====
-data class ModelInfo(
     val id: String,
-    val name: String? = null,
-    val contextLength: Long = 0
+    val name: String,
+    @SerializedName("system_prompt") val systemPrompt: String,
+    val avatar: String? = null,
+    val emoji: String? = null,
+    val tags: List<String>? = null,
+    @SerializedName("is_default") val isDefault: Boolean = false,
+    @SerializedName("built_in") val builtIn: Boolean = false,
+    val personality: String? = null,
+    @SerializedName("model_params_config") val modelParamsConfig: ModelParamsConfig? = null
 )
 
-// ===== 服务商 =====
-data class UIProvider(
+data class ModelParamsConfig(
+    val temperature: Float? = null,
+    @SerializedName("max_tokens") val maxTokens: Int? = null,
+    @SerializedName("top_p") val topP: Float? = null
+)
+
+// ───────── 记忆 ─────────
+
+data class MemoryEntry(
+    val id: String,
+    val content: String,
+    val type: String,  // fact, preference, context, instruction
+    val importance: Float = 0.5f,
+    @SerializedName("created_at") val createdAt: Long = System.currentTimeMillis(),
+    @SerializedName("last_accessed") val lastAccessed: Long = System.currentTimeMillis(),
+    @SerializedName("access_count") val accessCount: Int = 0,
+    val tags: List<String> = emptyList(),
+    val embedding: List<Float>? = null
+)
+
+// ───────── Provider 定义 (UI用) ─────────
+
+data class ProviderDef(
+    val id: String,
+    val name: String,
+    val transport: String = "https",  // https, http, ws
+    @SerializedName("api_key_env_vars") val apiKeyEnvVars: List<String>? = null,
+    @SerializedName("base_url") val baseUrl: String? = null,
+    @SerializedName("auth_type") val authType: String? = null,  // bearer, api-key, custom
+    @SerializedName("is_aggregator") val isAggregator: Boolean = false,
+    val aliases: List<String>? = null,
+    val doc: String? = null,
+    val source: String? = null
+)
+
+// ───────── 端点 ─────────
+
+data class EndpointEntry(
+    val url: String,
+    val providerId: String,
+    val name: String,
+    val needsApiKey: Boolean = true
+)
+
+data class EndpointRating(
+    var cumulativeScore: Double = 0.0,
+    var sampleCount: Int = 0,
+    var chatCount: Int = 0,
+    var lastChatAt: Long = System.currentTimeMillis()
+) {
+    fun quality(): Double {
+        return if (sampleCount == 0) 0.5
+        else cumulativeScore / (sampleCount * 100.0)
+    }
+}
+
+data class EndpointSelection(
+    val endpoint: String,
+    val apiKey: String,
+    val providerId: String
+)
+
+// ───────── 聊天会话 ─────────
+
+data class ChatSession(
     val id: String = java.util.UUID.randomUUID().toString(),
-    var name: String = "",
-    var isCustom: Boolean = false,
-    var baseUrl: String = "",
-    var apiKey: String = "",
-    val models: MutableList<ModelInfo> = mutableListOf(),
-    var enabled: Boolean = true,
-    var lastUpdated: Long = System.currentTimeMillis()
+    val title: String = "New Chat",
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    val personaId: String? = null,
+    val messages: MutableList<Message> = mutableListOf()
 )
 
-// ===== 设置 =====
-data class UISettings(
-    val theme: String = "system",
-    val glassEnabled: Boolean = false,
-    val glassOpacity: Int = 80,
-    val enableThinking: Boolean = true,
-    val thinkingAutoExpand: Boolean = false,
-    val toolCallAutoExpand: Boolean = false,
-    val developerMode: Boolean = false,
-    val selectedFont: String = "default",
-    val fontSize: String = "md",
-    val hapticEnabled: Boolean = true,
-    val eyeCareMode: Boolean = false,
-    val eyeCareWarmth: Int = 0,
-    val eyeCareIntensity: Int = 40,
-    val hdrEnabled: Boolean = false,
-    val bgAnimationEnabled: Boolean = true,
-    val searchEnabled: Boolean = false,
-    val activeSearchEngine: String = "duckduckgo"
+// ───────── AI 生成选项 ─────────
+
+data class AIGenerationOptions(
+    val model: String = "gpt-4o-mini",
+    val temperature: Float = 0.3f,
+    @SerializedName("max_tokens") val maxTokens: Int = 1024,
+    val signal: Boolean = true
 )
 
-enum class ThemeMode { system, light, dark, pureWhite, pureBlack }
-enum class DisplayMode { compact, default, expanded }
+// ───────── MCP 相关 ─────────
 
-// ===== API 请求/响应 =====
-data class ChatRequest(
-    val model: String,
-    val messages: List<ApiMessage>,
-    val stream: Boolean = true,
-    val temperature: Float = 0.7f,
-    val max_tokens: Int? = null
+data class MCPToolResult(
+    val content: String,
+    @SerializedName("is_error") val isError: Boolean = false
 )
 
-data class Delta(
-    val role: String? = null,
-    val content: String? = null,
-    val reasoning_content: String? = null
+data class MCPToolDef(
+    val name: String,
+    val description: String = "",
+    val inputSchema: JsonObject = JsonObject()
 )
 
+// ───────── Agent 状态 ─────────
 
-data class ChatResponse(
-    val id: String? = null,
-    val choices: List<Choice>? = null
-)
-
-data class Choice(
-    val index: Int = 0,
-    val delta: Delta? = null,
-    val message: ApiMessage? = null,
-    val finish_reason: String? = null
-)
+enum class AgentState {
+    IDLE,
+    THINKING,
+    STREAMING,
+    TOOL_CALLING,
+    ERROR
+}
