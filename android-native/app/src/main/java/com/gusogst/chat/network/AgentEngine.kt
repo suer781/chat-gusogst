@@ -326,7 +326,7 @@ class AgentEngine(
             .joinToString("\n") { it.content }
 
         if (recentUserMessages.isNotEmpty()) {
-            memoryManager?.extractAndSave(recentUserMessages)
+            memoryManager?.extractAndSave(listOf(recentUserMessages))
         }
     }
 

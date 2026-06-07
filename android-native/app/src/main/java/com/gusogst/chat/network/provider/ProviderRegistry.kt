@@ -75,7 +75,7 @@ class ProviderRegistry(context: Context) {
             "zhipu" in hostLower || "chatglm" in hostLower -> ProviderType.OPENAI
             "baichuan" in hostLower -> ProviderType.OPENAI
             "doubao" in hostLower || "volces" in hostLower || "volcengine" in hostLower -> ProviderType.OPENAI
-            else -> ProviderType.UNKNOWN
+            else -> ProviderType.CUSTOM
         }
     }
 
@@ -85,7 +85,7 @@ class ProviderRegistry(context: Context) {
         val url: String,
         val apiKey: String = "",
         val modelName: String = "",
-        val detectedType: ProviderType = ProviderType.UNKNOWN,
+        val detectedType: ProviderType = ProviderType.CUSTOM,
         val successCount: Int = 0,
         val failCount: Int = 0,
         val lastUsed: Long = 0,
@@ -129,7 +129,7 @@ class ProviderRegistry(context: Context) {
 
     fun suggestProviderType(url: String): String {
         val type = detectProviderType(url)
-        return if (type == ProviderType.UNKNOWN) {
+        return if (type == ProviderType.CUSTOM) {
             "无法自动识别，手动选择"
         } else {
             "识别为: ${type.name}"

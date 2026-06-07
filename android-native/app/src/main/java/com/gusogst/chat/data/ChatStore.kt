@@ -44,7 +44,7 @@ class ChatStore(context: Context) {
         val json = prefs.getString("conversations", null) ?: return emptyList()
         return try {
             val type = object : TypeToken<List<Conversation>>() {}.type
-            @Suppress("UNCHECKED_CAST") (@Suppress("UNCHECKED_CAST") gson.fromJson(json, type) as List<UIProvider> as? List<Conversation>)
+            gson.fromJson<List<Conversation>>(json, type) ?: emptyList()
         } catch (_: Exception) { emptyList() }
     }
 
@@ -57,7 +57,7 @@ class ChatStore(context: Context) {
         val json = prefs.getString("personas", null) ?: return seedDefaultPersonas()
         return try {
             val type = object : TypeToken<List<Persona>>() {}.type
-            @Suppress("UNCHECKED_CAST") (@Suppress("UNCHECKED_CAST") gson.fromJson(json, type) as List<UIProvider> as? List<Persona>)
+            gson.fromJson<List<Persona>>(json, type) ?: emptyList()
         } catch (_: Exception) { seedDefaultPersonas() }
     }
 
