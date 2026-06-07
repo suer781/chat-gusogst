@@ -50,7 +50,8 @@ chaquopy {
         // compilation).  The runtime Python that runs on-device is Chaquopy's
         // own cross-compiled build — this setting only affects the *build*
         // Python, not the embedded one.
-        buildPython("/opt/hermes/.venv/bin/python")
+        val hermesVenv = file("/opt/hermes/.venv/bin/python")
+        buildPython(if (hermesVenv.exists()) hermesVenv.absolutePath else "python3")
 
         // Core Hermes Agent dependencies (pure-Python subset that can be
         // cross-compiled for Android).  C-extension deps are excluded here
@@ -99,7 +100,8 @@ chaquopy {
         // under the Python path on-device so ``import agent`` etc. resolve.
         sourceSets {
             getByName("main") {
-                srcDir("/opt/hermes")
+                val hermesDir = file("/opt/hermes")
+                if (hermesDir.exists()) srcDir(hermesDir)
                 // Prevent deeply-nested test/docs/node_modules clutter
                 exclude(
                     "**/tests/**",
