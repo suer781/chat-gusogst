@@ -27,14 +27,24 @@ class StreamProcessor {
                     val data = l.removePrefix("data: ").trim()
                     if (data == "[DONE]") break
                     try {
-                        val chunk = gson.fromJson(data, ChatResponse::class.java)
-                        val delta = chunk.choices?.firstOrNull()?.delta ?: continue
-                        // 思考内容
-                        delta.reasoning_content?.let { if (it.isNotEmpty()) onThinking(it) }
-                        // 正文内容
-                        delta.content?.let { if (it.isNotEmpty()) onContent(it) }
+                        val json = com.google.gson.JsonParser.parseString(data).asJsonObject
+                        // OpenAI 格式: choices[0].delta.content
+                        val choices = json.getAsJsonArray("choices")
+                        if (choices != null && choices.size() > 0) {
+                            val delta = choices[0].asJsonObject.getAsJsonObject("delta")
+                            delta?.get("reasoning_content")?.asString?.let { if (it.isNotEmpty()) onThinking(it) }
+                            delta?.get("content")?.asString?.let { if (it.isNotEmpty()) onContent(it) }
+                        }
+                        // Ollama 格式: message.content
+                        val message = json.getAsJsonObject("message")
+                        if (message != null) {
+                            message.get("content")?.asString?.let { if (it.isNotEmpty()) onContent(it) }
+                        }
+                        // 简单格式: content 字段
+                        if (choices == null && message == null) {
+                            json.get("content")?.asString?.let { if (it.isNotEmpty()) onContent(it) }
+                        }
                     } catch (e: Exception) {
-                        // 解析失败时不打印 SSE 原始数据，避免聊天内容泄漏到 logcat
                         android.util.Log.w("StreamProcessor", "SSE parse error", e)
                     }
                 }
