@@ -5,11 +5,14 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.os.Bundle
+import android.view.Display
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
+import android.view.animation.PathInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -43,6 +46,12 @@ class MainActivity : AppCompatActivity() {
     private var currentTabIndex = 0
     private var isAnimating = false
 
+    // Animation interpolators - 精心调优的丝滑插值器
+    private val smoothEaseOut by lazy { PathInterpolator(0.25f, 0.1f, 0.25f, 1f) } // iOS风格
+    private val smoothEaseInOut by lazy { PathInterpolator(0.42f, 0f, 0.58f, 1f) } // Material Design
+    private val overshoot by lazy { OvershootInterpolator(1.2f) } // 轻微回弹
+    private val quickEaseOut by lazy { DecelerateInterpolator(1.5f) } // 快速减速
+
     private val navItems by lazy {
         listOf(navChat, navPersona, navProviders, navSettings)
     }
@@ -67,6 +76,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // 请求最高刷新率（关键！）
+        requestHighestRefreshRate()
+
         initViews()
         initNavigation()
         applyThemeToViews()
@@ -83,6 +95,45 @@ class MainActivity : AppCompatActivity() {
         
         // 设置环境光背景
         setupAmbientBackground()
+    }
+
+    /**
+     * 请求手机能支持的最高刷新率（120/144/240FPS）
+     */
+    private fun requestHighestRefreshRate() {
+        try {
+            // 获取所有支持的刷新率
+            val display = windowManager.defaultDisplay
+            val supportedModes = display.supportedModes
+            
+            // 找到刷新率最高的模式
+            val bestMode = supportedModes.maxByOrNull { it.refreshRate }
+            
+            if (bestMode != null) {
+                // 应用最佳模式
+                window.attributes = window.attributes.apply {
+                    preferredDisplayModeId = bestMode.modeId
+                }
+                
+                // 打印日志（可选）
+                android.util.Log.i("RefreshRate", "Requesting ${bestMode.refreshRate}Hz refresh rate")
+            }
+            
+            // 请求最高帧率（Android 11+）
+            window.setPreferMinimalPostProcessing(false)
+            
+            // 禁用 FPS 限制
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } catch (e: Exception) {
+            // 降级处理：如果上面的方法不行，尝试简单方法
+            try {
+                window.attributes = window.attributes.apply {
+                    refreshRate = Float.MAX_VALUE
+                }
+            } catch (e2: Exception) {
+                // 忽略错误
+            }
+        }
     }
 
     private fun applyThemeBeforeCreate() {
@@ -161,10 +212,10 @@ class MainActivity : AppCompatActivity() {
                     // 使用 Hardware Layer 优化动画
                     v.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                     v.animate()
-                        .scaleX(0.95f)
-                        .scaleY(0.95f)
-                        .setDuration(100)
-                        .setInterpolator(OvershootInterpolator())
+                        .scaleX(0.94f)
+                        .scaleY(0.94f)
+                        .setDuration(60)
+                        .setInterpolator(quickEaseOut)
                         .withEndAction { v.setLayerType(View.LAYER_TYPE_NONE, null) }
                         .start()
                 }
@@ -174,8 +225,8 @@ class MainActivity : AppCompatActivity() {
                     v.animate()
                         .scaleX(1f)
                         .scaleY(1f)
-                        .setDuration(200)
-                        .setInterpolator(OvershootInterpolator())
+                        .setDuration(120)
+                        .setInterpolator(overshoot)
                         .withEndAction { v.setLayerType(View.LAYER_TYPE_NONE, null) }
                         .start()
                 }
@@ -259,13 +310,15 @@ class MainActivity : AppCompatActivity() {
             icon?.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             icon?.animate()
                 ?.colorFilter(if (isActive) accentColor else inactiveColor)
-                ?.setDuration(200)
+                ?.setDuration(150)
+                ?.setInterpolator(smoothEaseOut)
                 ?.withEndAction { icon?.setLayerType(View.LAYER_TYPE_NONE, null) }
                 ?.start()
             
             text?.animate()
                 ?.textColor(if (isActive) accentColor else inactiveColor)
-                ?.setDuration(200)
+                ?.setDuration(150)
+                ?.setInterpolator(smoothEaseOut)
                 ?.start()
         }
         
@@ -283,8 +336,8 @@ class MainActivity : AppCompatActivity() {
             
             // 使用属性动画实现平滑移动
             val animator = ValueAnimator.ofFloat(navIndicator.x, targetX)
-            animator.duration = 350
-            animator.interpolator = DecelerateInterpolator()
+            animator.duration = 200
+            animator.interpolator = smoothEaseOut
             animator.addUpdateListener { animation ->
                 navIndicator.x = animation.animatedValue as Float
             }
@@ -292,14 +345,14 @@ class MainActivity : AppCompatActivity() {
             
             // 缩放动画
             navIndicator.animate()
-                .scaleX(1.2f)
-                .setDuration(175)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .scaleX(1.15f)
+                .setDuration(100)
+                .setInterpolator(smoothEaseInOut)
                 .withEndAction {
                     navIndicator.animate()
                         .scaleX(1f)
-                        .setDuration(175)
-                        .setInterpolator(AccelerateDecelerateInterpolator())
+                        .setDuration(100)
+                        .setInterpolator(smoothEaseInOut)
                         .withEndAction { 
                             navIndicator.setLayerType(View.LAYER_TYPE_NONE, null)
                         }
@@ -321,12 +374,14 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvHeaderTitle)?.apply {
             animate()
                 ?.alpha(0f)
-                ?.setDuration(150)
+                ?.setDuration(100)
+                ?.setInterpolator(smoothEaseOut)
                 ?.withEndAction {
                     text = title
                     animate()
                         ?.alpha(1f)
-                        ?.setDuration(150)
+                        ?.setDuration(100)
+                        ?.setInterpolator(smoothEaseOut)
                         ?.start()
                 }
                 ?.start()
@@ -407,8 +462,8 @@ class MainActivity : AppCompatActivity() {
         // 背景过渡
         transitionOverlay.animate()
             .alpha(1f)
-            .setDuration(300)
-            .setInterpolator(AccelerateDecelerateInterpolator())
+            .setDuration(200)
+            .setInterpolator(smoothEaseOut)
             .withEndAction {
                 transitionOverlay.setLayerType(View.LAYER_TYPE_NONE, null)
                 onEnd()
@@ -418,8 +473,8 @@ class MainActivity : AppCompatActivity() {
         // 内容淡出
         content.animate()
             .alpha(0f)
-            .setDuration(300)
-            .setInterpolator(AccelerateDecelerateInterpolator())
+            .setDuration(200)
+            .setInterpolator(smoothEaseOut)
             .start()
     }
 
