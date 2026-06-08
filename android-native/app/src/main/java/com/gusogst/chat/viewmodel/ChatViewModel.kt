@@ -4,10 +4,9 @@ import com.gusogst.chat.network.OpenAIProvider
 import com.gusogst.chat.network.AnthropicProvider
 import com.gusogst.chat.data.PersonaManager
 import com.gusogst.chat.data.ToolRegistry
-import com.gusogst.chat.model.MessageRole
-import com.gusogst.chat.model.ModelConfig
+import com.gusogst.chat.model.*
 import com.gusogst.chat.data.memory.MemoryManager
-import com.gusogst.chat.model.AgentEvent
+import com.gusogst.chat.data.settings.ChatSettingsManager
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -16,10 +15,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.gusogst.chat.agent.HermesBridge
 import com.gusogst.chat.agent.StreamEvent
-import com.gusogst.chat.data.ApiMessage
 import com.gusogst.chat.data.ChatStore
-// MemoryManager replaced by HermesBridge memory system (holographic provider)
-import com.gusogst.chat.model.*
 import com.gusogst.chat.network.ApiClient
 import com.gusogst.chat.network.AutoRetryEngine
 import com.gusogst.chat.network.EndpointKB
@@ -36,12 +32,12 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private val store = ChatStore.getInstance(app)
+    private val settingsManager = ChatSettingsManager(app)
     private val toolRegistry = ToolRegistry()
-    private val agentEngine by lazy { AgentEngine(toolRegistry, memoryManager) }
     private val memoryManager by lazy { MemoryManager(app) }
+    private val agentEngine by lazy { AgentEngine(toolRegistry, memoryManager) }
     private val streamProcessor = StreamProcessor()
     private val retryEngine = AutoRetryEngine()
-    // Memory is managed by HermesBridge (holographic provider via Chaquopy)
 
     private val _conversations = MutableLiveData<List<Conversation>>(emptyList())
     val conversations: LiveData<List<Conversation>> = _conversations
@@ -52,7 +48,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val _messages = MutableLiveData<List<Message>>(emptyList())
     val messages: LiveData<List<Message>> = _messages
 
-    private val _settings = MutableLiveData(UISettings())
+    private val _settings = MutableLiveData(settingsManager.toUISettings())
     val settings: LiveData<UISettings> = _settings
 
     private val _providers = MutableLiveData<List<UIProvider>>(emptyList())
@@ -68,7 +64,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun loadAll() {
         _conversations.value = store.loadConversations()
-        _settings.value = store.loadSettings()
+        _settings.value = settingsManager.toUISettings()
         _providers.value = store.loadProviders()
         _personas.value = store.loadPersonas()
         val activeId = store.loadActiveConversationId()
@@ -135,7 +131,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             createConversation()
             _activeConversation.value ?: return
         }
-        val userMsg = Message(conversationId = conv.id, role = Role.user, content = content)
+        val userMsg = Message(conversationId = conv.id, role = MessageRole.USER, content = content)
         conv.messages.add(userMsg)
         conv.updatedAt = System.currentTimeMillis()
         _messages.value = conv.messages.toList()
@@ -180,29 +176,29 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         }
 
         // Memory context (Hermes holographic provider via Chaquopy)
-        val lastUserMsg = conv.messages.lastOrNull { it.role == Role.user }
+        val lastUserMsg = conv.messages.lastOrNull { it.role == MessageRole.USER }
         if (lastUserMsg != null && HermesBridge.isStarted()) {
             val memoryContext = HermesBridge.getMemoryContext(lastUserMsg.content, 5)
             if (memoryContext.isNotEmpty()) {
                 messagesForAgent.add(mapOf(
                     "role" to "system",
                     "content" to ("以下是与用户相关的记忆，可用于个性化回复：\n" +
-                        memoryContext.joinToString("\n"))
+                            memoryContext.joinToString("\n"))
                 ))
             }
         }
 
         // Conversation history
-        conv.messages.filter { it.status != MessageStatus.error }.forEach {
+        conv.messages.filter { it.status != MessageStatus.ERROR }.forEach {
             messagesForAgent.add(mapOf("role" to it.role.name, "content" to it.content))
         }
 
         // Create AI message placeholder
         val aiMsg = Message(
             conversationId = conv.id,
-            role = Role.assistant,
+            role = MessageRole.ASSISTANT,
             content = "",
-            status = MessageStatus.streaming,
+            status = MessageStatus.STREAMING,
             providerId = primary.id,
             modelId = model
         )
@@ -216,11 +212,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     providerId = primary.id,
                     model = model,
                     messages = messagesForAgent,
-                    tools = null,  // Hermes Agent auto-discovers tools from its registry
+                    tools = null, // Hermes Agent auto-discovers tools from its registry
                 ).catch { e ->
                     // Flow error — agent crash
                     android.util.Log.e("ChatVM:Hermes", "Flow error", e)
-                    aiMsg.status = MessageStatus.error
+                    aiMsg.status = MessageStatus.ERROR
                     if (aiMsg.content.isBlank()) {
                         aiMsg.content = "Hermes Agent 运行错误: ${e.message?.take(100)}"
                     }
@@ -236,7 +232,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                         is StreamEvent.Complete -> {
                             val result = event.result
                             if (result.ok) {
-                                aiMsg.status = MessageStatus.ready
+                                aiMsg.status = MessageStatus.SENT
                                 // If Hermes returned additional content beyond deltas
                                 if (aiMsg.content.isBlank() && result.content.isNotBlank()) {
                                     aiMsg.content = result.content
@@ -244,12 +240,12 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                                 // Record tool calls if any
                                 if (result.toolCalls.isNotEmpty()) {
                                     aiMsg.content += "\n\n--- 工具调用 ---\n" +
-                                        result.toolCalls.joinToString("\n") { tc ->
-                                            "🔧 ${tc.name}: ${tc.arguments.take(200)}"
-                                        }
+                                            result.toolCalls.joinToString("\n") { tc ->
+                                                "🔧 ${tc.name}: ${tc.arguments.take(200)}"
+                                            }
                                 }
                             } else {
-                                aiMsg.status = MessageStatus.error
+                                aiMsg.status = MessageStatus.ERROR
                                 if (aiMsg.content.isBlank()) {
                                     aiMsg.content = result.error ?: "Agent 返回空响应"
                                 }
@@ -266,7 +262,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                             }
                         }
                         is StreamEvent.Error -> {
-                            aiMsg.status = MessageStatus.error
+                            aiMsg.status = MessageStatus.ERROR
                             android.util.Log.e("ChatVM:Hermes", "Stream error: ${event.message}")
                             // Only set error if we have no content yet
                             if (aiMsg.content.isBlank()) {
@@ -282,7 +278,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 }
             } catch (e: Exception) {
                 android.util.Log.e("ChatVM:Hermes", "sendMessage failed", e)
-                aiMsg.status = MessageStatus.error
+                aiMsg.status = MessageStatus.ERROR
                 if (aiMsg.content.isBlank()) {
                     aiMsg.content = "Hermes Agent 初始化失败: ${e.message?.take(100)}"
                 }
@@ -300,104 +296,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
      * 包含自动故障转移到备用端点。
      */
     private fun callAiApiViaAgent(conv: Conversation) {
-        activeConversationId = conv.id
-        val lastUserMsg = messages.lastOrNull { it.role == "user" && it.status == "ready" }
-        if (lastUserMsg == null) {
-            val errorMsg = Message(role = "assistant", content = "No user message found", status = "error")
-            messages = messages + errorMsg
-            _messages.value = messages
-            return
-        }
-
-        val modelConfig = ModelConfig(
-            provider = providerId,
-            model = selectedModel,
-            apiKey = apiKey,
-            apiHost = resolveEndpointPath(baseUrl),
-            temperature = 0.7f,
-            maxTokens = 1024
-        )
-
-        viewModelScope.launch {
-            var aiMsg = Message(role = "assistant", content = "", model = selectedModel)
-            messages = messages + aiMsg
-            _messages.value = messages
-            _isStreaming.value = true
-            var currentConversation = conversations.find { it.id == conv.id }
-
-            val history = messages.filter { it.status != "error" }.map {
-                com.gusogst.chat.model.Message(
-                    role = when (it.role) {
-                        "user" -> MessageRole.USER
-                        "assistant" -> MessageRole.ASSISTANT
-                        "tool" -> MessageRole.TOOL
-                        else -> MessageRole.SYSTEM
-                    },
-                    content = it.content,
-                    toolCallId = it.toolCallId
-                )
-            }.toMutableList()
-
-            try {
-                agentEngine.sendMessageStream(
-                    content = lastUserMsg.content,
-                    history = history,
-                    config = modelConfig,
-                    personaId = currentConversation?.personaId
-                ).collect { event ->
-                    when (event) {
-                        is AgentEvent.Token -> {
-                            aiMsg = aiMsg.copy(content = aiMsg.content + event.content)
-                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
-                            _messages.value = messages
-                        }
-                        is AgentEvent.Done -> {
-                            aiMsg = aiMsg.copy(
-                                content = event.message.content,
-                                status = "ready",
-                                thinking = event.message.thinking
-                            )
-                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
-                            _messages.value = messages
-                            currentConversation = currentConversation?.copy(updatedAt = System.currentTimeMillis())
-                            currentConversation?.let { c ->
-                                conversations = conversations.map { if (it.id == c.id) c else it }
-                                store.saveConversations(conversations)
-                            }
-                            _isStreaming.value = false
-                        }
-                        is AgentEvent.Error -> {
-                            val retryTimes = retryTimes
-                            if (retryTimes < 2) {
-                                this@ChatViewModel.retryTimes = retryTimes + 1
-                                delay(1500L)
-                                callAiApiViaAgent(conv)
-                                return@collect
-                            }
-                            aiMsg = aiMsg.copy(content = event.message, status = "error")
-                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
-                            _messages.value = messages
-                            _isStreaming.value = false
-                        }
-                        is AgentEvent.ToolCall -> {
-                            aiMsg = aiMsg.copy(content = aiMsg.content + "\n\\ud83d\\udd27 ${event.name}...")
-                            messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
-                            _messages.value = messages
-                        }
-                        is AgentEvent.ToolResult -> { /* no-op */ }
-                        is AgentEvent.Thinking -> {
-                            aiMsg = aiMsg.copy(thinking = (aiMsg.thinking ?: "") + event.content)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                aiMsg = aiMsg.copy(content = e.message ?: "Agent error", status = "error")
-                messages = messages.map { if (it.id == aiMsg.id) aiMsg else it }
-                _messages.value = messages
-                _isStreaming.value = false
-            }
-        }
+        // Fallback to direct API implementation
+        callAiApiDirect(conv)
     }
+
     private fun callAiApiDirect(conv: Conversation) {
         val providers = _providers.value.orEmpty().filter { it.enabled }
         val primary = providers.firstOrNull() ?: return
@@ -411,19 +313,19 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         if (systemMsg != null) apiMessages.add(systemMsg)
 
         // 注入记忆上下文（基于用户最近一条消息检索，使用 Hermes holographic provider）
-        val lastUserMsg = conv.messages.lastOrNull { it.role == Role.user }
+        val lastUserMsg = conv.messages.lastOrNull { it.role == MessageRole.USER }
         if (lastUserMsg != null && HermesBridge.isStarted()) {
             val memoryContext = HermesBridge.getMemoryContext(lastUserMsg.content, 5)
             if (memoryContext.isNotEmpty()) {
                 apiMessages.add(ApiMessage(
                     role = "system",
                     content = "以下是与用户相关的记忆，可用于个性化回复：\n" +
-                        memoryContext.joinToString("\n")
+                            memoryContext.joinToString("\n")
                 ))
             }
         }
 
-        conv.messages.filter { it.status != MessageStatus.error }.forEach {
+        conv.messages.filter { it.status != MessageStatus.ERROR }.forEach {
             apiMessages.add(ApiMessage(role = it.role.name, content = it.content))
         }
 
@@ -431,9 +333,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
         val aiMsg = Message(
             conversationId = conv.id,
-            role = Role.assistant,
+            role = MessageRole.ASSISTANT,
             content = "",
-            status = MessageStatus.streaming,
+            status = MessageStatus.STREAMING,
             providerId = primary.id,
             modelId = model
         )
@@ -486,7 +388,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
             // 3) 全部失败
             if (!success) {
-                aiMsg.status = MessageStatus.error
+                aiMsg.status = MessageStatus.ERROR
                 if (aiMsg.content.isBlank()) {
                     aiMsg.content = "所有可用端点均已失败，请检查网络或供应商配置"
                 }
@@ -527,7 +429,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                             _messages.postValue(conv.messages.toList())
                         },
                         onComplete = {
-                            aiMsg.status = MessageStatus.ready
+                            aiMsg.status = MessageStatus.SENT
                             conv.updatedAt = System.currentTimeMillis()
                             _messages.postValue(conv.messages.toList())
                             _isStreaming.postValue(false)
@@ -609,12 +511,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     // ===== 设置 =====
     fun updateSettings(update: (UISettings) -> UISettings) {
-        val new = update(_settings.value ?: UISettings())
-        _settings.value = new
-        store.saveSettings(new)
+        val newSettings = update(_settings.value ?: settingsManager.toUISettings())
+        _settings.value = newSettings
     }
 
-    
     /**
      * 设置当前对话的模型。
      * 更新对话的 providerId + modelId 并持久化。
