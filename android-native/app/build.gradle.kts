@@ -54,6 +54,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
         encoding = "UTF-8"
+        // 使用 Java toolchain 确保与宿主 JDK 版本无关
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -63,6 +65,13 @@ android {
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
         )
+    }
+
+    // 使用 Java toolchain 固定为 Java 21，避免宿主 JDK（如 25）导致兼容性问题
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
     }
 
     buildFeatures {
@@ -96,6 +105,9 @@ chaquopy {
 */
 
 dependencies {
+    // Core library desugaring for Java 8+ APIs on older Android versions
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
+
     // AndroidX Core Libraries (Latest Stable)
     implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.core:core-splashscreen:1.1.0")

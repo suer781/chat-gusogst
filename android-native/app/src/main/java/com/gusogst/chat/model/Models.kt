@@ -32,13 +32,13 @@ data class Message(
     val conversationId: String = "",
     var providerId: String = "",
     var modelId: String = "",
-    @SerializedName("tool_calls") val toolCalls: List<ToolCall>? = null,
+    @SerializedName("tool_calls") var toolCalls: List<ToolCall>? = null,
     @SerializedName("tool_call_id") val toolCallId: String? = null,
     val name: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
-    val thinking: String? = null,  // 思考内容 (Claude/OpenRouter)
-    val status: MessageStatus = MessageStatus.SENT,
-    val thinkingCollapsed: Boolean = true
+    var thinking: String? = null,  // 思考内容 (Claude/OpenRouter)
+    var status: MessageStatus = MessageStatus.SENT,
+    var thinkingCollapsed: Boolean = true
 )
 
 data class ToolCall(
@@ -269,11 +269,11 @@ enum class AvatarType {
 
 data class Conversation(
     val id: String = java.util.UUID.randomUUID().toString(),
-    val title: String = "",
+    var title: String = "",
     val messages: MutableList<Message> = mutableListOf(),
-    val providerId: String? = null,
-    val modelId: String? = null,
-    @SerializedName("persona_id") val personaId: String? = null,
+    var providerId: String? = null,
+    var modelId: String? = null,
+    @SerializedName("persona_id") var personaId: String? = null,
     @SerializedName("created_at") val createdAt: Long = System.currentTimeMillis(),
     @SerializedName("updated_at") var updatedAt: Long = System.currentTimeMillis(),
     val pinned: Boolean = false,
@@ -334,7 +334,7 @@ data class UIProvider(
     val type: String = "custom",     // "anthropic" | "openai" | "gemini" | "deepseek" | "custom"
     var baseUrl: String = "",
     var apiKey: String = "",
-    val models: List<ModelInfo> = emptyList(),
+    val models: MutableList<ModelInfo> = mutableListOf(),
     val selectedModelId: String? = null,
     val contextLength: Int = 4096,
     val enabled: Boolean = true,

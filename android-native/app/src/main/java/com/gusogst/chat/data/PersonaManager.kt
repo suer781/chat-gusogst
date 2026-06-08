@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.gusogst.chat.model.Persona
 import com.gusogst.chat.model.ModelParamsConfig
+import com.gusogst.chat.model.PersonalityTraits
 
 object PersonaManager {
     private const val PREFS_NAME = "personas"
@@ -136,7 +137,7 @@ object PersonaManager {
         systemPrompt: String,
         emoji: String? = null,
         tags: List<String>? = null,
-        personality: String? = null,
+        personality: com.gusogst.chat.model.PersonalityTraits? = null,
         modelParams: ModelParamsConfig? = null
     ): Persona {
         val id = "custom_${System.currentTimeMillis()}"
@@ -146,7 +147,7 @@ object PersonaManager {
             systemPrompt = systemPrompt,
             emoji = emoji,
             tags = tags,
-            personality = personality,
+            personality = personality ?: com.gusogst.chat.model.PersonalityTraits(),
             modelParamsConfig = modelParams
         )
         personas.add(persona)
@@ -161,7 +162,7 @@ object PersonaManager {
         systemPrompt: String? = null,
         emoji: String? = null,
         tags: List<String>? = null,
-        personality: String? = null,
+        personality: com.gusogst.chat.model.PersonalityTraits? = null,
         modelParams: ModelParamsConfig? = null
     ): Boolean {
         val index = personas.indexOfFirst { it.id == id }

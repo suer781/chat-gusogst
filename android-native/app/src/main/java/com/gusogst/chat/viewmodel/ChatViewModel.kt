@@ -35,7 +35,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val settingsManager = ChatSettingsManager(app)
     private val toolRegistry = ToolRegistry()
     private val memoryManager by lazy { MemoryManager(app) }
-    private val agentEngine by lazy { AgentEngine(toolRegistry, memoryManager) }
+    private val agentEngine by lazy { AgentEngine(memoryManager, toolRegistry) }
     private val streamProcessor = StreamProcessor()
     private val retryEngine = AutoRetryEngine()
 

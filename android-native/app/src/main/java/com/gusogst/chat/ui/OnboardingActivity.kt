@@ -332,9 +332,10 @@ class OnboardingActivity : AppCompatActivity() {
         }
     }
 
-    private fun animateViewVisibility(view: View, visibility: Int, duration: Long) {
+    private fun animateViewVisibility(view: View?, visibility: Int, duration: Long) {
+        view ?: return
         if (view.visibility == visibility) return
-        
+
         if (visibility == View.VISIBLE) {
             view.visibility = View.VISIBLE
             view.alpha = 0f
@@ -362,7 +363,7 @@ class OnboardingActivity : AppCompatActivity() {
     }
 
     private fun playEntranceAnimation() {
-        val rootView = findViewById<View>(R.id.onboarding_root)
+        val rootView = findViewById<View>(R.id.onboarding_root) ?: return
         
         // 重置状态
         rootView.alpha = 0f
@@ -436,7 +437,7 @@ class OnboardingActivity : AppCompatActivity() {
             }, 200)
             
             // 独特的漩涡式消失效果
-            val rootView = findViewById<View>(R.id.onboarding_root)
+            val rootView = findViewById<View>(R.id.onboarding_root) ?: return
             val readyRoot = findViewById<View>(R.id.ready_root) ?: rootView
             
             // 阶段1：内容轻微旋转并闪烁

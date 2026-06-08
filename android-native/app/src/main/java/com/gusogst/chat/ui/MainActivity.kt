@@ -10,7 +10,9 @@ import android.graphics.ColorFilter
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Build
+import androidx.annotation.RequiresApi
 import android.os.Bundle
 import android.view.Display
 import android.view.View
@@ -586,29 +588,44 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateNavigationState() {
-        val isDark = themeController.isDarkTheme()
         val accentColor = themeController.getAccentColorInt()
         val inactiveColor = themeController.getSecondaryTextColor()
-        
+
         navItems.forEachIndexed { i, item ->
             val isActive = i == currentTabIndex
             val icon = item.getChildAt(0) as? ImageView
             val text = item.getChildAt(1) as? TextView
-            
-            // 颜色过渡动画 - 使用 Hardware Layer
-            icon?.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-            icon?.animate()
-                ?.colorFilter(if (isActive) accentColor else inactiveColor)
-                ?.setDuration(150)
-                ?.setInterpolator(smoothEaseOut)
-                ?.withEndAction { icon?.setLayerType(View.LAYER_TYPE_NONE, null) }
-                ?.start()
-            
-            text?.animate()
-                ?.textColor(if (isActive) accentColor else inactiveColor)
-                ?.setDuration(150)
-                ?.setInterpolator(smoothEaseOut)
-                ?.start()
+
+            val targetIconColor = if (isActive) accentColor else inactiveColor
+            val targetTextColor = if (isActive) accentColor else inactiveColor
+
+            icon?.let { safeIcon ->
+                safeIcon.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                val iconAnim = ObjectAnimator.ofArgb(
+                    safeIcon,
+                    "colorFilter",
+                    targetIconColor
+                )
+                iconAnim.duration = 150
+                iconAnim.interpolator = smoothEaseOut
+                iconAnim.addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        safeIcon.setLayerType(View.LAYER_TYPE_NONE, null)
+                    }
+                })
+                iconAnim.start()
+            }
+
+            text?.let { safeText ->
+                val textAnim = ObjectAnimator.ofArgb(
+                    safeText,
+                    "textColor",
+                    targetTextColor
+                )
+                textAnim.duration = 150
+                textAnim.interpolator = smoothEaseOut
+                textAnim.start()
+            }
         }
         
         // 移动指示器 - 使用 Hardware Layer
@@ -683,22 +700,21 @@ class MainActivity : AppCompatActivity() {
             3 -> getString(R.string.nav_settings)
             else -> getString(R.string.app_name)
         }
-        
-        findViewById<TextView>(R.id.tvHeaderTitle)?.apply {
-            animate()
-                ?.alpha(0f)
-                ?.setDuration(100)
-                ?.setInterpolator(smoothEaseOut)
-                ?.withEndAction {
-                    text = title
-                    animate()
-                        ?.alpha(1f)
-                        ?.setDuration(100)
-                        ?.setInterpolator(smoothEaseOut)
-                        ?.start()
-                }
-                ?.start()
-        }
+
+        val headerTitle = findViewById<TextView>(R.id.tvHeaderTitle) ?: return
+        headerTitle.animate()
+            .alpha(0f)
+            .setDuration(100)
+            .setInterpolator(smoothEaseOut)
+            .withEndAction {
+                headerTitle.text = title
+                headerTitle.animate()
+                    .alpha(1f)
+                    .setDuration(100)
+                    .setInterpolator(smoothEaseOut)
+                    .start()
+            }
+            .start()
     }
 
     private fun setupAmbientBackground() {
