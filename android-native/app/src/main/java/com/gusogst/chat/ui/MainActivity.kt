@@ -83,6 +83,9 @@ class MainActivity : AppCompatActivity() {
         initNavigation()
         applyThemeToViews()
         
+        // 检查是否是首次启动
+        checkFirstLaunch()
+        
         // 预加载主题资源（性能优化）
         window.decorView.post {
             HdrHelper.preloadResources(window.decorView)
@@ -95,6 +98,39 @@ class MainActivity : AppCompatActivity() {
         
         // 设置环境光背景
         setupAmbientBackground()
+    }
+    
+    /**
+     * 检查是否是首次启动
+     * 0: 新用户，首次打开
+     * 1: 已完成向导的用户
+     */
+    private fun checkFirstLaunch() {
+        val launchCount = settingsManager.getLaunchCount()
+        
+        if (launchCount == 0) {
+            // 首次启动 - 显示向导
+            android.util.Log.i("FirstLaunch", "首次启动应用，应该显示向导")
+            // TODO: 这里添加向导页面的显示逻辑
+            // 目前先直接设置为已完成首次启动（方便测试）
+            // 未来可以替换为真实的向导流程
+            markFirstLaunchComplete()
+        } else {
+            // 非首次启动 - 直接进入应用
+            android.util.Log.i("FirstLaunch", "应用已启动过 $launchCount 次，直接进入")
+        }
+    }
+    
+    /**
+     * 标记首次启动已完成
+     * 将计数器设置为 1 并永久保存
+     */
+    fun markFirstLaunchComplete() {
+        val currentCount = settingsManager.getLaunchCount()
+        if (currentCount == 0) {
+            settingsManager.setLaunchCount(1)
+            android.util.Log.i("FirstLaunch", "首次启动完成，计数器已设置为 1")
+        }
     }
 
     /**

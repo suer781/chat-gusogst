@@ -15,6 +15,9 @@ class ChatSettingsManager(context: Context) {
         context.getSharedPreferences("chat_settings", Context.MODE_PRIVATE)
 
     // ===== 主题 =====
+    fun getLaunchCount(): Int = prefs.getInt("launchCount", 0)
+    fun setLaunchCount(v: Int) = prefs.edit().putInt("launchCount", v).apply()
+    
     fun getThemeMode(): String = prefs.getString("themeMode", "dark") ?: "dark"
     fun setThemeMode(v: String) = prefs.edit().putString("themeMode", v).apply()
 
