@@ -50,14 +50,14 @@ android {
 
     compileOptions {
         // 预防性声明：明确 Java 编译配置
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         encoding = "UTF-8"
     }
 
     kotlinOptions {
         // 预防性声明：明确 Kotlin 编译配置
-        jvmTarget = "17"
+        jvmTarget = "21"
         freeCompilerArgs += listOf(
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
