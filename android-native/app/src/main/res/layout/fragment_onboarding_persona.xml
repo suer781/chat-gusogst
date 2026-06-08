@@ -30,8 +30,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/persona_title" />
 
-    <!-- Persona Cards -->
+    <!-- Persona Cards Container -->
     <LinearLayout
+        android:id="@+id/persona_cards_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"

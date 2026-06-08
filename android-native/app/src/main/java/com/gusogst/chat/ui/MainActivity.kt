@@ -524,38 +524,7 @@ class MainActivity : AppCompatActivity() {
         val transaction = supportFragmentManager.beginTransaction()
         
         if (animate) {
-            // 3D 翻转页面切换效果
-            val previousFragment = fragments.getOrNull(previousIndex)
-            
-            // 旧页面：向右翻转并淡出
-            previousFragment?.let {
-                transaction.setCustomAnimations(
-                    R.anim.page_flip_out_right,
-                    R.anim.page_flip_in_left
-                )
-            } ?: run {
-                // 标准转场动画
-                transaction.setCustomAnimations(
-                    R.anim.page_enter,
-                    R.anim.page_exit
-                )
-            }
-            
-            // 添加缩放和淡入效果
-            transaction.setCustomAnimations(
-                R.anim.page_scale_in,
-                R.anim.page_scale_out,
-                R.anim.page_scale_in,
-                R.anim.page_scale_out
-            )
-        }
-        
-        // 执行切换
-        transaction.replace(R.id.fragmentContainer, fragment)
-        
-        // 添加共享元素过渡（如果有的话）
-        if (animate) {
-            // 添加滑动方向检测，自动决定滑动方向
+            // 根据性能等级和滑动方向选择合适的动画
             val slideDirection = if (index > previousIndex) {
                 // 向右滑动（前进）
                 R.anim.page_slide_in_right
@@ -564,15 +533,36 @@ class MainActivity : AppCompatActivity() {
                 R.anim.page_slide_in_left
             }
             
-            // 重新设置动画
-            transaction.setCustomAnimations(
-                slideDirection,
-                R.anim.page_slide_out,
-                R.anim.page_slide_in_left,
-                R.anim.page_slide_out_right
-            )
+            // 根据性能等级选择动画效果
+            if (animationQuality.enable3DEffects && previousIndex != index) {
+                // 高配设备：3D 翻转效果（使用存在的动画资源）
+                transaction.setCustomAnimations(
+                    R.anim.page_flip_out_right,
+                    R.anim.page_flip_in_left,
+                    R.anim.page_slide_out_right,
+                    R.anim.page_slide_in_right
+                )
+            } else if (animationQuality.enableGlowEffects) {
+                // 中配设备：带缩放的滑动效果
+                transaction.setCustomAnimations(
+                    R.anim.page_scale_in,
+                    R.anim.page_scale_out,
+                    R.anim.page_scale_in,
+                    R.anim.page_scale_out
+                )
+            } else {
+                // 低配设备：简单滑动效果
+                transaction.setCustomAnimations(
+                    slideDirection,
+                    R.anim.page_slide_out,
+                    R.anim.page_slide_in_left,
+                    R.anim.page_slide_out_right
+                )
+            }
         }
         
+        // 执行切换
+        transaction.replace(R.id.fragmentContainer, fragment)
         transaction.commit()
         
         // 更新 Header 标题
@@ -806,7 +796,8 @@ class MainActivity : AppCompatActivity() {
      */
     fun quickSwitchTheme(mode: String) {
         themeController.setThemeMode(mode)
-        applySavedTheme()
+        // 重新应用主题到当前 Activity
+        themeController.applyActivityTheme(this, mode)
         applyThemeToViews()
     }
 
@@ -889,13 +880,16 @@ class MainActivity : AppCompatActivity() {
                     // 启用HDR
                     RealHdrHelper.enableHdr(this)
                     
-                    // 应用HDR增强效果
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    // 应用HDR增强效果（根据性能等级）
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && animationQuality.enableHdrEnhancement) {
                         window.decorView.setRenderEffect(
                             RenderEffect.createColorFilterEffect(
                                 createHdrEnhancementColorFilter()
                             )
                         )
+                        android.util.Log.i("HDR", "HDR已启用，毛玻璃增强已激活")
+                    } else if (!animationQuality.enableHdrEnhancement) {
+                        android.util.Log.i("HDR", "HDR已启用，但增强效果已禁用（性能优先）")
                     }
                     
                     // 应用动态颜色增强
@@ -904,8 +898,6 @@ class MainActivity : AppCompatActivity() {
                         themeController.getThemeColorInt(),
                         accentColor
                     ) { _, _ -> }
-                    
-                    android.util.Log.i("HDR", "HDR已启用，毛玻璃增强已激活")
                 } else {
                     // 禁用HDR
                     RealHdrHelper.disableHdr(this)

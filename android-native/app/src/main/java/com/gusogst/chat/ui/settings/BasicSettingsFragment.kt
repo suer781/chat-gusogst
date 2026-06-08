@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.gusogst.chat.R
 import com.gusogst.chat.data.settings.ChatSettingsManager
-import com.gusogst.chat.ui.theme.ThemeManager
-import com.gusogst.chat.ui.theme.ThemeMode
+import com.gusogst.chat.ui.MainActivity
+import com.gusogst.chat.ui.theme.ThemeController
 
 /**
  * 通用设置页面 — 手动构建 UI，不依赖 PreferenceFragment
@@ -18,7 +18,7 @@ import com.gusogst.chat.ui.theme.ThemeMode
 class BasicSettingsFragment : Fragment() {
 
     private lateinit var settingsManager: ChatSettingsManager
-    private lateinit var themeManager: ThemeManager
+    private lateinit var themeController: ThemeController
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,7 +26,7 @@ class BasicSettingsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         settingsManager = ChatSettingsManager(requireContext())
-        themeManager = ThemeManager.getInstance(requireContext())
+        themeController = ThemeController.getInstance(requireContext())
 
         val scrollView = ScrollView(requireContext()).apply {
             layoutParams = ViewGroup.LayoutParams(

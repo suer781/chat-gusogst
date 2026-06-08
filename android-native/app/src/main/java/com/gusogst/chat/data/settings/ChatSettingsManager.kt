@@ -84,10 +84,13 @@ class ChatSettingsManager(context: Context) {
 
     // ===== 导出/导入 =====
     fun toUISettings(): UISettings = UISettings(
+        theme = getThemeMode(),  // 兼容旧属性
         themeMode = getThemeMode(),
         themeColor = getThemeColor(),
         accentColor = getAccentColor(),
         fontSize = getFontSize(),
+        hdrEnabled = isHdrEnabled(),
+        glassEnabled = isAutoHdrEnabled(),
         useBubbles = getUseBubbles(),
         quoteAsBubble = getQuoteAsBubble(),
         markdownRendering = getMarkdownRendering(),
