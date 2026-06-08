@@ -7,22 +7,22 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import com.gusogst.chat.R
-import com.gusogst.chat.ui.theme.ThemeManager
-import com.gusogst.chat.ui.theme.ThemeMode
+import com.gusogst.chat.data.settings.ChatSettingsManager
+import com.gusogst.chat.ui.MainActivity
 
 /**
  * 主题设置页面 — 深色模式、主题色选择、强调色
  */
 class ThemeSettingsFragment : Fragment() {
 
-    private lateinit var themeManager: ThemeManager
+    private lateinit var settingsManager: ChatSettingsManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        themeManager = ThemeManager.getInstance(requireContext())
+        settingsManager = ChatSettingsManager(requireContext())
 
         val scrollView = ScrollView(requireContext()).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -49,19 +49,17 @@ class ThemeSettingsFragment : Fragment() {
         root.addView(backBtn)
 
         // ===== 标题 =====
-        root.addView(TextView(requireContext()).apply {
-            text = "主题设置"
-            textSize = 22f
-            setPadding(0, 0, 0, 32)
-        })
+        root.addSectionTitle("外观设置")
 
         // ===== 深色模式 =====
         root.addSectionTitle("深色模式")
 
         val modes = listOf(
-            ThemeMode.LIGHT to "浅色模式",
-            ThemeMode.DARK to "深色模式",
-            ThemeMode.SYSTEM to "跟随系统"
+            "light" to "浅色模式",
+            "dark" to "深色模式",
+            "pureWhite" to "纯白模式",
+            "pureBlack" to "纯黑模式 (AMOLED)",
+            "system" to "跟随系统"
         )
 
         val radioGroup = RadioGroup(requireContext()).apply {
@@ -69,7 +67,7 @@ class ThemeSettingsFragment : Fragment() {
             setPadding(0, 0, 0, 24)
         }
 
-        val currentMode = themeManager.getThemeMode()
+        val currentMode = settingsManager.getThemeMode()
         modes.forEach { (mode, label) ->
             val rb = RadioButton(requireContext()).apply {
                 text = label
@@ -82,9 +80,9 @@ class ThemeSettingsFragment : Fragment() {
 
             rb.setOnCheckedChangeListener { _, checked ->
                 if (checked) {
-                    themeManager.setThemeMode(mode)
-                    // 重启 Activity 生效
-                    requireActivity().recreate()
+                    settingsManager.setThemeMode(mode)
+                    // 重启 Activity 并应用动画
+                    (activity as? MainActivity)?.applyThemeWithAnimation()
                 }
             }
         }
@@ -115,7 +113,7 @@ class ThemeSettingsFragment : Fragment() {
             ).apply { setMargins(0, 0, 0, 24) }
         }
 
-        val currentColor = themeManager.getThemeColor()
+        val currentColor = settingsManager.getThemeColor()
 
         colors.forEach { (name, hex) ->
             val colorView = View(requireContext()).apply {
@@ -136,9 +134,9 @@ class ThemeSettingsFragment : Fragment() {
                 }
 
                 setOnClickListener {
-                    themeManager.setThemeColor(hex)
+                    settingsManager.setThemeColor(hex)
                     Toast.makeText(context, "主题色已切换: $name", Toast.LENGTH_SHORT).show()
-                    requireActivity().recreate()
+                    (activity as? MainActivity)?.applyThemeWithAnimation()
                 }
             }
             colorGrid.addView(colorView)
@@ -149,12 +147,7 @@ class ThemeSettingsFragment : Fragment() {
 
         // ===== 强调色 =====
         root.addSectionTitle("强调色")
-        root.addView(TextView(requireContext()).apply {
-            text = "用于按钮、链接、高亮等交互元素"
-            textSize = 12f
-            setTextColor(0xFF888888.toInt())
-            setPadding(0, 0, 0, 16)
-        })
+        root.addInfoItem("用于按钮、链接、高亮等交互元素", "")
 
         val accentColors = listOf(
             "Amber" to "#FFC107",
@@ -173,7 +166,7 @@ class ThemeSettingsFragment : Fragment() {
             ).apply { setMargins(0, 0, 0, 24) }
         }
 
-        val currentAccent = themeManager.getAccentColor()
+        val currentAccent = settingsManager.getAccentColor()
 
         accentColors.forEach { (name, hex) ->
             val colorView = View(requireContext()).apply {
@@ -193,9 +186,9 @@ class ThemeSettingsFragment : Fragment() {
                 }
 
                 setOnClickListener {
-                    themeManager.setAccentColor(hex)
+                    settingsManager.setAccentColor(hex)
                     Toast.makeText(context, "强调色已切换: $name", Toast.LENGTH_SHORT).show()
-                    requireActivity().recreate()
+                    (activity as? MainActivity)?.applyThemeWithAnimation()
                 }
             }
             accentGrid.addView(colorView)
@@ -207,8 +200,13 @@ class ThemeSettingsFragment : Fragment() {
         // ===== 字体大小 =====
         root.addSectionTitle("字体大小")
 
-        val fontSizes = listOf("小" to 0.85f, "标准" to 1.0f, "大" to 1.15f, "特大" to 1.3f)
-        val currentFontSize = themeManager.getFontSize()
+        val fontSizes = listOf(
+            "小" to 0.85f,
+            "标准" to 1.0f,
+            "大" to 1.15f,
+            "特大" to 1.3f
+        )
+        val currentFontSize = settingsManager.getFontSize()
 
         val fontGroup = RadioGroup(requireContext()).apply {
             orientation = RadioGroup.HORIZONTAL
@@ -227,8 +225,8 @@ class ThemeSettingsFragment : Fragment() {
 
             rb.setOnCheckedChangeListener { _, checked ->
                 if (checked) {
-                    themeManager.setFontSize(scale)
-                    requireActivity().recreate()
+                    settingsManager.setFontSize(scale)
+                    (activity as? MainActivity)?.recreate()
                 }
             }
         }
@@ -249,10 +247,31 @@ class ThemeSettingsFragment : Fragment() {
         })
     }
 
+    private fun LinearLayout.addInfoItem(title: String, value: String) {
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 12, 0, 12)
+        }
+        container.addView(TextView(requireContext()).apply {
+            text = title
+            textSize = 14f
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        })
+        if (value.isNotEmpty()) {
+            container.addView(TextView(requireContext()).apply {
+                text = value
+                textSize = 14f
+                setTextColor(0xFF888888.toInt())
+            })
+        }
+        addView(container)
+    }
+
     private fun LinearLayout.addDivider() {
         addView(View(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 1
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1
             ).apply { setMargins(0, 16, 0, 16) }
             setBackgroundColor(0xFF333333.toInt())
         })

@@ -6,6 +6,7 @@ import com.gusogst.chat.data.PersonaManager
 import com.gusogst.chat.data.ToolRegistry
 import com.gusogst.chat.model.*
 import com.gusogst.chat.data.memory.MemoryManager
+import com.gusogst.chat.data.settings.ChatSettingsManager
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -15,8 +16,6 @@ import androidx.lifecycle.viewModelScope
 import com.gusogst.chat.agent.HermesBridge
 import com.gusogst.chat.agent.StreamEvent
 import com.gusogst.chat.data.ChatStore
-// MemoryManager replaced by HermesBridge memory system (holographic provider)
-import com.gusogst.chat.model.*
 import com.gusogst.chat.network.ApiClient
 import com.gusogst.chat.network.AutoRetryEngine
 import com.gusogst.chat.network.EndpointKB
@@ -33,12 +32,12 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private val store = ChatStore.getInstance(app)
+    private val settingsManager = ChatSettingsManager(app)
     private val toolRegistry = ToolRegistry()
     private val memoryManager by lazy { MemoryManager(app) }
     private val agentEngine by lazy { AgentEngine(toolRegistry, memoryManager) }
     private val streamProcessor = StreamProcessor()
     private val retryEngine = AutoRetryEngine()
-    // Memory is managed by HermesBridge (holographic provider via Chaquopy)
 
     private val _conversations = MutableLiveData<List<Conversation>>(emptyList())
     val conversations: LiveData<List<Conversation>> = _conversations
@@ -49,7 +48,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val _messages = MutableLiveData<List<Message>>(emptyList())
     val messages: LiveData<List<Message>> = _messages
 
-    private val _settings = MutableLiveData(UISettings())
+    private val _settings = MutableLiveData(settingsManager.toUISettings())
     val settings: LiveData<UISettings> = _settings
 
     private val _providers = MutableLiveData<List<UIProvider>>(emptyList())
@@ -65,7 +64,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun loadAll() {
         _conversations.value = store.loadConversations()
-        _settings.value = store.loadSettings()
+        _settings.value = settingsManager.toUISettings()
         _providers.value = store.loadProviders()
         _personas.value = store.loadPersonas()
         val activeId = store.loadActiveConversationId()
@@ -184,7 +183,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 messagesForAgent.add(mapOf(
                     "role" to "system",
                     "content" to ("以下是与用户相关的记忆，可用于个性化回复：\n" +
-                        memoryContext.joinToString("\n"))
+                            memoryContext.joinToString("\n"))
                 ))
             }
         }
@@ -213,7 +212,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     providerId = primary.id,
                     model = model,
                     messages = messagesForAgent,
-                    tools = null,  // Hermes Agent auto-discovers tools from its registry
+                    tools = null, // Hermes Agent auto-discovers tools from its registry
                 ).catch { e ->
                     // Flow error — agent crash
                     android.util.Log.e("ChatVM:Hermes", "Flow error", e)
@@ -241,9 +240,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                                 // Record tool calls if any
                                 if (result.toolCalls.isNotEmpty()) {
                                     aiMsg.content += "\n\n--- 工具调用 ---\n" +
-                                        result.toolCalls.joinToString("\n") { tc ->
-                                            "🔧 ${tc.name}: ${tc.arguments.take(200)}"
-                                        }
+                                            result.toolCalls.joinToString("\n") { tc ->
+                                                "🔧 ${tc.name}: ${tc.arguments.take(200)}"
+                                            }
                                 }
                             } else {
                                 aiMsg.status = MessageStatus.ERROR
@@ -300,6 +299,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         // Fallback to direct API implementation
         callAiApiDirect(conv)
     }
+
     private fun callAiApiDirect(conv: Conversation) {
         val providers = _providers.value.orEmpty().filter { it.enabled }
         val primary = providers.firstOrNull() ?: return
@@ -320,7 +320,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 apiMessages.add(ApiMessage(
                     role = "system",
                     content = "以下是与用户相关的记忆，可用于个性化回复：\n" +
-                        memoryContext.joinToString("\n")
+                            memoryContext.joinToString("\n")
                 ))
             }
         }
@@ -511,12 +511,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     // ===== 设置 =====
     fun updateSettings(update: (UISettings) -> UISettings) {
-        val new = update(_settings.value ?: UISettings())
-        _settings.value = new
-        store.saveSettings(new)
+        val newSettings = update(_settings.value ?: settingsManager.toUISettings())
+        _settings.value = newSettings
     }
 
-    
     /**
      * 设置当前对话的模型。
      * 更新对话的 providerId + modelId 并持久化。
