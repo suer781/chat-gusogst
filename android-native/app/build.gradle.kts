@@ -88,21 +88,8 @@ chaquopy {
         // Use the system Python for build-time tasks
         buildPython("python3")
 
-        // Core Python dependencies (minimal set for build)
-        pip {
-            options("--index-url", "https://pypi.org/simple")
-            options("--extra-index-url", "https://chaquo.com/pypi-13.1")
-
-            // Minimal core dependencies
-            install("pydantic>=1.10")
-            install("httpx[socks]")
-            install("anyio")
-            install("idna")
-            install("sniffio")
-            install("python-dotenv")
-            install("requests")
-            install("urllib3")
-        }
+        // No external pip packages needed - hermes_bridge.py is a stub
+        // Full Hermes Agent requires additional source modules
     }
 }
 
