@@ -8,8 +8,8 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-    // 预防性声明：明确仓库模式，使用 FAIL_ON_PROJECT_REPOS 强制统一管理
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    // 预防性声明：使用 PREFER_SETTINGS 模式，允许项目仓库作为后备
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     
     repositories {
         google()

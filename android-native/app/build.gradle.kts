@@ -68,7 +68,7 @@ android {
     buildFeatures {
         // 预防性声明：明确启用的功能
         buildConfig = true
-        viewBinding = true
+        viewBinding = false // 暂时禁用以避免问题
         aidl = false
         renderScript = false
         shaders = false
