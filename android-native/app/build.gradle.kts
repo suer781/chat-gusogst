@@ -85,8 +85,8 @@ android {
 // ── Chaquopy: embed Python (Hermes Agent) into the Android process ──────
 chaquopy {
     defaultConfig {
-        // Use the system Python for build-time tasks
-        buildPython("python3")
+        // Use Python from PATH for build-time tasks
+        buildPython("/opt/hermes/.venv/bin/python")
 
         // No external pip packages needed - hermes_bridge.py is a stub
         // Full Hermes Agent requires additional source modules
