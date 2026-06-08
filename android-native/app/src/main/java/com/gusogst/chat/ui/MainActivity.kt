@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.Display
 import android.view.View
@@ -70,6 +71,9 @@ class MainActivity : AppCompatActivity() {
         themeController = ThemeController.getInstance(this)
         settingsManager = ChatSettingsManager(this)
         
+        // 检查是否是首次启动
+        checkFirstLaunch()
+        
         // 应用保存的主题模式（必须在 super.onCreate 之前）
         applyThemeBeforeCreate()
         
@@ -82,9 +86,6 @@ class MainActivity : AppCompatActivity() {
         initViews()
         initNavigation()
         applyThemeToViews()
-        
-        // 检查是否是首次启动
-        checkFirstLaunch()
         
         // 预加载主题资源（性能优化）
         window.decorView.post {
@@ -107,29 +108,16 @@ class MainActivity : AppCompatActivity() {
      */
     private fun checkFirstLaunch() {
         val launchCount = settingsManager.getLaunchCount()
-        
+
         if (launchCount == 0) {
             // 首次启动 - 显示向导
-            android.util.Log.i("FirstLaunch", "首次启动应用，应该显示向导")
-            // TODO: 这里添加向导页面的显示逻辑
-            // 目前先直接设置为已完成首次启动（方便测试）
-            // 未来可以替换为真实的向导流程
-            markFirstLaunchComplete()
+            android.util.Log.i("FirstLaunch", "首次启动应用，启动向导页面")
+            val intent = Intent(this, OnboardingActivity::class.java)
+            startActivity(intent)
+            finish()
         } else {
             // 非首次启动 - 直接进入应用
             android.util.Log.i("FirstLaunch", "应用已启动过 $launchCount 次，直接进入")
-        }
-    }
-    
-    /**
-     * 标记首次启动已完成
-     * 将计数器设置为 1 并永久保存
-     */
-    fun markFirstLaunchComplete() {
-        val currentCount = settingsManager.getLaunchCount()
-        if (currentCount == 0) {
-            settingsManager.setLaunchCount(1)
-            android.util.Log.i("FirstLaunch", "首次启动完成，计数器已设置为 1")
         }
     }
 

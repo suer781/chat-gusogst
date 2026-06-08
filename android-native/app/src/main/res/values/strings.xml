@@ -255,4 +255,26 @@
     <string name="copied">已复制</string>
     <string name="tool_done">完成</string>
     <string name="tool_running">运行中…</string>
+
+    <!-- Onboarding Wizard -->
+    <string name="onboarding_title">欢迎使用</string>
+    <string name="onboarding_subtitle">AI 虚拟伴侣</string>
+    
+    <string name="onboarding_welcome_greeting">你好</string>
+    <string name="onboarding_welcome_greeting_en">Hello</string>
+    <string name="onboarding_welcome_desc">开始你的 AI 伴侣之旅</string>
+    
+    <string name="onboarding_persona_title">选择角色</string>
+    <string name="onboarding_persona_desc">找到你喜欢的 AI 性格</string>
+    
+    <string name="onboarding_model_title">配置模型</string>
+    <string name="onboarding_model_desc">选择你的 AI 提供商</string>
+    
+    <string name="onboarding_ready_title">一切已经准备就绪</string>
+    <string name="onboarding_ready_desc">开始和你的 AI 伴侣聊天吧</string>
+    <string name="onboarding_start_button">开始使用</string>
+    
+    <string name="onboarding_skip">跳过</string>
+    <string name="onboarding_next">下一步</string>
+    <string name="onboarding_prev">上一步</string>
 </resources>
