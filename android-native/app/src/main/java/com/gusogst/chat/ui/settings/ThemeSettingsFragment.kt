@@ -1,5 +1,6 @@
 package com.gusogst.chat.ui.settings
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import com.gusogst.chat.R
 import com.gusogst.chat.data.settings.ChatSettingsManager
 import com.gusogst.chat.ui.MainActivity
 import com.gusogst.chat.ui.theme.ThemeController
+import com.gusogst.chat.util.RealHdrHelper
 
 /**
  * 主题设置页面 - 纯本地函数方式，不依赖 HTTP
@@ -76,6 +78,12 @@ class ThemeSettingsFragment : Fragment() {
         // 字体大小
         root.addSectionTitle("字体大小")
         root.addFontSizeSelector()
+
+        // HDR设置
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && RealHdrHelper.isHdrSupported(requireContext())) {
+            root.addDivider()
+            root.addHdrSettings()
+        }
 
         scrollView.addView(root)
         return scrollView
@@ -235,6 +243,56 @@ class ThemeSettingsFragment : Fragment() {
             }
         }
         addView(radioGroup)
+    }
+
+    private fun ViewGroup.addHdrSettings() {
+        val hdrSection = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(24), 0, dp(16))
+        }
+
+        // HDR标题
+        hdrSection.addView(TextView(requireContext()).apply {
+            text = "HDR 显示"
+            textSize = 16f
+            setTextColor(themeController.getSecondaryTextColor())
+        })
+
+        // HDR状态
+        val hdrStatus = TextView(requireContext()).apply {
+            text = RealHdrHelper.getHdrStatusDescription(requireContext())
+            textSize = 12f
+            setTextColor(0xFF888888.toInt())
+            setPadding(0, dp(4), 0, dp(16))
+        }
+        hdrSection.addView(hdrStatus)
+
+        // HDR开关
+        hdrSection.addSwitchItem(
+            "启用 HDR",
+            "开启后，当显示HDR内容时，系统会自动切换到HDR模式（需要应用重启）",
+            settingsManager.isHdrEnabled()
+        ) { enabled ->
+            settingsManager.setHdrEnabled(enabled)
+            // 通知MainActivity刷新HDR设置
+            (activity as? MainActivity)?.refreshHdrSettings()
+            Toast.makeText(
+                requireContext(),
+                if (enabled) "HDR已启用（需要重启应用以生效）" else "HDR已禁用",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        // 自动HDR开关
+        hdrSection.addSwitchItem(
+            "自动 HDR",
+            "智能检测内容并自动切换HDR模式（推荐）",
+            settingsManager.isAutoHdrEnabled()
+        ) { enabled ->
+            settingsManager.setAutoHdrEnabled(enabled)
+        }
+
+        addView(hdrSection)
     }
 
     private fun LinearLayout.addSectionTitle(title: String) {

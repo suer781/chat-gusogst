@@ -52,6 +52,13 @@ class ChatSettingsManager(context: Context) {
     fun getResourcePreviewEnabled(): Boolean = prefs.getBoolean("resourcePreviewEnabled", true)
     fun setResourcePreviewEnabled(v: Boolean) = prefs.edit().putBoolean("resourcePreviewEnabled", v).apply()
 
+    // ===== HDR =====
+    fun isHdrEnabled(): Boolean = prefs.getBoolean("hdrEnabled", false)
+    fun setHdrEnabled(v: Boolean) = prefs.edit().putBoolean("hdrEnabled", v).apply()
+
+    fun isAutoHdrEnabled(): Boolean = prefs.getBoolean("autoHdrEnabled", true)
+    fun setAutoHdrEnabled(v: Boolean) = prefs.edit().putBoolean("autoHdrEnabled", v).apply()
+
     // ===== 轮询 =====
     fun getPollingIntervalSeconds(): Int = prefs.getInt("pollingIntervalSeconds", 10)
     fun setPollingIntervalSeconds(v: Int) = prefs.edit().putInt("pollingIntervalSeconds", v).apply()

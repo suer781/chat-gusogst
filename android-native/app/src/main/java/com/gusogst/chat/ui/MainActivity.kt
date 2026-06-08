@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.Display
 import android.view.View
@@ -29,6 +30,7 @@ import com.gusogst.chat.ui.providers.ProvidersFragment
 import com.gusogst.chat.ui.settings.SettingsFragment
 import com.gusogst.chat.ui.theme.ThemeController
 import com.gusogst.chat.util.HdrHelper
+import com.gusogst.chat.util.RealHdrHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -82,6 +84,9 @@ class MainActivity : AppCompatActivity() {
 
         // 请求最高刷新率（关键！）
         requestHighestRefreshRate()
+        
+        // 应用HDR设置
+        applyHdrSettings()
 
         initViews()
         initNavigation()
@@ -516,5 +521,41 @@ class MainActivity : AppCompatActivity() {
      */
     fun getThemeController(): ThemeController {
         return themeController
+    }
+    
+    /**
+     * 应用HDR设置
+     */
+    private fun applyHdrSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && settingsManager.isHdrEnabled()) {
+            try {
+                // 自动优化HDR设置
+                RealHdrHelper.autoOptimize(this)
+                android.util.Log.i("HDR", "HDR模式已启用")
+            } catch (e: Exception) {
+                android.util.Log.e("HDR", "启用HDR失败: ${e.message}")
+            }
+        }
+    }
+    
+    /**
+     * 刷新HDR设置（从设置页面调用）
+     */
+    fun refreshHdrSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                if (settingsManager.isHdrEnabled()) {
+                    // 启用HDR
+                    RealHdrHelper.enableHdr(this)
+                    android.util.Log.i("HDR", "HDR已启用")
+                } else {
+                    // 禁用HDR
+                    RealHdrHelper.disableHdr(this)
+                    android.util.Log.i("HDR", "HDR已禁用")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("HDR", "刷新HDR设置失败: ${e.message}")
+            }
+        }
     }
 }
