@@ -4,10 +4,8 @@ import com.gusogst.chat.network.OpenAIProvider
 import com.gusogst.chat.network.AnthropicProvider
 import com.gusogst.chat.data.PersonaManager
 import com.gusogst.chat.data.ToolRegistry
-import com.gusogst.chat.model.MessageRole
-import com.gusogst.chat.model.ModelConfig
+import com.gusogst.chat.model.*
 import com.gusogst.chat.data.memory.MemoryManager
-import com.gusogst.chat.model.AgentEvent
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -16,7 +14,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.gusogst.chat.agent.HermesBridge
 import com.gusogst.chat.agent.StreamEvent
-import com.gusogst.chat.data.ApiMessage
 import com.gusogst.chat.data.ChatStore
 // MemoryManager replaced by HermesBridge memory system (holographic provider)
 import com.gusogst.chat.model.*
@@ -37,8 +34,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private val store = ChatStore.getInstance(app)
     private val toolRegistry = ToolRegistry()
-    private val agentEngine by lazy { AgentEngine(toolRegistry, memoryManager) }
     private val memoryManager by lazy { MemoryManager(app) }
+    private val agentEngine by lazy { AgentEngine(toolRegistry, memoryManager) }
     private val streamProcessor = StreamProcessor()
     private val retryEngine = AutoRetryEngine()
     // Memory is managed by HermesBridge (holographic provider via Chaquopy)
