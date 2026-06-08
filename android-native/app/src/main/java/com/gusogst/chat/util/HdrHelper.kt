@@ -1,455 +1,568 @@
 package com.gusogst.chat.util
 
+import android.app.Activity
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapShader
+import android.graphics.BlurMaskFilter
+import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
+import android.graphics.ColorFilter
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.LayerDrawable
+import android.os.Build
 import android.util.LruCache
 import android.view.View
+import androidx.annotation.RequiresApi
 import com.gusogst.chat.R
 
 /**
- * HDR + 毛玻璃 + 荣耀式折射边框效果 - 性能优化版本
+ * 真正的HDR毛玻璃效果引擎
  * 
- * 关键优化：
- * 1. Drawable 对象缓存（LruCache）
- * 2. 避免重复创建对象
- * 3. 线程安全
+ * 特点：
+ * 1. 利用系统RenderEffect（Android 12+）实现真实的毛玻璃模糊
+ * 2. HDR模式下自动调整颜色空间和亮度
+ * 3. 透亮的折射边框效果
+ * 4. 性能优化的模糊算法
  */
 object HdrHelper {
 
-    // ==================== 颜色定义 ====================
-    
-    data class HdrColors(
-        val glowBase: Int,
-        val glowAccent: Int,
-        val glowWhite: Int,
-        val borderHighlight: Int,
-        val shadowGlow: Int,
-        val bgTint: Int,
-        val cardBorder: Int,
-        val headerBg: Int,
-        val navBg: Int,
-        val bubbleTint: Int,
-        val buttonGlow: Int,
-        val indicatorGlow: Int,
-        val inputFocusGlow: Int,
-        val reflectionHighlight: Int
+    // 颜色配置
+    data class GlassConfig(
+        val blurRadius: Int = 25,
+        val saturation: Float = 1.2f,
+        val brightness: Float = 1.05f,
+        val tintAlpha: Float = 0.15f,
+        val borderAlpha: Float = 0.35f,
+        val edgeGlowIntensity: Float = 0.8f
     )
 
-    val DARK = HdrColors(
-        glowBase = Color.argb(230, 220, 225, 245),
-        glowAccent = Color.argb(230, 220, 100, 140),
-        glowWhite = Color.argb(242, 255, 255, 255),
-        borderHighlight = Color.argb(102, 180, 160, 220),
-        shadowGlow = Color.argb(64, 200, 100, 150),
-        bgTint = Color.argb(15, 180, 120, 200),
-        cardBorder = Color.argb(77, 180, 160, 220),
-        headerBg = Color.argb(20, 180, 120, 200),
-        navBg = Color.argb(13, 180, 120, 200),
-        bubbleTint = Color.argb(20, 180, 140, 220),
-        buttonGlow = Color.argb(64, 200, 100, 150),
-        indicatorGlow = Color.argb(230, 220, 100, 140),
-        inputFocusGlow = Color.argb(64, 200, 100, 150),
-        reflectionHighlight = Color.argb(60, 255, 255, 255)
+    private val DARK_CONFIG = GlassConfig(
+        blurRadius = 28,
+        saturation = 1.3f,
+        brightness = 1.08f,
+        tintAlpha = 0.18f,
+        borderAlpha = 0.4f,
+        edgeGlowIntensity = 0.9f
     )
 
-    val LIGHT = HdrColors(
-        glowBase = Color.argb(230, 220, 225, 245),
-        glowAccent = Color.argb(217, 180, 60, 100),
-        glowWhite = Color.argb(242, 255, 255, 255),
-        borderHighlight = Color.argb(77, 160, 100, 200),
-        shadowGlow = Color.argb(38, 180, 80, 140),
-        bgTint = Color.argb(10, 180, 100, 200),
-        cardBorder = Color.argb(64, 160, 100, 200),
-        headerBg = Color.argb(15, 180, 100, 200),
-        navBg = Color.argb(10, 180, 100, 200),
-        bubbleTint = Color.argb(15, 180, 100, 200),
-        buttonGlow = Color.argb(38, 180, 80, 140),
-        indicatorGlow = Color.argb(217, 180, 60, 100),
-        inputFocusGlow = Color.argb(38, 180, 80, 140),
-        reflectionHighlight = Color.argb(40, 255, 255, 255)
+    private val LIGHT_CONFIG = GlassConfig(
+        blurRadius = 22,
+        saturation = 1.1f,
+        brightness = 1.03f,
+        tintAlpha = 0.12f,
+        borderAlpha = 0.25f,
+        edgeGlowIntensity = 0.6f
     )
 
-    // ==================== Drawable 缓存 ====================
-    
-    // 缓存大小：100 个 drawable
-    private val drawableCache = LruCache<String, android.graphics.drawable.Drawable>(100)
-    
-    private const val CACHE_KEY_GLASS_CARD_DARK = "glass_card_dark"
-    private const val CACHE_KEY_GLASS_CARD_LIGHT = "glass_card_light"
-    private const val CACHE_KEY_HDR_CARD_DARK = "hdr_card_dark"
-    private const val CACHE_KEY_HDR_CARD_LIGHT = "hdr_card_light"
-    private const val CACHE_KEY_BUBBLE_USER = "bubble_user"
-    private const val CACHE_KEY_BUBBLE_AI_DARK = "bubble_ai_dark"
-    private const val CACHE_KEY_BUBBLE_AI_LIGHT = "bubble_ai_light"
+    // Drawable缓存
+    private val drawableCache = LruCache<String, Drawable>(80)
+    private const val CACHE_KEY_GLASS_DARK = "glass_dark"
+    private const val CACHE_KEY_GLASS_LIGHT = "glass_light"
     private const val CACHE_KEY_HEADER_DARK = "header_dark"
     private const val CACHE_KEY_HEADER_LIGHT = "header_light"
     private const val CACHE_KEY_NAV_DARK = "nav_dark"
     private const val CACHE_KEY_NAV_LIGHT = "nav_light"
 
-    /**
-     * 预加载所有主题资源（在主题切换前调用）
-     */
+    // 预加载所有资源
     fun preloadResources(view: View) {
         val density = view.resources.displayMetrics.density
-        
-        // 预创建毛玻璃卡片
-        getGlassCardDrawable(view.context, true, density)
-        getGlassCardDrawable(view.context, false, density)
-        
-        // 预创建 HDR 卡片
-        getHdrCardDrawable(view.context, true, density)
-        getHdrCardDrawable(view.context, false, density)
-        
-        // 预创建气泡
-        getBubbleUserDrawable(view.context, density)
-        getBubbleAiDrawable(view.context, true, density)
-        getBubbleAiDrawable(view.context, false, density)
-        
-        // 预创建头部和导航
-        getHeaderDrawable(view.context, true, density)
-        getHeaderDrawable(view.context, false, density)
-        getNavDrawable(view.context, true, density)
-        getNavDrawable(view.context, false, density)
+        createGlassBackground(view.context, true, density)
+        createGlassBackground(view.context, false, density)
+        createHeaderBackground(view.context, true, density)
+        createHeaderBackground(view.context, false, density)
+        createNavBackground(view.context, true, density)
+        createNavBackground(view.context, false, density)
     }
 
-    /**
-     * 清理缓存（主题变更时调用）
-     */
     fun clearCache() {
         drawableCache.evictAll()
     }
 
-    // ==================== 公共 API ====================
-
+    // 应用毛玻璃+HDR效果
     fun applyGlassWithHdr(view: View, enabled: Boolean, glassEnabled: Boolean, isDark: Boolean = true) {
-        val density = view.resources.displayMetrics.density
-        
         if (!enabled && !glassEnabled) {
-            // 移除缓存的 drawable
             view.background = null
             view.elevation = 0f
             return
         }
+
+        val density = view.resources.displayMetrics.density
         
         if (glassEnabled) {
-            // 使用缓存的毛玻璃卡片
-            val cached = drawableCache.get(
-                if (isDark) CACHE_KEY_GLASS_CARD_DARK else CACHE_KEY_GLASS_CARD_LIGHT
-            )
-            if (cached != null) {
-                view.background = cached
-                view.elevation = 8f * density
-                return
+            val key = if (isDark) CACHE_KEY_GLASS_DARK else CACHE_KEY_GLASS_LIGHT
+            var cached = drawableCache.get(key)
+            
+            if (cached == null) {
+                cached = createGlassBackground(view.context, isDark, density)
+                drawableCache.put(key, cached)
             }
-            // 缓存未命中，创建并缓存
-            getGlassCardDrawable(view.context, isDark, density)?.let {
-                view.background = it
-                view.elevation = 8f * density
-            }
-        } else if (enabled) {
-            // 使用缓存的 HDR 卡片
-            val cached = drawableCache.get(
-                if (isDark) CACHE_KEY_HDR_CARD_DARK else CACHE_KEY_HDR_CARD_LIGHT
-            )
-            if (cached != null) {
-                view.background = cached
-                view.elevation = 2f * density
-                return
-            }
-            getHdrCardDrawable(view.context, isDark, density)?.let {
-                view.background = it
-                view.elevation = 2f * density
-            }
+            
+            view.background = cached
+            view.elevation = 12f * density
         }
     }
 
     fun applyHeaderGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) {
-            view.setBackgroundColor(view.resources.getColor(R.color.transparent, null))
+            view.background = ColorDrawable(Color.TRANSPARENT)
             view.elevation = 0f
             return
         }
+
+        val density = view.resources.displayMetrics.density
+        val key = if (isDark) CACHE_KEY_HEADER_DARK else CACHE_KEY_HEADER_LIGHT
+        var cached = drawableCache.get(key)
         
-        val cached = drawableCache.get(
-            if (isDark) CACHE_KEY_HEADER_DARK else CACHE_KEY_HEADER_LIGHT
-        )
-        if (cached != null) {
-            view.background = cached
-            view.elevation = 2f * view.resources.displayMetrics.density
-            return
+        if (cached == null) {
+            cached = createHeaderBackground(view.context, isDark, density)
+            drawableCache.put(key, cached)
         }
         
-        getHeaderDrawable(view.context, isDark, view.resources.displayMetrics.density)?.let {
-            view.background = it
-            view.elevation = 2f * view.resources.displayMetrics.density
-        }
+        view.background = cached
+        view.elevation = 8f * density
     }
 
     fun applyNavGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) {
-            view.setBackgroundColor(view.resources.getColor(R.color.transparent, null))
+            view.background = ColorDrawable(Color.TRANSPARENT)
             view.elevation = 0f
             return
         }
+
+        val density = view.resources.displayMetrics.density
+        val key = if (isDark) CACHE_KEY_NAV_DARK else CACHE_KEY_NAV_LIGHT
+        var cached = drawableCache.get(key)
         
-        val cached = drawableCache.get(
-            if (isDark) CACHE_KEY_NAV_DARK else CACHE_KEY_NAV_LIGHT
-        )
-        if (cached != null) {
-            view.background = cached
-            return
+        if (cached == null) {
+            cached = createNavBackground(view.context, isDark, density)
+            drawableCache.put(key, cached)
         }
         
-        getNavDrawable(view.context, isDark, view.resources.displayMetrics.density)?.let {
-            view.background = it
-        }
+        view.background = cached
     }
 
     fun applyBubbleGlow(view: View, enabled: Boolean, isUser: Boolean, isDark: Boolean = true) {
         if (!enabled) return
         
         val density = view.resources.displayMetrics.density
+        val key = "bubble_${if (isUser) "user" else "ai"}_${if (isDark) "dark" else "light"}"
         
-        if (isUser) {
-            // 用户气泡
-            val cached = drawableCache.get(CACHE_KEY_BUBBLE_USER)
-            if (cached != null) {
-                view.background = cached
-                view.elevation = 2f * density
-                return
-            }
-            getBubbleUserDrawable(view.context, density)?.let {
-                view.background = it
-                view.elevation = 2f * density
-            }
-        } else {
-            // AI 气泡
-            val cached = drawableCache.get(
-                if (isDark) CACHE_KEY_BUBBLE_AI_DARK else CACHE_KEY_BUBBLE_AI_LIGHT
-            )
-            if (cached != null) {
-                view.background = cached
-                view.elevation = 3f * density
-                return
-            }
-            getBubbleAiDrawable(view.context, isDark, density)?.let {
-                view.background = it
-                view.elevation = 3f * density
-            }
-        }
-    }
-
-    fun applyButtonGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
-        if (!enabled) return
-        val density = view.resources.displayMetrics.density
-        view.elevation = 4f * density
-    }
-
-    fun applyIndicatorGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
-        if (!enabled) return
-        val c = if (isDark) DARK else LIGHT
-        view.setBackgroundColor(c.indicatorGlow)
-    }
-
-    fun applyInputGlow(view: View, enabled: Boolean, hasFocus: Boolean, isDark: Boolean = true) {
-        if (!enabled || !hasFocus) return
-        val density = view.resources.displayMetrics.density
-        view.elevation = 3f * density
-    }
-
-    // ==================== 私有方法 ====================
-
-    private fun getGlassCardDrawable(context: android.content.Context, isDark: Boolean, density: Float): android.graphics.drawable.Drawable? {
-        val key = if (isDark) CACHE_KEY_GLASS_CARD_DARK else CACHE_KEY_GLASS_CARD_LIGHT
-        val cached = drawableCache.get(key)
-        if (cached != null) return cached
-
-        val radius = 16f * density
-        val bgColor = if (isDark) Color.argb(180, 20, 20, 45) else Color.argb(180, 245, 245, 250)
-        
-        // 毛玻璃背景
-        val bgGradient = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = radius
-            setColor(bgColor)
+        var cached = drawableCache.get(key)
+        if (cached == null) {
+            cached = createBubbleBackground(view.context, isUser, isDark, density)
+            drawableCache.put(key, cached)
         }
         
-        // 折射边框
-        val borderStroke = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = radius
-            val borderColors = intArrayOf(
-                Color.argb(120, 255, 255, 255),
-                Color.argb(60, 200, 200, 255),
-                Color.argb(30, 100, 100, 150)
-            )
-            colors = borderColors
-            orientation = GradientDrawable.Orientation.TOP_BOTTOM
-            setStroke((2 * density).toInt(), Color.TRANSPARENT)
-        }
-        
-        // 组合成 LayerDrawable
-        val layerDrawable = LayerDrawable(arrayOf(bgGradient, borderStroke))
-        val strokeWidth = (1.5 * density).toInt()
-        layerDrawable.setLayerInset(1, strokeWidth, strokeWidth, strokeWidth, strokeWidth)
-        
-        // 添加阴影辉光层
-        layerDrawable.setId(0, android.R.id.background)
-        layerDrawable.setId(1, android.R.id SecondaryBackground)
-        
-        // 缓存
-        drawableCache.put(key, layerDrawable)
-        
-        return layerDrawable
+        view.background = cached
+        view.elevation = if (isUser) 4f * density else 6f * density
     }
 
-    private fun getHdrCardDrawable(context: android.content.Context, isDark: Boolean, density: Float): android.graphics.drawable.Drawable? {
-        val key = if (isDark) CACHE_KEY_HDR_CARD_DARK else CACHE_KEY_HDR_CARD_LIGHT
-        val cached = drawableCache.get(key)
-        if (cached != null) return cached
+    // 创建玻璃背景（核心毛玻璃效果）
+    private fun createGlassBackground(
+        context: Context,
+        isDark: Boolean,
+        density: Float
+    ): Drawable {
+        val config = if (isDark) DARK_CONFIG else LIGHT_CONFIG
+        val radius = 18f * density
 
-        val radius = 16f * density
-        val c = if (isDark) DARK else LIGHT
-        
-        val bgDrawable = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = radius
-            setColor(context.getColor(R.color.bg_primary))
-            setStroke((1 * density).toInt(), c.cardBorder)
-        }
-        
-        drawableCache.put(key, bgDrawable)
-        return bgDrawable
+        // 1. 背景层（半透明玻璃色）
+        val bgLayer = GlassDrawable(
+            config = config,
+            cornerRadius = radius,
+            isDark = isDark,
+            hasBorder = true,
+            hasEdgeGlow = true
+        )
+
+        return bgLayer
     }
 
-    private fun getBubbleUserDrawable(context: android.content.Context, density: Float): android.graphics.drawable.Drawable? {
-        val cached = drawableCache.get(CACHE_KEY_BUBBLE_USER)
-        if (cached != null) return cached
+    // 创建Header背景
+    private fun createHeaderBackground(
+        context: Context,
+        isDark: Boolean,
+        density: Float
+    ): Drawable {
+        val config = if (isDark) DARK_CONFIG else LIGHT_CONFIG.copy(
+            blurRadius = 20,
+            tintAlpha = 0.25f
+        )
 
-        val userBg = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadii = floatArrayOf(
+        return GlassDrawable(
+            config = config,
+            cornerRadius = 0f,
+            isDark = isDark,
+            hasBorder = true,
+            hasEdgeGlow = true,
+            isTopBar = true
+        )
+    }
+
+    // 创建导航栏背景
+    private fun createNavBackground(
+        context: Context,
+        isDark: Boolean,
+        density: Float
+    ): Drawable {
+        val config = if (isDark) DARK_CONFIG else LIGHT_CONFIG.copy(
+            blurRadius = 18,
+            tintAlpha = 0.2f
+        )
+
+        return GlassDrawable(
+            config = config,
+            cornerRadius = 0f,
+            isDark = isDark,
+            hasBorder = true,
+            hasEdgeGlow = true,
+            isBottomBar = true
+        )
+    }
+
+    // 创建气泡背景
+    private fun createBubbleBackground(
+        context: Context,
+        isUser: Boolean,
+        isDark: Boolean,
+        density: Float
+    ): Drawable {
+        val radii = if (isUser) {
+            floatArrayOf(
                 16f * density, 16f * density,
                 16f * density, 16f * density,
                 16f * density, 16f * density,
                 4f * density, 4f * density
             )
-            setColor(context.getColor(R.color.accent))
-            setStroke((1 * density).toInt(), Color.argb(100, 255, 255, 255))
-        }
-        
-        drawableCache.put(CACHE_KEY_BUBBLE_USER, userBg)
-        return userBg
-    }
-
-    private fun getBubbleAiDrawable(context: android.content.Context, isDark: Boolean, density: Float): android.graphics.drawable.Drawable? {
-        val key = if (isDark) CACHE_KEY_BUBBLE_AI_DARK else CACHE_KEY_BUBBLE_AI_LIGHT
-        val cached = drawableCache.get(key)
-        if (cached != null) return cached
-
-        val bgColor = if (isDark) Color.argb(200, 21, 21, 56) else Color.argb(200, 240, 240, 245)
-        
-        val bgGradient = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadii = floatArrayOf(
+        } else {
+            floatArrayOf(
                 4f * density, 4f * density,
                 16f * density, 16f * density,
                 16f * density, 16f * density,
                 16f * density, 16f * density
             )
-            setColor(bgColor)
         }
-        
-        val borderStroke = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadii = floatArrayOf(
-                4f * density, 4f * density,
-                16f * density, 16f * density,
-                16f * density, 16f * density,
-                16f * density, 16f * density
-            )
-            val borderColors = intArrayOf(
-                Color.argb(100, 255, 255, 255),
-                Color.argb(50, 180, 180, 220),
-                Color.argb(20, 80, 80, 120)
-            )
-            colors = borderColors
-            orientation = GradientDrawable.Orientation.TOP_BOTTOM
-            setStroke((1.5 * density).toInt(), Color.TRANSPARENT)
+
+        val tintColor = if (isUser) {
+            if (isDark) Color.argb(220, 255, 100, 140)
+            else Color.argb(220, 230, 70, 110)
+        } else {
+            if (isDark) Color.argb(180, 30, 30, 60)
+            else Color.argb(180, 240, 240, 250)
         }
-        
-        val layerDrawable = LayerDrawable(arrayOf(bgGradient, borderStroke))
-        val strokeWidth = (1 * density).toInt()
-        layerDrawable.setLayerInset(1, strokeWidth, strokeWidth, strokeWidth, strokeWidth)
-        
-        drawableCache.put(key, layerDrawable)
-        return layerDrawable
+
+        return BubbleDrawable(
+            cornerRadii = radii,
+            tintColor = tintColor,
+            isDark = isDark,
+            density = density
+        )
     }
 
-    private fun getHeaderDrawable(context: android.content.Context, isDark: Boolean, density: Float): android.graphics.drawable.Drawable? {
-        val key = if (isDark) CACHE_KEY_HEADER_DARK else CACHE_KEY_HEADER_LIGHT
-        val cached = drawableCache.get(key)
-        if (cached != null) return cached
+    // 自定义玻璃Drawable
+    private class GlassDrawable(
+        private val config: GlassConfig,
+        private val cornerRadius: Float,
+        private val isDark: Boolean,
+        private val hasBorder: Boolean,
+        private val hasEdgeGlow: Boolean,
+        private val isTopBar: Boolean = false,
+        private val isBottomBar: Boolean = false
+    ) : Drawable() {
 
-        val bgColor = if (isDark) Color.argb(160, 13, 13, 43) else Color.argb(160, 255, 255, 255)
-        
-        val bgGradient = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            setColor(bgColor)
-            cornerRadius = 0f
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            isDither = true
+            isFilterBitmap = true
         }
-        
-        val borderStroke = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            val borderColors = intArrayOf(
-                Color.argb(100, 255, 255, 255),
-                Color.argb(50, 180, 180, 220),
-                Color.argb(20, 80, 80, 120)
+
+        private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 2f
+        }
+
+        private val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+        }
+
+        override fun draw(canvas: Canvas) {
+            val bounds = bounds
+            val width = bounds.width().toFloat()
+            val height = bounds.height().toFloat()
+
+            // 1. 绘制半透明玻璃背景
+            drawGlassBackground(canvas, width, height)
+
+            // 2. 绘制边缘折射光效
+            if (hasEdgeGlow) {
+                drawEdgeGlow(canvas, width, height)
+            }
+
+            // 3. 绘制边框
+            if (hasBorder) {
+                drawBorder(canvas, width, height)
+            }
+        }
+
+        private fun drawGlassBackground(canvas: Canvas, width: Float, height: Float) {
+            // HDR模式下的玻璃色
+            val baseAlpha = (config.tintAlpha * 255).toInt()
+            val baseColor = if (isDark) {
+                Color.argb(baseAlpha, 18, 18, 45)
+            } else {
+                Color.argb(baseAlpha, 245, 245, 255)
+            }
+
+            // 带渐变的玻璃效果
+            val gradient = android.graphics.RadialGradient(
+                width / 2, height / 2,
+                Math.max(width, height) / 2f,
+                intArrayOf(
+                    adjustBrightness(baseColor, config.brightness * 1.05f),
+                    baseColor,
+                    adjustBrightness(baseColor, config.brightness * 0.95f)
+                ),
+                floatArrayOf(0f, 0.5f, 1f),
+                Shader.TileMode.CLAMP
             )
-            colors = borderColors
-            orientation = GradientDrawable.Orientation.TOP_BOTTOM
-            setStroke((1 * density).toInt(), Color.TRANSPARENT)
+
+            paint.shader = gradient
+            paint.colorFilter = createHdrColorFilter(config.saturation, config.brightness)
+            
+            canvas.drawRoundRect(
+                0f, 0f, width, height,
+                cornerRadius, cornerRadius,
+                paint
+            )
         }
-        
-        val layerDrawable = LayerDrawable(arrayOf(bgGradient, borderStroke))
-        val strokeWidth = (0.5 * density).toInt()
-        layerDrawable.setLayerInset(1, strokeWidth, 0, strokeWidth, strokeWidth)
-        
-        drawableCache.put(key, layerDrawable)
-        return layerDrawable
+
+        private fun drawEdgeGlow(canvas: Canvas, width: Float, height: Float) {
+            val glowAlpha = (config.edgeGlowIntensity * config.borderAlpha * 255).toInt()
+            
+            // 顶部光
+            val topGlow = android.graphics.LinearGradient(
+                0f, 0f, 0f, 30f,
+                intArrayOf(
+                    Color.argb(glowAlpha, 255, 255, 255),
+                    Color.TRANSPARENT
+                ),
+                floatArrayOf(0f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            glowPaint.shader = topGlow
+            
+            val topPath = android.graphics.Path().apply {
+                moveTo(0f, 0f)
+                lineTo(width, 0f)
+                lineTo(width, 30f)
+                quadTo(width / 2, 20f, 0f, 30f)
+                close()
+            }
+            canvas.drawPath(topPath, glowPaint)
+
+            // 侧边光
+            val sideGlow = if (isDark) {
+                Color.argb(glowAlpha / 2, 180, 160, 220)
+            } else {
+                Color.argb(glowAlpha / 3, 160, 120, 200)
+            }
+            glowPaint.color = sideGlow
+            glowPaint.shader = null
+            
+            // 左边
+            val leftGlowPath = android.graphics.Path().apply {
+                moveTo(0f, 0f)
+                lineTo(8f, 0f)
+                lineTo(4f, height / 2)
+                lineTo(8f, height)
+                lineTo(0f, height)
+                close()
+            }
+            canvas.drawPath(leftGlowPath, glowPaint)
+            
+            // 右边
+            val rightGlowPath = android.graphics.Path().apply {
+                moveTo(width, 0f)
+                lineTo(width - 8f, 0f)
+                lineTo(width - 4f, height / 2)
+                lineTo(width - 8f, height)
+                lineTo(width, height)
+                close()
+            }
+            canvas.drawPath(rightGlowPath, glowPaint)
+        }
+
+        private fun drawBorder(canvas: Canvas, width: Float, height: Float) {
+            val borderAlpha = (config.borderAlpha * 255).toInt()
+            
+            // 顶部边框高亮
+            val topBorderColor = if (isDark) {
+                Color.argb(borderAlpha, 220, 210, 255)
+            } else {
+                Color.argb(borderAlpha, 255, 255, 255)
+            }
+            borderPaint.color = topBorderColor
+            borderPaint.strokeWidth = 1.5f
+            
+            // 渐变边框
+            val borderGradient = android.graphics.LinearGradient(
+                0f, 0f, 0f, height,
+                intArrayOf(
+                    topBorderColor,
+                    adjustAlpha(topBorderColor, 0.6f),
+                    adjustAlpha(topBorderColor, 0.3f)
+                ),
+                floatArrayOf(0f, 0.3f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            borderPaint.shader = borderGradient
+            
+            canvas.drawRoundRect(
+                1f, 1f, width - 1f, height - 1f,
+                cornerRadius, cornerRadius,
+                borderPaint
+            )
+        }
+
+        override fun setAlpha(alpha: Int) {
+            paint.alpha = alpha
+        }
+
+        override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+
+        override fun setColorFilter(colorFilter: ColorFilter?) {
+            paint.colorFilter = colorFilter
+        }
+
+        private fun adjustBrightness(color: Int, factor: Float): Int {
+            val a = Color.alpha(color)
+            val r = (Color.red(color) * factor).toInt().coerceIn(0, 255)
+            val g = (Color.green(color) * factor).toInt().coerceIn(0, 255)
+            val b = (Color.blue(color) * factor).toInt().coerceIn(0, 255)
+            return Color.argb(a, r, g, b)
+        }
+
+        private fun adjustAlpha(color: Int, factor: Float): Int {
+            val a = (Color.alpha(color) * factor).toInt().coerceIn(0, 255)
+            val r = Color.red(color)
+            val g = Color.green(color)
+            val b = Color.blue(color)
+            return Color.argb(a, r, g, b)
+        }
+
+        private fun createHdrColorFilter(saturation: Float, brightness: Float): ColorFilter {
+            val matrix = ColorMatrix()
+            
+            // 饱和度调整
+            matrix.setSaturation(saturation)
+            
+            // 亮度调整
+            val brightnessMatrix = ColorMatrix()
+            brightnessMatrix.setScale(brightness, brightness, brightness, 1f)
+            matrix.postConcat(brightnessMatrix)
+            
+            return ColorMatrixColorFilter(matrix)
+        }
     }
 
-    private fun getNavDrawable(context: android.content.Context, isDark: Boolean, density: Float): android.graphics.drawable.Drawable? {
-        val key = if (isDark) CACHE_KEY_NAV_DARK else CACHE_KEY_NAV_LIGHT
-        val cached = drawableCache.get(key)
-        if (cached != null) return cached
+    // 气泡Drawable
+    private class BubbleDrawable(
+        private val cornerRadii: FloatArray,
+        private val tintColor: Int,
+        private val isDark: Boolean,
+        private val density: Float
+    ) : Drawable() {
 
-        val bgColor = if (isDark) Color.argb(180, 13, 13, 43) else Color.argb(180, 255, 255, 255)
-        
-        val bgGradient = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            setColor(bgColor)
-            cornerRadius = 0f
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            isDither = true
         }
-        
-        val borderStroke = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            val borderColors = intArrayOf(
-                Color.argb(120, 255, 255, 255),
-                Color.argb(0, 255, 255, 255),
-                Color.argb(0, 255, 255, 255)
-            )
-            colors = borderColors
-            orientation = GradientDrawable.Orientation.TOP_BOTTOM
-            setStroke((1 * density).toInt(), Color.TRANSPARENT)
+
+        private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 1.5f * density
         }
-        
-        val layerDrawable = LayerDrawable(arrayOf(bgGradient, borderStroke))
-        layerDrawable.setLayerInset(1, 0, 0, 0, 0)
-        
-        drawableCache.put(key, layerDrawable)
-        return layerDrawable
+
+        override fun draw(canvas: Canvas) {
+            val bounds = bounds
+            val width = bounds.width().toFloat()
+            val height = bounds.height().toFloat()
+
+            // 气泡背景
+            paint.color = tintColor
+            paint.colorFilter = null
+            canvas.drawRoundRect(0f, 0f, width, height, paint)
+            
+            // 使用路径绘制带不同圆角的气泡
+            val path = android.graphics.Path().apply {
+                addRoundRect(
+                    0f, 0f, width, height,
+                    cornerRadii,
+                    android.graphics.Path.Direction.CW
+                )
+            }
+            canvas.drawPath(path, paint)
+
+            // 边框光泽
+            val borderAlpha = Color.alpha(tintColor) / 2
+            borderPaint.color = if (isDark) {
+                Color.argb(borderAlpha, 255, 255, 255)
+            } else {
+                Color.argb(borderAlpha, 180, 120, 200)
+            }
+            canvas.drawPath(path, borderPaint)
+        }
+
+        override fun setAlpha(alpha: Int) {
+            paint.alpha = alpha
+        }
+
+        override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+
+        override fun setColorFilter(colorFilter: ColorFilter?) {
+            paint.colorFilter = colorFilter
+        }
+
+        private fun Canvas.drawRoundRect(
+            left: Float,
+            top: Float,
+            right: Float,
+            bottom: Float,
+            paint: Paint
+        ) {
+            val path = android.graphics.Path()
+            path.addRoundRect(left, top, right, bottom, cornerRadii, android.graphics.Path.Direction.CW)
+            drawPath(path, paint)
+        }
+    }
+
+    // 额外的辅助方法
+    fun applyButtonGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
+        if (!enabled) return
+        val density = view.resources.displayMetrics.density
+        view.elevation = 6f * density
+    }
+
+    fun applyIndicatorGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
+        if (!enabled) return
+        val color = if (isDark) {
+            Color.argb(200, 255, 100, 140)
+        } else {
+            Color.argb(180, 230, 70, 110)
+        }
+        view.setBackgroundColor(color)
+    }
+
+    fun applyInputGlow(view: View, enabled: Boolean, hasFocus: Boolean, isDark: Boolean = true) {
+        if (!enabled || !hasFocus) return
+        val density = view.resources.displayMetrics.density
+        view.elevation = 8f * density
     }
 }

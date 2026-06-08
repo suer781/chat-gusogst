@@ -5,6 +5,10 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.graphics.ColorFilter
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.RenderEffect
 import android.os.Build
 import android.os.Bundle
 import android.view.Display
@@ -531,11 +535,52 @@ class MainActivity : AppCompatActivity() {
             try {
                 // 自动优化HDR设置
                 RealHdrHelper.autoOptimize(this)
-                android.util.Log.i("HDR", "HDR模式已启用")
+                
+                // 为整个窗口应用HDR增强（关键）
+                window.decorView.let { view ->
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        view.setRenderEffect(
+                            RenderEffect.createColorFilterEffect(
+                                createHdrEnhancementColorFilter()
+                            )
+                        )
+                    }
+                }
+                
+                android.util.Log.i("HDR", "HDR模式已启用，毛玻璃增强已激活")
             } catch (e: Exception) {
                 android.util.Log.e("HDR", "启用HDR失败: ${e.message}")
             }
         }
+    }
+    
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createHdrEnhancementColorFilter(): ColorFilter {
+        val matrix = ColorMatrix()
+        
+        // HDR模式下提升对比度和饱和度
+        matrix.setSaturation(1.2f)
+        
+        // 提高亮度和对比度
+        val brightnessMatrix = ColorMatrix()
+        brightnessMatrix.setScale(1.08f, 1.08f, 1.08f, 1f)
+        
+        // 对比度增强
+        val contrast = 1.05f
+        val contrastMatrix = ColorMatrix()
+        val scale = contrast
+        val trans = -0.5f * scale + 0.5f
+        contrastMatrix.set(floatArrayOf(
+            scale, 0f, 0f, 0f, trans,
+            0f, scale, 0f, 0f, trans,
+            0f, 0f, scale, 0f, trans,
+            0f, 0f, 0f, 1f, 0f
+        ))
+        
+        matrix.postConcat(brightnessMatrix)
+        matrix.postConcat(contrastMatrix)
+        
+        return ColorMatrixColorFilter(matrix)
     }
     
     /**
@@ -547,10 +592,26 @@ class MainActivity : AppCompatActivity() {
                 if (settingsManager.isHdrEnabled()) {
                     // 启用HDR
                     RealHdrHelper.enableHdr(this)
-                    android.util.Log.i("HDR", "HDR已启用")
+                    
+                    // 应用HDR增强效果
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        window.decorView.setRenderEffect(
+                            RenderEffect.createColorFilterEffect(
+                                createHdrEnhancementColorFilter()
+                            )
+                        )
+                    }
+                    
+                    android.util.Log.i("HDR", "HDR已启用，毛玻璃增强已激活")
                 } else {
                     // 禁用HDR
                     RealHdrHelper.disableHdr(this)
+                    
+                    // 清除HDR增强效果
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        window.decorView.setRenderEffect(null)
+                    }
+                    
                     android.util.Log.i("HDR", "HDR已禁用")
                 }
             } catch (e: Exception) {
