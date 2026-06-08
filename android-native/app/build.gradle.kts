@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.chaquo.python")
 }
 
 android {
@@ -80,59 +79,6 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-}
-
-// ── Chaquopy: embed Python (Hermes Agent) into the Android process ──────
-chaquopy {
-    defaultConfig {
-        // Use the system Python for build-time tasks
-        buildPython("python3")
-
-        // Core Hermes Agent dependencies (pure-Python subset)
-        pip {
-            options("--index-url", "https://pypi.org/simple")
-            options("--extra-index-url", "https://chaquo.com/pypi-13.1")
-
-            // Core: openai SDK + httpx stack
-            install("openai==1.2.0")
-            install("pydantic==1.10.21")
-            install("httpx[socks]<1")
-            install("httpcore<2")
-            install("h11")
-            install("anyio<4")
-            install("sniffio")
-            install("idna")
-
-            // Config / env / serialization
-            install("python-dotenv")
-            install("pyyaml")
-            install("ruamel.yaml")
-            install("requests")
-            install("urllib3")
-            install("charset-normalizer")
-
-            // CLI / rich output
-            install("jinja2")
-            install("markupsafe")
-            install("rich")
-            install("pygments")
-
-            // Utilities
-            install("fire")
-
-            // Extra pure-Python convenience deps
-            install("distro")
-            install("tqdm")
-            install("packaging")
-            install("attrs")
-        }
-
-        // Source directories: Python modules loaded into the APK
-        // (Hermes Agent source not included for GitHub Actions builds)
-    }
-
-    // Pre-built Python packages (platform-native *.so libs) are
-    // excluded from minification so they survive R8/ProGuard.
 }
 
 dependencies {
