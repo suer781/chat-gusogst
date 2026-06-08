@@ -15,7 +15,6 @@ import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -53,6 +52,8 @@ class OnboardingActivity : AppCompatActivity() {
     private val gentleEase by lazy { PathInterpolator(0.2f, 0.8f, 0.2f, 1f) }
     private val bounceEase by lazy { PathInterpolator(0.68f, -0.55f, 0.265f, 1.55f) }
     private val softOvershoot by lazy { OvershootInterpolator(0.8f) }
+    private val smoothEaseOut by lazy { PathInterpolator(0.25f, 0.1f, 0.25f, 1f) }
+    private val fastOutSlowIn by lazy { PathInterpolator(0.4f, 0f, 0.2f, 1f) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
