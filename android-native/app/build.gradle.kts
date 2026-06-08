@@ -15,6 +15,10 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
+        // 预防性声明：明确测试配置
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+
         // Build Python only for arm64-v8a (95%+ of modern Android devices)
         // to keep APK size under control.  Add armeabi-v7a / x86_64 for
         // emulators during development if needed.
@@ -24,8 +28,19 @@ android {
     }
 
     buildTypes {
+        debug {
+            // 预防性声明：调试模式配置
+            isDebuggable = true
+            isMinifyEnabled = false
+            isShrinkResources = false
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-DEBUG"
+        }
         release {
+            // 预防性声明：发布模式明确配置
+            isDebuggable = false
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -34,12 +49,36 @@ android {
     }
 
     compileOptions {
+        // 预防性声明：明确 Java 编译配置
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        encoding = "UTF-8"
     }
 
     kotlinOptions {
+        // 预防性声明：明确 Kotlin 编译配置
         jvmTarget = "21"
+        freeCompilerArgs += listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-Xjvm-default=all"
+        )
+    }
+
+    buildFeatures {
+        // 预防性声明：明确启用的功能
+        buildConfig = true
+        viewBinding = true
+        aidl = false
+        renderScript = false
+        shaders = false
+    }
+
+    packaging {
+        resources {
+            // 预防性声明：明确排除冲突资源
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
