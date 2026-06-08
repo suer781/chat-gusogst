@@ -28,7 +28,10 @@ enum class Role {
 data class Message(
     val id: String = java.util.UUID.randomUUID().toString(),
     val role: MessageRole,
-    val content: String,
+    var content: String = "",
+    val conversationId: String = "",
+    var providerId: String = "",
+    var modelId: String = "",
     @SerializedName("tool_calls") val toolCalls: List<ToolCall>? = null,
     @SerializedName("tool_call_id") val toolCallId: String? = null,
     val name: String? = null,
@@ -267,9 +270,12 @@ enum class AvatarType {
 data class Conversation(
     val id: String = java.util.UUID.randomUUID().toString(),
     val title: String = "",
+    val messages: MutableList<Message> = mutableListOf(),
+    val providerId: String? = null,
+    val modelId: String? = null,
     @SerializedName("persona_id") val personaId: String? = null,
     @SerializedName("created_at") val createdAt: Long = System.currentTimeMillis(),
-    @SerializedName("updated_at") val updatedAt: Long = System.currentTimeMillis(),
+    @SerializedName("updated_at") var updatedAt: Long = System.currentTimeMillis(),
     val pinned: Boolean = false,
     val archived: Boolean = false
 )
@@ -340,12 +346,19 @@ data class UIProvider(
 // ===== API 通信模型 =====
 
 data class ChatRequest(
-    val message: String,
-    val conversationId: String = "",
+    val model: String,
+    val messages: List<ApiMessage>,
     val stream: Boolean = true,
-    val model: String? = null,
-    val temperature: Double = 0.7,
-    val maxTokens: Int = 4096
+    val temperature: Double? = null,
+    val maxTokens: Int? = null,
+    val topP: Double? = null
+)
+
+data class ApiMessage(
+    val role: String,
+    val content: String,
+    val name: String? = null,
+    @SerializedName("tool_call_id") val toolCallId: String? = null
 )
 
 data class ChatResponse(

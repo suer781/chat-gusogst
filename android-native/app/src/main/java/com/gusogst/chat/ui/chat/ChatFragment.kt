@@ -14,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
+import com.gusogst.chat.model.MessageStatus
 import com.gusogst.chat.viewmodel.ChatViewModel
 import com.gusogst.chat.util.HdrHelper
 import com.gusogst.chat.util.MaterialAnimator
@@ -77,7 +78,7 @@ class ChatFragment : Fragment() {
             // Grok 风格：流式输出时每新增内容触发微震动
             if (viewModel.isStreaming.value == true && msgs.isNotEmpty()) {
                 val lastMsg = msgs.last()
-                if (lastMsg.status.name == "streaming" && lastMsg.content.length > _lastStreamingLength) {
+                if (lastMsg.status == MessageStatus.STREAMING && lastMsg.content.length > _lastStreamingLength) {
                     haptics.microTick()
                 }
                 _lastStreamingLength = lastMsg.content.length

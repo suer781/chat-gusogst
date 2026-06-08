@@ -8,6 +8,6 @@ class AppInitializer : Application() {
     override fun onCreate() {
         super.onCreate()
         Log.d("AppInitializer", "Application initialized")
-        HermesBridge.initialize(this)
+        HermesBridge.init(this)
     }
 }

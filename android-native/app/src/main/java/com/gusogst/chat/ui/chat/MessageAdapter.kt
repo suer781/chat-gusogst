@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
 import com.gusogst.chat.model.Message
 import com.gusogst.chat.model.MessageStatus
-import com.gusogst.chat.model.Role
+import com.gusogst.chat.model.MessageRole
 import com.gusogst.chat.util.HdrHelper
 import com.gusogst.chat.util.MaterialAnimator
 
@@ -52,7 +52,7 @@ class MessageAdapter(
 
     override fun getItemViewType(position: Int): Int =
         when (getItem(position).role) {
-            Role.USER -> TYPE_USER
+            MessageRole.USER -> TYPE_USER
             else -> TYPE_ASSISTANT
         }
 
