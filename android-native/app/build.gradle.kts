@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.chaquo.python")
+    // Chaquopy disabled for initial build - hermes_bridge.py is a stub
+    // id("com.chaquo.python")
 }
 
 android {
@@ -82,6 +83,7 @@ android {
     }
 }
 
+/*
 // ── Chaquopy: embed Python (Hermes Agent) into the Android process ──────
 chaquopy {
     defaultConfig {
@@ -92,6 +94,7 @@ chaquopy {
         // Full Hermes Agent requires additional source modules
     }
 }
+*/
 
 dependencies {
     // AndroidX Core Libraries (Latest Stable)
