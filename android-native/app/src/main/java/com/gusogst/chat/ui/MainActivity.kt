@@ -258,7 +258,7 @@ class MainActivity : AppCompatActivity() {
         navProviders = findViewById(R.id.navProviders)
         navSettings = findViewById(R.id.navSettings)
         navIndicator = findViewById(R.id.navIndicator)
-        headerView = findViewById(R.id.headerView)
+        headerView = findViewById(R.id.header)
         
         // 创建过渡动画覆盖层
         transitionOverlay = View(this).apply {
