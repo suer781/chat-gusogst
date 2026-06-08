@@ -46,18 +46,12 @@ android {
 // ── Chaquopy: embed Python (Hermes Agent) into the Android process ──────
 chaquopy {
     defaultConfig {
-        // Use the Hermes venv Python for build-time tasks (pip install, .pyc
-        // compilation).  The runtime Python that runs on-device is Chaquopy's
-        // own cross-compiled build — this setting only affects the *build*
-        // Python, not the embedded one.
-        val hermesVenv = file("/opt/hermes/.venv/bin/python")
-        buildPython(if (hermesVenv.exists()) hermesVenv.absolutePath else "python3")
+        // Use the system Python for build-time tasks
+        buildPython("python3")
 
-        // Core Hermes Agent dependencies (pure-Python subset that can be
-        // cross-compiled for Android).  C-extension deps are excluded here
-        // and handled via lazy fallback at runtime.
+        // Core Hermes Agent dependencies (pure-Python subset)
         pip {
-            options("--index-url", "https://mirrors.aliyun.com/pypi/simple")
+            options("--index-url", "https://pypi.org/simple")
             options("--extra-index-url", "https://chaquo.com/pypi-13.1")
 
             // Core: openai SDK + httpx stack
@@ -94,46 +88,12 @@ chaquopy {
             install("attrs")
         }
 
-        // ── Source directories: Python modules loaded into the APK ──
-        // Hermes Agent source — referenced from /opt/hermes (no copy).
-        // Chaquopy traverses each dir, collects *.py files, and places them
-        // under the Python path on-device so ``import agent`` etc. resolve.
-        sourceSets {
-            getByName("main") {
-                val hermesDir = file("/opt/hermes")
-                if (hermesDir.exists()) srcDir(hermesDir)
-                // Prevent deeply-nested test/docs/node_modules clutter
-                exclude(
-                    "**/tests/**",
-                    "**/node_modules/**",
-                    "**/__pycache__/**",
-                    "**/*.pyc",
-                    "**/docs/**",
-                    "**/assets/**",
-                    "**/website/**",
-                    "**/nix/**",
-                    "**/docker/**",
-                    "**/packaging/**",
-                    "**/scripts/**",
-                    "**/optional-skills/**",
-                    "**/skills/**",
-                    "**/locales/**",
-                    "**/plans/**",
-                    "**/datagen-config-examples/**",
-                    "**/tui_gateway/**",
-                    "**/ui-tui/**",
-                    "**/web/**",
-                    "**/cron/**",
-                    "**/acp_adapter/**",
-                    "**/acp_registry/**"
-                )
-            }
-        }
+        // Source directories: Python modules loaded into the APK
+        // (Hermes Agent source not included for GitHub Actions builds)
     }
 
-    // ── Pre-built Python packages (platform-native *.so libs) are
+    // Pre-built Python packages (platform-native *.so libs) are
     // excluded from minification so they survive R8/ProGuard.
-    // Chaquopy's own ProGuard rules handle the Java/Kotlin side.
 }
 
 dependencies {
