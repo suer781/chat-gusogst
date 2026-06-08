@@ -5,11 +5,17 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -37,6 +43,7 @@ class OnboardingActivity : AppCompatActivity() {
     private lateinit var skipText: TextView
     private lateinit var prevText: TextView
     private lateinit var navContainer: View
+    private lateinit var vibrator: Vibrator
 
     private val totalPages = 4
     private var currentPage = 0
@@ -52,6 +59,15 @@ class OnboardingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_onboarding)
 
         settingsManager = ChatSettingsManager(this)
+        
+        // 初始化线性马达震动器
+        vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
 
         // 检查是否是首次启动
         if (settingsManager.getLaunchCount() > 0) {
@@ -106,6 +122,9 @@ class OnboardingActivity : AppCompatActivity() {
             view.setOnTouchListener { v, event ->
                 when (event.action) {
                     android.view.MotionEvent.ACTION_DOWN -> {
+                        // 触觉反馈：轻微触感
+                        performLightHaptic()
+                        
                         // 按下时：轻微缩小 + 微妙的颜色加深
                         v.animate()
                             .scaleX(0.92f)
@@ -161,6 +180,10 @@ class OnboardingActivity : AppCompatActivity() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 currentPage = position
+                
+                // 页面切换触觉反馈
+                performMediumHaptic()
+                
                 updateIndicators()
                 updateNavButtons()
             }
@@ -401,8 +424,16 @@ class OnboardingActivity : AppCompatActivity() {
 
     private fun completeOnboarding() {
         settingsManager.setLaunchCount(1)
+        
+        // 成功触觉反馈序列
+        performSuccessHaptic()
 
         if (currentPage == totalPages - 1) {
+            // 强力触觉反馈
+            Handler(Looper.getMainLooper()).postDelayed({
+                performHeavyHaptic()
+            }, 200)
+            
             // 独特的漩涡式消失效果
             val rootView = findViewById<View>(R.id.onboarding_root)
             val readyRoot = findViewById<View>(R.id.ready_root) ?: rootView
@@ -450,6 +481,58 @@ class OnboardingActivity : AppCompatActivity() {
     private fun Int.dpToPx(): Int {
         val density = resources.displayMetrics.density
         return (this * density).toInt()
+    }
+    
+    // 触觉反馈辅助方法
+    private fun performLightHaptic() {
+        // 轻微的触感反馈 - 用于按钮按下
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(10, 50))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(10)
+        }
+    }
+    
+    private fun performMediumHaptic() {
+        // 中等触感反馈 - 用于页面切换
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(20, 100))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(20)
+        }
+    }
+    
+    private fun performHeavyHaptic() {
+        // 强力触感反馈 - 用于完成动画
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(40, 180))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(40)
+        }
+    }
+    
+    private fun performSuccessHaptic() {
+        // 成功触觉反馈序列 - 用于完成向导
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val timings = longArrayOf(0, 30, 50, 40, 80, 60)
+            val amplitudes = intArrayOf(0, 80, 0, 120, 0, 200)
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val timings = longArrayOf(0, 30, 50, 40, 80, 60)
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(longArrayOf(0, 30, 50, 40, 80, 60), -1)
+        }
     }
 
     private inner class OnboardingPagerAdapter(activity: FragmentActivity) :
