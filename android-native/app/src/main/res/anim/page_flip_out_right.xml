@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/accelerate_decelerate_interpolator">
+    
+    <!-- 3D 向右翻转淡出 -->
+    <objectAnimator
+        android:propertyName="rotationY"
+        android:valueFrom="0"
+        android:valueTo="90"
+        android:duration="200"
+        android:startOffset="0"/>
+    
+    <objectAnimator
+        android:propertyName="alpha"
+        android:valueFrom="1"
+        android:valueTo="0"
+        android:duration="200"
+        android:startOffset="100"/>
+    
+    <objectAnimator
+        android:propertyName="scaleX"
+        android:valueFrom="1"
+        android:valueTo="0.9"
+        android:duration="200"/>
+    
+    <objectAnimator
+        android:propertyName="scaleY"
+        android:valueFrom="1"
+        android:valueTo="0.9"
+        android:duration="200"/>
+    
+</set>

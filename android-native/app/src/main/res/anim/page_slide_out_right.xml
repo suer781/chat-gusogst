@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/accelerate_interpolator">
+    
+    <!-- 向右滑出 -->
+    <objectAnimator
+        android:propertyName="translationX"
+        android:valueFrom="0"
+        android:valueTo="50%p"
+        android:duration="250"/>
+    
+    <objectAnimator
+        android:propertyName="alpha"
+        android:valueFrom="1"
+        android:valueTo="0"
+        android:duration="250"/>
+    
+    <!-- 轻微缩小 -->
+    <objectAnimator
+        android:propertyName="scaleX"
+        android:valueFrom="1"
+        android:valueTo="0.9"
+        android:duration="250"/>
+    
+    <objectAnimator
+        android:propertyName="scaleY"
+        android:valueFrom="1"
+        android:valueTo="0.9"
+        android:duration="250"/>
+    
+</set>
