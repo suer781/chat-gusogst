@@ -38,6 +38,7 @@ import com.gusogst.chat.ui.theme.ThemeController
 import com.gusogst.chat.util.HdrHelper
 import com.gusogst.chat.util.RealHdrHelper
 import com.gusogst.chat.util.DynamicColorEngine
+import com.gusogst.chat.util.PerformanceAdapter
 import com.gusogst.chat.util.PerformanceMonitor
 
 class MainActivity : AppCompatActivity() {
@@ -68,6 +69,9 @@ class MainActivity : AppCompatActivity() {
     
     // 3D 翻转插值器
     private val flipInterpolator by lazy { PathInterpolator(0.4f, 0f, 0.2f, 1f) }
+    
+    // 性能适配
+    private lateinit var animationQuality: PerformanceAdapter.AnimationQuality
 
     private val navItems by lazy {
         listOf(navChat, navPersona, navProviders, navSettings)
@@ -96,7 +100,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 请求最高刷新率（关键！）
+        // 初始化性能适配
+        animationQuality = PerformanceAdapter.getAnimationQuality(this)
+        
+        // 请求最高刷新率（根据设备性能调整）
         requestHighestRefreshRate()
         
         // 应用HDR设置
@@ -143,18 +150,37 @@ class MainActivity : AppCompatActivity() {
     
     /**
      * 启动性能监控
+     * 根据设备性能等级调整监控策略
      */
     private fun startPerformanceMonitoring() {
+        // 只有高端设备才启用详细监控
+        if (!BuildConfig.DEBUG) return
+        
+        // 根据性能等级决定监控粒度
+        val fpsThreshold = when (animationQuality.maxFps) {
+            120 -> 100f  // 高端设备：FPS < 100 才警告
+            90 -> 75f   // 中高端：FPS < 75 才警告
+            else -> 45f  // 中低端：FPS < 45 才警告
+        }
+        
         PerformanceMonitor.startMonitoring(
             onFpsUpdate = { fps ->
-                // FPS 低于 55 时记录警告
-                if (fps < 55f) {
-                    android.util.Log.w("Performance", "Low FPS: $fps")
+                if (fps < fpsThreshold) {
+                    android.util.Log.w("Performance", "Low FPS: $fps (threshold: $fpsThreshold)")
+                    
+                    // 动态调整性能等级
+                    val newLevel = PerformanceAdapter.adjustPerformanceLevel(this, fps)
+                    if (newLevel != animationQuality.maxFps) {
+                        android.util.Log.i("Performance", "Auto-adjusted to: ${newLevel.name}")
+                        // 重新获取动画质量
+                        animationQuality = PerformanceAdapter.getAnimationQuality(this)
+                    }
                 }
             },
             onJank = { frameTime ->
-                // 记录卡顿
-                android.util.Log.w("Performance", "Jank detected: ${frameTime}ms")
+                if (frameTime > 33) { // 超过1帧时间
+                    android.util.Log.w("Performance", "Jank detected: ${frameTime}ms")
+                }
             }
         )
     }
@@ -190,7 +216,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 请求手机能支持的最高刷新率（120/144/240FPS）
+     * 请求最高刷新率
+     * 根据设备性能自动调整
      */
     private fun requestHighestRefreshRate() {
         try {
@@ -198,8 +225,13 @@ class MainActivity : AppCompatActivity() {
             val display = windowManager.defaultDisplay
             val supportedModes = display.supportedModes
             
-            // 找到刷新率最高的模式
-            val bestMode = supportedModes.maxByOrNull { it.refreshRate }
+            // 根据性能等级选择合适的刷新率
+            val targetFps = animationQuality.maxFps
+            
+            // 选择最接近目标FPS的最高分辨率模式
+            val bestMode = supportedModes.filter { it.refreshRate <= targetFps }
+                .maxByOrNull { it.refreshRate }
+                ?: supportedModes.maxByOrNull { it.refreshRate }
             
             if (bestMode != null) {
                 // 应用最佳模式
@@ -207,8 +239,8 @@ class MainActivity : AppCompatActivity() {
                     preferredDisplayModeId = bestMode.modeId
                 }
                 
-                // 打印日志（可选）
-                android.util.Log.i("RefreshRate", "Requesting ${bestMode.refreshRate}Hz refresh rate")
+                // 打印日志
+                android.util.Log.i("RefreshRate", "Selected: ${bestMode.refreshRate}Hz (target: ${targetFps}Hz)")
             }
             
             // 请求最高帧率（Android 11+）
@@ -271,44 +303,70 @@ class MainActivity : AppCompatActivity() {
         }
         (findViewById<View>(android.R.id.content) as? ViewGroup)?.addView(transitionOverlay)
         
-        // 创建环境光叠加层（动态背景效果）
-        createAmbientOverlay()
+        // 根据性能等级决定是否创建环境光背景
+        if (animationQuality.enableGlowEffects || animationQuality.enableComplexGradients) {
+            createAmbientOverlay()
+        }
         
-        // 设置 Header 视差滚动效果
-        setupParallaxHeader()
+        // 根据性能等级决定是否设置视差效果
+        if (animationQuality.enableParallax) {
+            setupParallaxHeader()
+        }
     }
     
     /**
      * 创建动态环境光背景效果
-     * 利用径向渐变创造层次感和深度
+     * 根据性能等级决定是否启用复杂效果
      */
     private fun createAmbientOverlay() {
         val rootView = findViewById<View>(android.R.id.content) as? ViewGroup ?: return
         
         ambientOverlay = View(this).apply {
-            // 硬件加速层
-            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+            // 根据性能等级决定是否使用硬件加速
+            if (animationQuality.hardwareLayerEnabled) {
+                setLayerType(View.LAYER_TYPE_HARDWARE, null)
+            }
             
-            // 动态径向渐变背景
             post {
                 val w = width.toFloat()
                 val h = height.toFloat()
                 
-                // 创建多层次径向渐变
-                val gradient = android.graphics.RadialGradient(
-                    w / 2f, 0f,  // 中心点在顶部
-                    Math.max(w, h) * 0.8f,
-                    intArrayOf(
-                        0x2020B0F0.toInt(),  // 顶部：淡蓝高光
-                        0x15003080.toInt(),  // 中部：深蓝
-                        0x00000000            // 底部：透明
-                    ),
-                    floatArrayOf(0f, 0.4f, 1f),
-                    Shader.TileMode.CLAMP
-                )
-                
-                background = android.graphics.drawable.GradientDrawable(gradient)
-                alpha = 0.3f
+                // 根据性能等级决定背景复杂度
+                if (animationQuality.enableComplexGradients) {
+                    // 高配设备：复杂多层次渐变
+                    val gradient = android.graphics.RadialGradient(
+                        w / 2f, 0f,
+                        Math.max(w, h) * 0.8f,
+                        intArrayOf(
+                            0x2020B0F0.toInt(),
+                            0x15003080.toInt(),
+                            0x00000000
+                        ),
+                        floatArrayOf(0f, 0.4f, 1f),
+                        Shader.TileMode.CLAMP
+                    )
+                    
+                    background = android.graphics.drawable.GradientDrawable(gradient)
+                    alpha = 0.3f
+                } else if (animationQuality.enableGlowEffects) {
+                    // 中配设备：简单渐变
+                    val gradient = android.graphics.RadialGradient(
+                        w / 2f, 0f,
+                        Math.max(w, h) * 0.6f,
+                        intArrayOf(
+                            0x15002060.toInt(),
+                            0x00000000
+                        ),
+                        floatArrayOf(0f, 1f),
+                        Shader.TileMode.CLAMP
+                    )
+                    
+                    background = android.graphics.drawable.GradientDrawable(gradient)
+                    alpha = 0.2f
+                } else {
+                    // 低配设备：无背景效果
+                    setBackgroundColor(0x00000000)
+                }
             }
             
             layoutParams = ViewGroup.LayoutParams(
@@ -323,9 +381,16 @@ class MainActivity : AppCompatActivity() {
     
     /**
      * 设置视差滚动效果
-     * Header 随内容滚动产生层次感
+     * 根据性能等级决定是否启用
      */
     private fun setupParallaxHeader() {
+        // 根据性能等级决定是否启用视差效果
+        if (!animationQuality.enableParallax) {
+            // 低配设备：禁用视差效果
+            headerView.translationY = 0f
+            return
+        }
+        
         fragmentContainer.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             if (scrollY != oldScrollY) {
                 // 视差偏移量（header 移动速度是内容的一半）
@@ -334,7 +399,7 @@ class MainActivity : AppCompatActivity() {
                 
                 // 动态模糊效果（根据滚动速度）
                 val velocity = kotlin.math.abs(scrollY - oldScrollY)
-                if (velocity > 20) {
+                if (velocity > 20 && animationQuality.hardwareLayerEnabled) {
                     headerView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                     headerView.alpha = 1f - (velocity - 20) * 0.01f
                 } else {
@@ -756,6 +821,12 @@ class MainActivity : AppCompatActivity() {
      * 应用HDR设置
      */
     private fun applyHdrSettings() {
+        // 首先检查HDR增强是否启用
+        if (!animationQuality.enableHdrEnhancement) {
+            android.util.Log.i("HDR", "HDR enhancement disabled for performance")
+            return
+        }
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && settingsManager.isHdrEnabled()) {
             try {
                 // 自动优化HDR设置
