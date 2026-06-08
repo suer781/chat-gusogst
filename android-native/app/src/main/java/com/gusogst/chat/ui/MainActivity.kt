@@ -7,7 +7,6 @@ import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
@@ -31,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var themeController: ThemeController
     private lateinit var settingsManager: ChatSettingsManager
     private lateinit var fragmentContainer: FrameLayout
-    private lateinit var ambientOverlay: View
     private lateinit var transitionOverlay: View
 
     // Navigation views
@@ -62,8 +60,8 @@ class MainActivity : AppCompatActivity() {
         themeController = ThemeController.getInstance(this)
         settingsManager = ChatSettingsManager(this)
         
-        // 应用保存的主题模式
-        applySavedTheme()
+        // 应用保存的主题模式（必须在 super.onCreate 之前）
+        applyThemeBeforeCreate()
         
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -81,53 +79,25 @@ class MainActivity : AppCompatActivity() {
         setupAmbientBackground()
     }
 
-    private fun applySavedTheme() {
+    private fun applyThemeBeforeCreate() {
         val mode = themeController.getThemeMode()
-        val nightMode = when (mode) {
-            ThemeController.MODE_LIGHT, ThemeController.MODE_PURE_WHITE -> 
-                AppCompatDelegate.MODE_NIGHT_NO
-            ThemeController.MODE_DARK, ThemeController.MODE_PURE_BLACK -> 
-                AppCompatDelegate.MODE_NIGHT_YES
-            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        }
-        AppCompatDelegate.setDefaultNightMode(nightMode)
-        
-        // 应用 Activity 级别的系统栏颜色
-        applySystemBarsTheme(mode)
-    }
-
-    private fun applySystemBarsTheme(mode: String) {
-        val window = window
-        
-        val (statusBarColor, navBarColor, isLight) = when (mode) {
-            ThemeController.MODE_LIGHT, ThemeController.MODE_PURE_WHITE -> 
-                Triple(0xFFFFFFFF.toInt(), 0xFFFFFFFF.toInt(), true)
-            ThemeController.MODE_DARK -> 
-                Triple(0xFF0D0D2B.toInt(), 0xFF0D0D2B.toInt(), false)
-            ThemeController.MODE_PURE_BLACK -> 
-                Triple(android.graphics.Color.BLACK, android.graphics.Color.BLACK, false)
-            else -> {
-                val isNight = (resources.configuration.uiMode and 
-                    android.content.res.Configuration.UI_MODE_NIGHT_MASK) == 
-                    android.content.res.Configuration.UI_MODE_NIGHT_YES
-                if (isNight) {
-                    Triple(0xFF0D0D2B.toInt(), 0xFF0D0D2B.toInt(), false)
-                } else {
-                    Triple(0xFFFFFFFF.toInt(), 0xFFFFFFFF.toInt(), true)
-                }
+        when (mode) {
+            ThemeController.MODE_LIGHT, ThemeController.MODE_PURE_WHITE -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                setTheme(R.style.Theme_ChatGusogst)
             }
-        }
-        
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            window.statusBarColor = statusBarColor
-            window.navigationBarColor = navBarColor
-        }
-        
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            window.decorView.systemUiVisibility = if (isLight) {
-                window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            } else {
-                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            ThemeController.MODE_DARK -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                setTheme(R.style.Theme_ChatGusogst)
+            }
+            ThemeController.MODE_PURE_BLACK -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                setTheme(R.style.Theme_ChatGusogst_Amoled)
+            }
+            else -> {
+                // 跟随系统
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                setTheme(R.style.Theme_ChatGusogst)
             }
         }
     }
@@ -160,7 +130,7 @@ class MainActivity : AppCompatActivity() {
             ThemeController.MODE_DARK -> 
                 0xFF0D0D2B.toInt()
             ThemeController.MODE_PURE_BLACK -> 
-                android.graphics.Color.BLACK
+                0xFF000000.toInt()
             else -> 0xFF0D0D2B.toInt()
         }
     }
@@ -206,7 +176,6 @@ class MainActivity : AppCompatActivity() {
     private fun applyThemeToViews() {
         // 应用主题到各个 UI 元素
         val isDark = themeController.isDarkTheme()
-        val primaryColor = if (isDark) 0xFF0D0D2B.toInt() else 0xFFFFFFFF.toInt()
         val textColor = themeController.getTextColor()
         val secondaryTextColor = themeController.getSecondaryTextColor()
         val accentColor = themeController.getAccentColorInt()
@@ -347,7 +316,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupAmbientBackground() {
         // 环境光背景已经在布局中通过 XML 设置
-        // 这里可以添加动态调整或动画效果
     }
 
     /**
@@ -359,21 +327,9 @@ class MainActivity : AppCompatActivity() {
         
         // 1. 淡出当前界面
         animateFadeOut {
-            // 2. 应用新主题
+            // 2. 应用新主题并重新创建 Activity
             themeController.setThemeMode(newMode)
-            applySavedTheme()
-            
-            // 3. 更新所有 UI 元素
-            applyThemeToViews()
-            applySystemBarsTheme(newMode)
-            
-            // 4. 淡入新界面
-            animateFadeIn {
-                isAnimating = false
-                
-                // 5. 重新创建 Activity 以应用所有更改
-                recreate()
-            }
+            recreate()
         }
     }
 
@@ -415,6 +371,9 @@ class MainActivity : AppCompatActivity() {
     private fun animateFadeOut(onEnd: () -> Unit) {
         val content = findViewById<View>(android.R.id.content) as? ViewGroup ?: return
         
+        // 设置正确的背景颜色
+        transitionOverlay.setBackgroundColor(getThemeBackgroundColor())
+        
         // 背景过渡
         transitionOverlay.animate()
             .alpha(1f)
@@ -431,33 +390,20 @@ class MainActivity : AppCompatActivity() {
             .start()
     }
 
-    private fun animateFadeIn(onEnd: () -> Unit) {
-        val content = findViewById<View>(android.R.id.content) as? ViewGroup ?: return
-        
-        // 背景过渡
-        transitionOverlay.animate()
-            .alpha(0f)
-            .setDuration(300)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        
-        // 内容淡入
-        content.animate()
-            .alpha(1f)
-            .setDuration(300)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .withEndAction { onEnd() }
-            .start()
+    /**
+     * 获取当前主题模式
+     */
+    fun getCurrentThemeMode(): String {
+        return themeController.getThemeMode()
     }
 
     /**
-     * 快速切换主题（无动画）
+     * 快速切换主题（无动画，直接应用）
      */
     fun quickSwitchTheme(mode: String) {
         themeController.setThemeMode(mode)
         applySavedTheme()
         applyThemeToViews()
-        applySystemBarsTheme(mode)
     }
 
     /**
@@ -468,15 +414,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * 快速切换主题（无动画，直接应用）
+     */
+    fun quickSwitchTheme(mode: String) {
+        themeController.setThemeMode(mode)
+        applySavedTheme()
+        applyThemeToViews()
+    }
+
+    /**
      * 获取主题控制器
      */
     fun getThemeController(): ThemeController {
         return themeController
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 确保主题状态正确
-        applyThemeToViews()
     }
 }

@@ -253,10 +253,11 @@ class ThemeSettingsFragment : Fragment() {
                 dp(1)
             ).apply { setMargins(0, dp(16), 0, dp(16)) }
             setBackgroundColor(
-                if (themeController.isDarkTheme()) 
-                    0xFF333333.toInt() 
-                else 
-                    0xFFDDDDDD.toInt()
+                if (themeController.isDarkTheme()) {
+                    android.graphics.Color.parseColor("#2A2A40")
+                } else {
+                    android.graphics.Color.parseColor("#E0E0E0")
+                }
             )
         })
     }

@@ -1,31 +1,39 @@
 package com.gusogst.chat.util
-import com.gusogst.chat.R
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.ColorDrawable
+import android.graphics.RectF
 import android.view.View
+import com.gusogst.chat.R
 
 /**
- * HDR v4.0 glass glow helper — mirrors Web hdr_v3.css
+ * HDR + 毛玻璃 + 荣耀式折射边框效果
  *
- * HDR 的目的是增强玻璃的透光性与真实感，模拟光线穿过玻璃时的：
- *   1. 边缘辉光（border highlight）
- *   2. 表面反光（diagonal reflection）
- *   3. 透射光晕（shadow glow）
- *   4. 环境色染（ambient tint）
- *
- * Performance: 使用 LayerDrawable 组合多层效果，GPU 单次合成
+ * 真正实现：
+ * 1. 荣耀式折射边框（半透明渐变边框）
+ * 2. 毛玻璃效果（半透明背景 + elevation）
+ * 3. HDR 辉光效果
+ * 4. 环境光背景
  */
 object HdrHelper {
 
     data class HdrColors(
-        val glowBase: Int, val glowAccent: Int, val glowWhite: Int,
-        val borderHighlight: Int, val shadowGlow: Int, val bgTint: Int,
-        val cardBorder: Int, val headerBg: Int, val navBg: Int, val bubbleTint: Int,
-        val buttonGlow: Int, val indicatorGlow: Int, val inputFocusGlow: Int,
-        val reflectionHighlight: Int  // 玻璃表面反光色
+        val glowBase: Int,
+        val glowAccent: Int,
+        val glowWhite: Int,
+        val borderHighlight: Int,
+        val shadowGlow: Int,
+        val bgTint: Int,
+        val cardBorder: Int,
+        val headerBg: Int,
+        val navBg: Int,
+        val bubbleTint: Int,
+        val buttonGlow: Int,
+        val indicatorGlow: Int,
+        val inputFocusGlow: Int,
+        val reflectionHighlight: Int
     )
 
     // Dark theme HDR colors
@@ -43,7 +51,7 @@ object HdrHelper {
         buttonGlow = Color.argb(64, 200, 100, 150),
         indicatorGlow = Color.argb(230, 220, 100, 140),
         inputFocusGlow = Color.argb(64, 200, 100, 150),
-        reflectionHighlight = Color.argb(60, 255, 255, 255)  // 微微的白光反光
+        reflectionHighlight = Color.argb(60, 255, 255, 255)
     )
 
     // Light theme HDR colors
@@ -64,111 +72,267 @@ object HdrHelper {
         reflectionHighlight = Color.argb(40, 255, 255, 255)
     )
 
-    // ── 公开 API ──
-
     /**
-     * Apply HDR + 玻璃反光到 view
-     * 使用 LayerDrawable 叠加：底色 + 反光层
+     * 应用毛玻璃 + HDR 效果（带荣耀式折射边框）
      */
     fun applyGlassWithHdr(view: View, enabled: Boolean, glassEnabled: Boolean, isDark: Boolean = true) {
         if (!enabled && !glassEnabled) {
             view.background = null
+            view.elevation = 0f
             return
         }
+        
         val c = if (isDark) DARK else LIGHT
+        val density = view.resources.displayMetrics.density
+        val radius = 16f * density
+        
+        if (glassEnabled) {
+            // 荣耀式折射边框 + 毛玻璃效果
+            applyGlassCard(view, c, radius, isDark)
+        } else if (enabled) {
+            // 仅 HDR 效果
+            applyHdrCard(view, c, radius)
+        }
+    }
 
-        // 底层：玻璃渐变底色
-        val bgGradient = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            intArrayOf(
-                if (glassEnabled) 0x23FFFFFF else view.resources.getColor(R.color.transparent, null),
-                if (enabled) c.headerBg else view.resources.getColor(R.color.transparent, null)
-            )
-        )
-        bgGradient.cornerRadius = 0f
-
-        if (enabled) {
-            // HDR 开启时：使用 LayerDrawable 叠加反光层
-            val reflection = GradientDrawable(
-                GradientDrawable.Orientation.TL_BR,
-                intArrayOf(
-                    c.reflectionHighlight,
-                    view.resources.getColor(R.color.transparent, null)
-                )
-            )
-
-            val layers = arrayOf<android.graphics.drawable.Drawable>(
-                bgGradient,
-                reflection
-            )
-            val layerDrawable = LayerDrawable(layers)
-            view.background = layerDrawable
+    /**
+     * 荣耀式折射边框 + 毛玻璃背景
+     */
+    private fun applyGlassCard(view: View, colors: HdrColors, radius: Float, isDark: Boolean) {
+        val density = view.resources.displayMetrics.density
+        
+        // 1. 背景：半透明毛玻璃效果
+        val bgColor = if (isDark) {
+            Color.argb(180, 20, 20, 45)
         } else {
-            view.background = bgGradient
+            Color.argb(180, 245, 245, 250)
         }
-
-        // elevation 模拟阴影深度
-        view.elevation = if (enabled) 3f * view.resources.displayMetrics.density
-                         else if (glassEnabled) 2f * view.resources.displayMetrics.density
-                         else 0f
-    }
-
-    fun applyHeaderGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
-        if (!enabled) { view.setBackgroundColor(view.resources.getColor(R.color.transparent, null)); return }
-        val c = if (isDark) DARK else LIGHT
-        // HDR 头部：底色 + 反光层
-        val bottom = ColorDrawable(c.headerBg)
-        val reflection = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            intArrayOf(c.reflectionHighlight, view.resources.getColor(R.color.transparent, null))
+        
+        val bgGradient = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = radius
+            setColor(bgColor)
+        }
+        
+        // 2. 折射边框（荣耀式：顶部亮，底部暗的渐变边框）
+        val borderStroke = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = radius
+            
+            // 荣耀式折射渐变：顶部亮，两侧次之，底部暗
+            val borderColors = intArrayOf(
+                Color.argb(120, 255, 255, 255),   // 顶部：最亮
+                Color.argb(60, 200, 200, 255),    // 左/右：次亮
+                Color.argb(30, 100, 100, 150)     // 底部：最暗
+            )
+            
+            colors = borderColors
+            orientation = GradientDrawable.Orientation.TOP_BOTTOM
+            setStroke((2 * density).toInt(), Color.TRANSPARENT)
+        }
+        
+        // 3. 组合成 LayerDrawable
+        val layers = arrayOf(
+            bgGradient,
+            borderStroke
         )
-        view.background = LayerDrawable(arrayOf(bottom, reflection))
-        view.elevation = 2f * view.resources.displayMetrics.density
+        val layerDrawable = LayerDrawable(layers)
+        
+        // 设置边框的内边距
+        val strokeWidth = (1.5 * density).toInt()
+        layerDrawable.setLayerInset(1, strokeWidth, strokeWidth, strokeWidth, strokeWidth)
+        
+        view.background = layerDrawable
+        view.elevation = 8f * density
     }
 
-    fun applyNavGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
-        if (!enabled) { view.setBackgroundColor(view.resources.getColor(R.color.transparent, null)); return }
-        val c = if (isDark) DARK else LIGHT
-        val bottom = ColorDrawable(c.navBg)
-        val reflection = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            intArrayOf(view.resources.getColor(R.color.transparent, null), c.reflectionHighlight)
-        )
-        view.background = LayerDrawable(arrayOf(bottom, reflection))
-    }
-
-    fun applyCardGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
-        if (!enabled) return
-        val c = if (isDark) DARK else LIGHT
+    /**
+     * HDR 卡片效果（带边框）
+     */
+    private fun applyHdrCard(view: View, colors: HdrColors, radius: Float) {
         val density = view.resources.displayMetrics.density
-        val bg = GradientDrawable().apply {
-            setColor(c.bgTint)
-            setStroke(1, c.cardBorder)
-            cornerRadius = 16f * density
+        val bgColor = view.resources.getColor(R.color.bg_primary, null)
+        
+        val bgDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = radius
+            setColor(bgColor)
+            setStroke((1 * density).toInt(), colors.cardBorder)
         }
-        view.background = bg
-        view.elevation = 4f * density
-    }
-
-    fun applyBubbleGlow(view: View, enabled: Boolean, isUser: Boolean, isDark: Boolean = true) {
-        if (!enabled) return
-        val c = if (isDark) DARK else LIGHT
-        val density = view.resources.displayMetrics.density
-        if (isUser) {
-            val bg = GradientDrawable().apply {
-                setColor(c.bubbleTint)
-                setStroke(1, c.cardBorder)
-                cornerRadius = 16f * density
-            }
-            view.background = bg
-        }
+        
+        view.background = bgDrawable
         view.elevation = 2f * density
+    }
+
+    /**
+     * 应用 HDR 头部效果
+     */
+    fun applyHeaderGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
+        if (!enabled) {
+            view.setBackgroundColor(view.resources.getColor(R.color.transparent, null))
+            view.elevation = 0f
+            return
+        }
+        
+        val c = if (isDark) DARK else LIGHT
+        val density = view.resources.displayMetrics.density
+        
+        // 半透明背景 + 折射边框
+        val bgColor = if (isDark) {
+            Color.argb(160, 13, 13, 43)
+        } else {
+            Color.argb(160, 255, 255, 255)
+        }
+        
+        val bgGradient = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(bgColor)
+            cornerRadius = 0f
+        }
+        
+        // 荣耀式边框
+        val borderStroke = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            val borderColors = intArrayOf(
+                Color.argb(100, 255, 255, 255),
+                Color.argb(50, 180, 180, 220),
+                Color.argb(20, 80, 80, 120)
+            )
+            colors = borderColors
+            orientation = GradientDrawable.Orientation.TOP_BOTTOM
+            setStroke((1 * density).toInt(), Color.TRANSPARENT)
+        }
+        
+        val layers = arrayOf(bgGradient, borderStroke)
+        val layerDrawable = LayerDrawable(layers)
+        val strokeWidth = (0.5 * density).toInt()
+        layerDrawable.setLayerInset(1, strokeWidth, 0, strokeWidth, strokeWidth)
+        
+        view.background = layerDrawable
+        view.elevation = 2f * density
+    }
+
+    /**
+     * 应用导航栏 HDR 效果
+     */
+    fun applyNavGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
+        if (!enabled) {
+            view.setBackgroundColor(view.resources.getColor(R.color.transparent, null))
+            view.elevation = 0f
+            return
+        }
+        
+        val c = if (isDark) DARK else LIGHT
+        val density = view.resources.displayMetrics.density
+        
+        val bgColor = if (isDark) {
+            Color.argb(180, 13, 13, 43)
+        } else {
+            Color.argb(180, 255, 255, 255)
+        }
+        
+        val bgGradient = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(bgColor)
+            cornerRadius = 0f
+        }
+        
+        // 荣耀式边框（顶部有亮线）
+        val borderStroke = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            val borderColors = intArrayOf(
+                Color.argb(120, 255, 255, 255),
+                Color.argb(0, 255, 255, 255),
+                Color.argb(0, 255, 255, 255)
+            )
+            colors = borderColors
+            orientation = GradientDrawable.Orientation.TOP_BOTTOM
+            setStroke((1 * density).toInt(), Color.TRANSPARENT)
+        }
+        
+        val layers = arrayOf(bgGradient, borderStroke)
+        val layerDrawable = LayerDrawable(layers)
+        layerDrawable.setLayerInset(1, 0, 0, 0, 0)
+        
+        view.background = layerDrawable
+    }
+
+    /**
+     * 应用消息气泡 HDR + 毛玻璃效果
+     */
+    fun applyBubbleGlow(view: View, enabled: Boolean, isUser: Boolean, isDark: Boolean = true) {
+        val c = if (isDark) DARK else LIGHT
+        val density = view.resources.displayMetrics.density
+        
+        if (enabled) {
+            if (isUser) {
+                // 用户消息气泡：纯色 + 边框
+                val userBg = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadii = floatArrayOf(
+                        16f * density, 16f * density,
+                        16f * density, 16f * density,
+                        16f * density, 16f * density,
+                        4f * density, 4f * density
+                    )
+                    setColor(view.resources.getColor(R.color.accent, null))
+                    setStroke((1 * density).toInt(), Color.argb(100, 255, 255, 255))
+                }
+                view.background = userBg
+                view.elevation = 2f * density
+            } else {
+                // AI 消息气泡：毛玻璃 + 折射边框
+                val bgColor = if (isDark) {
+                    Color.argb(200, 21, 21, 56)
+                } else {
+                    Color.argb(200, 240, 240, 245)
+                }
+                
+                val bgGradient = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadii = floatArrayOf(
+                        4f * density, 4f * density,
+                        16f * density, 16f * density,
+                        16f * density, 16f * density,
+                        16f * density, 16f * density
+                    )
+                    setColor(bgColor)
+                }
+                
+                // 折射边框
+                val borderStroke = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadii = floatArrayOf(
+                        4f * density, 4f * density,
+                        16f * density, 16f * density,
+                        16f * density, 16f * density,
+                        16f * density, 16f * density
+                    )
+                    val borderColors = intArrayOf(
+                        Color.argb(100, 255, 255, 255),
+                        Color.argb(50, 180, 180, 220),
+                        Color.argb(20, 80, 80, 120)
+                    )
+                    colors = borderColors
+                    orientation = GradientDrawable.Orientation.TOP_BOTTOM
+                    setStroke((1.5 * density).toInt(), Color.TRANSPARENT)
+                }
+                
+                val layers = arrayOf(bgGradient, borderStroke)
+                val layerDrawable = LayerDrawable(layers)
+                val strokeWidth = (1 * density).toInt()
+                layerDrawable.setLayerInset(1, strokeWidth, strokeWidth, strokeWidth, strokeWidth)
+                
+                view.background = layerDrawable
+                view.elevation = 3f * density
+            }
+        }
     }
 
     fun applyButtonGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
         if (!enabled) return
-        val c = if (isDark) DARK else LIGHT
-        view.elevation = 6f * view.resources.displayMetrics.density
+        val density = view.resources.displayMetrics.density
+        view.elevation = 4f * density
     }
 
     fun applyIndicatorGlow(view: View, enabled: Boolean, isDark: Boolean = true) {
@@ -179,6 +343,7 @@ object HdrHelper {
 
     fun applyInputGlow(view: View, enabled: Boolean, hasFocus: Boolean, isDark: Boolean = true) {
         if (!enabled || !hasFocus) return
-        view.elevation = 3f * view.resources.displayMetrics.density
+        val density = view.resources.displayMetrics.density
+        view.elevation = 3f * density
     }
 }
