@@ -1,28 +1,19 @@
 package com.gusogst.chat.util
 
-import android.app.Activity
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapShader
-import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
-import android.graphics.RenderEffect
+import android.graphics.Path
+import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.LayerDrawable
-import android.os.Build
 import android.util.LruCache
 import android.view.View
-import androidx.annotation.RequiresApi
-import com.gusogst.chat.R
 
 /**
  * 真正的HDR毛玻璃效果引擎
