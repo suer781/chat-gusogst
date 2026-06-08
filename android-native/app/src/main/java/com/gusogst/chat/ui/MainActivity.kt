@@ -24,6 +24,7 @@ import com.gusogst.chat.ui.persona.PersonaFragment
 import com.gusogst.chat.ui.providers.ProvidersFragment
 import com.gusogst.chat.ui.settings.SettingsFragment
 import com.gusogst.chat.ui.theme.ThemeController
+import com.gusogst.chat.util.HdrHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -69,6 +70,11 @@ class MainActivity : AppCompatActivity() {
         initViews()
         initNavigation()
         applyThemeToViews()
+        
+        // 预加载主题资源（性能优化）
+        window.decorView.post {
+            HdrHelper.preloadResources(window.decorView)
+        }
         
         // 加载初始 Fragment
         if (savedInstanceState == null) {
@@ -152,20 +158,25 @@ class MainActivity : AppCompatActivity() {
         view.setOnTouchListener { v, event ->
             when (event.action) {
                 android.view.MotionEvent.ACTION_DOWN -> {
+                    // 使用 Hardware Layer 优化动画
+                    v.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                     v.animate()
                         .scaleX(0.95f)
                         .scaleY(0.95f)
                         .setDuration(100)
                         .setInterpolator(OvershootInterpolator())
+                        .withEndAction { v.setLayerType(View.LAYER_TYPE_NONE, null) }
                         .start()
                 }
                 android.view.MotionEvent.ACTION_UP, 
                 android.view.MotionEvent.ACTION_CANCEL -> {
+                    v.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                     v.animate()
                         .scaleX(1f)
                         .scaleY(1f)
                         .setDuration(200)
                         .setInterpolator(OvershootInterpolator())
+                        .withEndAction { v.setLayerType(View.LAYER_TYPE_NONE, null) }
                         .start()
                 }
             }
@@ -244,10 +255,12 @@ class MainActivity : AppCompatActivity() {
             val icon = item.getChildAt(0) as? ImageView
             val text = item.getChildAt(1) as? TextView
             
-            // 颜色过渡动画
+            // 颜色过渡动画 - 使用 Hardware Layer
+            icon?.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             icon?.animate()
                 ?.colorFilter(if (isActive) accentColor else inactiveColor)
                 ?.setDuration(200)
+                ?.withEndAction { icon?.setLayerType(View.LAYER_TYPE_NONE, null) }
                 ?.start()
             
             text?.animate()
@@ -256,7 +269,7 @@ class MainActivity : AppCompatActivity() {
                 ?.start()
         }
         
-        // 移动指示器
+        // 移动指示器 - 使用 Hardware Layer
         moveIndicatorWithAnimation(currentTabIndex)
     }
 
@@ -264,6 +277,9 @@ class MainActivity : AppCompatActivity() {
         val activeTab = navItems[tabIndex]
         activeTab.post {
             val targetX = activeTab.left + (activeTab.width - navIndicator.width) / 2f
+            
+            // 使用 Hardware Layer 优化动画性能
+            navIndicator.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             
             // 使用属性动画实现平滑移动
             val animator = ValueAnimator.ofFloat(navIndicator.x, targetX)
@@ -284,6 +300,9 @@ class MainActivity : AppCompatActivity() {
                         .scaleX(1f)
                         .setDuration(175)
                         .setInterpolator(AccelerateDecelerateInterpolator())
+                        .withEndAction { 
+                            navIndicator.setLayerType(View.LAYER_TYPE_NONE, null)
+                        }
                         .start()
                 }
                 .start()
@@ -325,9 +344,17 @@ class MainActivity : AppCompatActivity() {
         if (isAnimating) return
         isAnimating = true
         
-        // 1. 淡出当前界面
+        // 1. 清理旧的 Drawable 缓存
+        HdrHelper.clearCache()
+        
+        // 2. 预加载新主题资源（后台线程）
+        window.decorView.post {
+            HdrHelper.preloadResources(window.decorView)
+        }
+        
+        // 3. 淡出当前界面（使用 Hardware Layer）
         animateFadeOut {
-            // 2. 应用新主题并重新创建 Activity
+            // 4. 应用新主题并重新创建 Activity
             themeController.setThemeMode(newMode)
             recreate()
         }
@@ -374,12 +401,18 @@ class MainActivity : AppCompatActivity() {
         // 设置正确的背景颜色
         transitionOverlay.setBackgroundColor(getThemeBackgroundColor())
         
+        // 使用 Hardware Layer 优化动画
+        transitionOverlay.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        
         // 背景过渡
         transitionOverlay.animate()
             .alpha(1f)
             .setDuration(300)
             .setInterpolator(AccelerateDecelerateInterpolator())
-            .withEndAction { onEnd() }
+            .withEndAction {
+                transitionOverlay.setLayerType(View.LAYER_TYPE_NONE, null)
+                onEnd()
+            }
             .start()
         
         // 内容淡出
@@ -388,29 +421,6 @@ class MainActivity : AppCompatActivity() {
             .setDuration(300)
             .setInterpolator(AccelerateDecelerateInterpolator())
             .start()
-    }
-
-    /**
-     * 获取当前主题模式
-     */
-    fun getCurrentThemeMode(): String {
-        return themeController.getThemeMode()
-    }
-
-    /**
-     * 快速切换主题（无动画，直接应用）
-     */
-    fun quickSwitchTheme(mode: String) {
-        themeController.setThemeMode(mode)
-        applySavedTheme()
-        applyThemeToViews()
-    }
-
-    /**
-     * 获取当前主题模式
-     */
-    fun getCurrentThemeMode(): String {
-        return themeController.getThemeMode()
     }
 
     /**
