@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.ColorSpace
 import android.os.Build
 import android.view.SurfaceView
-import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 

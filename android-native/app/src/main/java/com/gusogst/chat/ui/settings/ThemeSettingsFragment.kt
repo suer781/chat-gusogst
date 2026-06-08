@@ -322,6 +322,44 @@ class ThemeSettingsFragment : Fragment() {
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
+    private fun LinearLayout.addSwitchItem(
+        title: String,
+        subtitle: String,
+        checked: Boolean,
+        onChecked: (Boolean) -> Unit
+    ) {
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(0, dp(12), 0, dp(12))
+        }
+
+        val textLayout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        textLayout.addView(TextView(requireContext()).apply {
+            text = title
+            textSize = 15f
+            setTextColor(themeController.getTextColor())
+        })
+        textLayout.addView(TextView(requireContext()).apply {
+            text = subtitle
+            textSize = 12f
+            setTextColor(themeController.getSecondaryTextColor())
+        })
+
+        val switch = Switch(requireContext()).apply {
+            isChecked = checked
+            setOnCheckedChangeListener { _, value -> onChecked(value) }
+        }
+
+        container.addView(textLayout)
+        container.addView(switch)
+        addView(container)
+    }
+
     /**
      * 颜色选择视图 - 自定义简单的圆形颜色块
      */
