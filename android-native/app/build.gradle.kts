@@ -67,13 +67,6 @@ android {
         )
     }
 
-    // 使用 Java toolchain 固定为 Java 21，避免宿主 JDK（如 25）导致兼容性问题
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
-        }
-    }
-
     buildFeatures {
         // 预防性声明：明确启用的功能
         buildConfig = true

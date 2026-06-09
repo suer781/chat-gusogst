@@ -167,19 +167,22 @@ class AgentEngine(
         history.add(response)
 
         // 逐个执行工具
-        for (tc in response.toolCalls!!) {
-            emit(AgentEvent.ToolCall(tc.id, tc.function.name, tc.function.arguments))
+        val tcList = response.toolCalls
+        if (tcList != null && tcList.isNotEmpty()) {
+            for (tc in tcList) {
+                emit(AgentEvent.ToolCall(tc.id, tc.function.name, tc.function.arguments))
 
-            val result = executeTool(tc.function.name, tc.id, tc.function.arguments)
-            emit(AgentEvent.ToolResult(tc.id, tc.function.name, result))
+                val result = executeTool(tc.function.name, tc.id, tc.function.arguments)
+                emit(AgentEvent.ToolResult(tc.id, tc.function.name, result))
 
-            // 添加工具结果消息
-            history.add(Message(
-                role = MessageRole.TOOL,
-                content = result,
-                toolCallId = tc.id,
-                name = tc.function.name
-            ))
+                // 添加工具结果消息
+                history.add(Message(
+                    role = MessageRole.TOOL,
+                    content = result,
+                    toolCallId = tc.id,
+                    name = tc.function.name
+                ))
+            }
         }
 
         // 递归调用 LLM

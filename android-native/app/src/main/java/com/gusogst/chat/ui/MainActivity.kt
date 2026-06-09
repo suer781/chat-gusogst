@@ -599,7 +599,8 @@ class MainActivity : AppCompatActivity() {
             val targetIconColor = if (isActive) accentColor else inactiveColor
             val targetTextColor = if (isActive) accentColor else inactiveColor
 
-            icon?.let { safeIcon ->
+            if (icon != null) {
+                val safeIcon: ImageView = icon
                 safeIcon.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                 val iconAnim = ObjectAnimator.ofArgb(
                     safeIcon,
@@ -616,7 +617,8 @@ class MainActivity : AppCompatActivity() {
                 iconAnim.start()
             }
 
-            text?.let { safeText ->
+            if (text != null) {
+                val safeText: TextView = text
                 val textAnim = ObjectAnimator.ofArgb(
                     safeText,
                     "textColor",

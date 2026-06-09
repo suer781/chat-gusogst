@@ -137,8 +137,8 @@ object PersonaManager {
         systemPrompt: String,
         emoji: String? = null,
         tags: List<String>? = null,
-        personality: com.gusogst.chat.model.PersonalityTraits? = null,
-        modelParams: ModelParamsConfig? = null
+        personality: PersonalityTraits = PersonalityTraits(),
+        modelParams: com.gusogst.chat.model.ModelParamsConfig? = null
     ): Persona {
         val id = "custom_${System.currentTimeMillis()}"
         val persona = Persona(
@@ -147,7 +147,7 @@ object PersonaManager {
             systemPrompt = systemPrompt,
             emoji = emoji,
             tags = tags,
-            personality = personality ?: com.gusogst.chat.model.PersonalityTraits(),
+            personality = personality,
             modelParamsConfig = modelParams
         )
         personas.add(persona)
@@ -162,8 +162,8 @@ object PersonaManager {
         systemPrompt: String? = null,
         emoji: String? = null,
         tags: List<String>? = null,
-        personality: com.gusogst.chat.model.PersonalityTraits? = null,
-        modelParams: ModelParamsConfig? = null
+        personality: PersonalityTraits? = null,
+        modelParams: com.gusogst.chat.model.ModelParamsConfig? = null
     ): Boolean {
         val index = personas.indexOfFirst { it.id == id }
         if (index == -1) return false

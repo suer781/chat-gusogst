@@ -92,7 +92,8 @@ class OpenAIProvider : ProviderAdapter {
             throw IOException("Stream request failed: ${response.code} - $errorBody")
         }
 
-        val reader = BufferedReader(InputStreamReader(response.body!!.byteStream()))
+        val body = response.body ?: throw IOException("Empty response body")
+        val reader = BufferedReader(InputStreamReader(body.byteStream()))
         try {
             var line: String?
             while (reader.readLine().also { line = it } != null) {

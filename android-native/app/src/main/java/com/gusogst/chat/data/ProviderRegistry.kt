@@ -59,8 +59,9 @@ object ProviderRegistry {
             return providers
         } catch (e: Exception) {
             android.util.Log.e("ProviderRegistry", "Failed to load providers", e)
-            cached = getFallback()
-            return cached!!
+            val fallback = getFallback()
+            cached = fallback
+            return fallback
         }
     }
 
