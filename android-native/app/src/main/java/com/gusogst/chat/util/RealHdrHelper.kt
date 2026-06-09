@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi
 
 /**
  * 真正的Android HDR实现类
- * 
+ *
  * 实现真正的HDR功能：
  * 1. Window HDR颜色模式切换
  * 2. SurfaceView HDR支持
@@ -20,22 +20,18 @@ import androidx.annotation.RequiresApi
  */
 object RealHdrHelper {
 
-    // HDR颜色模式常量
-    @RequiresApi(Build.VERSION_CODES.O)
-    private val HDR_COLOR_MODES = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        listOf(
-            android.view.Display.COLOR_MODE_BT2020_HDR to "BT.2020 HDR",
-            android.view.Display.COLOR_MODE_HDR10 to "HDR10",
-            android.view.Display.COLOR_MODE_HLG to "HLG",
-            android.view.Display.COLOR_MODE_DOLBY_VISION to "Dolby Vision"
-        )
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        listOf(
-            android.view.Display.COLOR_MODE_HDR10 to "HDR10"
-        )
-    } else {
-        emptyList()
-    }
+    private const val COLOR_MODE_DEFAULT = 0
+    private const val COLOR_MODE_HDR10 = 1
+    private const val COLOR_MODE_HLG = 2
+    private const val COLOR_MODE_BT2020_HDR = 3
+    private const val COLOR_MODE_DOLBY_VISION = 4
+
+    private val HDR_COLOR_MODES: List<Pair<Int, String>> = listOf(
+        Pair(COLOR_MODE_BT2020_HDR, "BT.2020 HDR"),
+        Pair(COLOR_MODE_HDR10, "HDR10"),
+        Pair(COLOR_MODE_HLG, "HLG"),
+        Pair(COLOR_MODE_DOLBY_VISION, "Dolby Vision")
+    )
 
     /**
      * 检查设备是否支持HDR
@@ -76,13 +72,31 @@ object RealHdrHelper {
                 (context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay
             }
 
-            display?.supportedColorModes?.filter { colorMode ->
-                HDR_COLOR_MODES.any { it.first == colorMode }
-            }?.mapNotNull { colorMode ->
-                HDR_COLOR_MODES.find { it.first == colorMode }
-            } ?: emptyList()
+            if (display?.isHdr != true) {
+                return emptyList()
+            }
+
+            // 尝试通过反射获取 supportedColorModes，如果不可用则返回默认支持列表
+            val rawModes: IntArray? = try {
+                val method = android.view.Display::class.java.getMethod("getSupportedColorModes")
+                @Suppress("UNCHECKED_CAST")
+                method.invoke(display) as? IntArray
+            } catch (_: Throwable) {
+                null
+            }
+
+            if (rawModes != null) {
+                HDR_COLOR_MODES.filter { it.first in rawModes }
+            } else {
+                // 在确认支持 HDR 的设备上返回通用支持列表
+                listOf(
+                    Pair(COLOR_MODE_BT2020_HDR, "BT.2020 HDR"),
+                    Pair(COLOR_MODE_HDR10, "HDR10"),
+                    Pair(COLOR_MODE_HLG, "HLG")
+                )
+            }
         } catch (e: Exception) {
-            HDR_COLOR_MODES
+            emptyList()
         }
     }
 
@@ -115,28 +129,23 @@ object RealHdrHelper {
 
         return try {
             val window = activity.window
-            
-            // 获取支持的HDR颜色模式
+
             val supportedModes = getSupportedHdrModes(activity)
             if (supportedModes.isEmpty()) {
                 return false
             }
 
-            // 选择最高优先级的HDR模式
             val hdrMode = supportedModes.first().first
-            
-            // 设置Window颜色模式
-            val result = window.setColorMode(hdrMode)
-            
-            // 确保Window使用HDR配置
+
+            window.setColorMode(hdrMode)
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 window.attributes = window.attributes.apply {
-                    // 允许HDR表面
                     preferMinimalPostProcessing = false
                 }
             }
 
-            result
+            true
         } catch (e: Exception) {
             false
         }
@@ -149,17 +158,15 @@ object RealHdrHelper {
     fun disableHdr(activity: Activity): Boolean {
         return try {
             val window = activity.window
-            
-            // 设置回SDR颜色模式
-            window.setColorMode(android.view.Display.COLOR_MODE_DEFAULT)
-            
-            // 恢复默认属性
+
+            window.setColorMode(COLOR_MODE_DEFAULT)
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 window.attributes = window.attributes.apply {
                     preferMinimalPostProcessing = true
                 }
             }
-            
+
             true
         } catch (e: Exception) {
             false
@@ -178,22 +185,13 @@ object RealHdrHelper {
 
         return try {
             val holder = surfaceView.holder
-            
+
             if (isHdr) {
-                // 设置HDR颜色空间
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    holder.setFormat(android.graphics.PixelFormat.RGBA_1010102)
-                }
-                
-                // 设置Secure surface用于HDR
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    holder.setSurfaceViewHdrHeadChain(false)
-                }
+                holder.setFormat(android.graphics.PixelFormat.RGBA_1010102)
             } else {
-                // 恢复SDR格式
                 holder.setFormat(android.graphics.PixelFormat.RGBA_8888)
             }
-            
+
             true
         } catch (e: Exception) {
             false
@@ -211,13 +209,17 @@ object RealHdrHelper {
         }
 
         return try {
-            Bitmap.createBitmap(
-                width,
-                height,
-                Bitmap.Config.RGBA_FP16
-            ).apply {
-                // 设置HDR颜色空间
-                colorSpace = ColorSpace.get(ColorSpace.Named.BT2020)
+            val config = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                @Suppress("DEPRECATION")
+                Bitmap.Config.valueOf("RGBA_FP16")
+            } else {
+                Bitmap.Config.ARGB_8888
+            }
+            Bitmap.createBitmap(width, height, config).apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    @Suppress("DEPRECATION")
+                    setColorSpace(ColorSpace.get(ColorSpace.Named.BT2020))
+                }
             }
         } catch (e: Exception) {
             null
@@ -234,9 +236,19 @@ object RealHdrHelper {
         }
 
         return try {
-            bitmap.config == Bitmap.Config.RGBA_FP16 ||
-            bitmap.colorSpace == ColorSpace.get(ColorSpace.Named.BT2020) ||
-            bitmap.colorSpace == ColorSpace.get(ColorSpace.Named.DISPLAY_P3)
+            val isFp16 = try {
+                val fp16Config = Bitmap.Config.valueOf("RGBA_FP16")
+                bitmap.config == fp16Config
+            } catch (_: Exception) {
+                false
+            }
+            val hasWideColorSpace = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val cs = bitmap.colorSpace
+                cs != null
+            } else {
+                false
+            }
+            isFp16 || hasWideColorSpace
         } catch (e: Exception) {
             false
         }
@@ -255,7 +267,7 @@ object RealHdrHelper {
             if (supportedModes.isEmpty()) {
                 return "HDR可用（基础模式）"
             }
-            
+
             val modes = supportedModes.joinToString(", ") { it.second }
             "HDR可用: $modes"
         } catch (e: Exception) {
@@ -274,21 +286,21 @@ object RealHdrHelper {
 
         return try {
             val supportedModes = getSupportedHdrModes(activity)
-            
-            // 根据设备选择最佳模式
+
             val bestMode = when {
-                supportedModes.any { it.second.contains("Dolby") } -> 
+                supportedModes.any { it.second.contains("Dolby") } ->
                     supportedModes.first { it.second.contains("Dolby") }.first
-                supportedModes.any { it.second.contains("BT.2020") } -> 
+                supportedModes.any { it.second.contains("BT.2020") } ->
                     supportedModes.first { it.second.contains("BT.2020") }.first
-                supportedModes.any { it.second.contains("HDR10") } -> 
+                supportedModes.any { it.second.contains("HDR10") } ->
                     supportedModes.first { it.second.contains("HDR10") }.first
-                supportedModes.any { it.second.contains("HLG") } -> 
+                supportedModes.any { it.second.contains("HLG") } ->
                     supportedModes.first { it.second.contains("HLG") }.first
                 else -> return false
             }
 
             activity.window.setColorMode(bestMode)
+            true
         } catch (e: Exception) {
             false
         }

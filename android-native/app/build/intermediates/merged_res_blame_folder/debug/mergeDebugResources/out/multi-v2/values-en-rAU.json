@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.gusogst.chat.app-mergeDebugResources-52:/values-en-rAU/values-en-rAU.xml",
+            "outputFile": "com.gusogst.chat.app-mergeDebugResources-54:/values-en-rAU/values-en-rAU.xml",
             "map": [
                 {
-                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/ecea6f90f2e89390abb77e08b1282d0e/transformed/navigation-ui-2.8.5/res/values-en-rAU/values-en-rAU.xml",
+                    "source": "/root/.gradle/caches/8.14.4/transforms/8a3fb95197c961bc9906e8d72b10c388/transformed/navigation-ui-2.8.0/res/values-en-rAU/values-en-rAU.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/e5317df76a22a2b0d227c281548b0a3b/transformed/appcompat-1.7.0/res/values-en-rAU/values-en-rAU.xml",
+                    "source": "/root/.gradle/caches/8.14.4/transforms/b6442526d52bf4c41081c639f2ba655a/transformed/appcompat-1.7.0/res/values-en-rAU/values-en-rAU.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -38,7 +38,7 @@
                     }
                 },
                 {
-                    "source": "/opt/data/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/res/values-en-rAU/values-en-rAU.xml",
+                    "source": "/root/.gradle/caches/8.14.4/transforms/02912aeca5ef82c2cedf77372e7c4246/transformed/core-1.15.0/res/values-en-rAU/values-en-rAU.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

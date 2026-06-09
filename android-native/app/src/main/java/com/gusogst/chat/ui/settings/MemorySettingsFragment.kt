@@ -30,7 +30,7 @@ class MemorySettingsFragment : Fragment() {
     private lateinit var tvLastUpdate: LinearLayout
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        memoryManager = MemoryManager()
+        memoryManager = MemoryManager(requireContext())
         val sv = ScrollView(requireContext()).apply { setBackgroundColor(resources.getColor(R.color.bg_primary, null)) }
         root = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, dp(100)) }
         sv.addView(root)
@@ -46,26 +46,26 @@ class MemorySettingsFragment : Fragment() {
 
     private fun buildUI() {
         root.removeAllViews()
-        addHeader("\u8BB0\u5FC6")
+        addHeader("Memory")
 
-        addSection("\u8BB0\u5FC6\u7CFB\u7EDF", "\uD83E\uDDE0") {
+        addSection("Memory System", "🧠") {
             val col = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            col.addView(createToggle("\u542F\u7528\u8BB0\u5FC6", "AI \u4F1A\u8BB0\u4F4F\u5BF9\u8BDD\u4E2D\u7684\u91CD\u8981\u4FE1\u606F", true) {})
+            col.addView(createToggle("Enable Memory", "AI will remember important info from conversations", true) {})
             return@addSection col
         }
 
-        addSection("\u5B58\u50A8\u4FE1\u606F", "\uD83E\uDDA0") {
+        addSection("Storage Info", "🗂") {
             statsSection = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
-            tvTotalEntries = createInfo("\u8BB0\u5FC6\u6761\u76EE", "\u52A0\u8F7D\u4E2D...").also { statsSection.addView(it) }
-            tvStorage = createInfo("\u5B58\u50A8\u7A7A\u95F4", "\u52A0\u8F7D\u4E2D...").also { statsSection.addView(it) }
-            tvLastUpdate = createInfo("\u6700\u540E\u66F4\u65B0", "\u52A0\u8F7D\u4E2D...").also { statsSection.addView(it) }
+            tvTotalEntries = createInfo("Entries", "Loading...").also { statsSection.addView(it) }
+            tvStorage = createInfo("Storage", "Loading...").also { statsSection.addView(it) }
+            tvLastUpdate = createInfo("Last Update", "Loading...").also { statsSection.addView(it) }
             refreshStats()
             return@addSection statsSection
         }
 
-        addSection("\u5371\u9669\u64CD\u4F5C", "\u26A0") {
+        addSection("Dangerous Actions", "⚠") {
             return@addSection TextView(requireContext()).apply {
-                text = "\u6E05\u9664\u6240\u6709\u8BB0\u5FC6"; setTextColor(resources.getColor(R.color.danger, null)); textSize = 14f
+                text = "Clear All Memory"; setTextColor(resources.getColor(R.color.danger, null)); textSize = 14f
                 setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER; setPadding(dp(12), dp(12), dp(12), dp(12))
                 background = GradientDrawable().apply { setColor(ContextCompat.getColor(requireContext(), R.color.danger_soft_1A)); setStroke(1, resources.getColor(R.color.danger, null)); cornerRadius = dp(10).toFloat() }
                 setOnClickListener { showClearConfirm() }
@@ -74,14 +74,12 @@ class MemorySettingsFragment : Fragment() {
     }
 
     private fun refreshStats() {
-        val stats = memoryManager.getStats()
-        setValueText(tvTotalEntries, "${getAll().size} \u6761")
+        val entries = memoryManager.getAll()
+        val totalEntries = entries.size
+        val totalBytes = entries.sumOf { it.content.toByteArray(Charsets.UTF_8).size }
 
-        // 估算存储大小
-        val json = memoryManager.getAll().joinToString("
-") { it.content }
-        val bytes = json.toByteArray(Charsets.UTF_8).size
-        setValueText(tvStorage, if (bytes < 1024) "$bytes B" else "%.1f KB".format(bytes / 1024f))
+        setValueText(tvTotalEntries, "$totalEntries items")
+        setValueText(tvStorage, if (totalBytes < 1024) "$totalBytes B" else "%.1f KB".format(totalBytes / 1024f))
 
         // 最后更新时间
         setValueText(tvLastUpdate, SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date()))
@@ -94,21 +92,21 @@ class MemorySettingsFragment : Fragment() {
 
     private fun showClearConfirm() {
         AlertDialog.Builder(requireContext())
-            .setTitle("\u786E\u8BA4\u6E05\u9664")
-            .setMessage("\u786E\u5B9A\u8981\u6E05\u9664\u6240\u6709\u8BB0\u5FC6\u5417\uFF1F\u6B64\u64CD\u4F5C\u4E0D\u53EF\u64A4\u9500\u3002")
-            .setPositiveButton("\u6E05\u9664") { _, _ ->
+            .setTitle("Confirm Clear")
+            .setMessage("Are you sure you want to clear all memory? This cannot be undone.")
+            .setPositiveButton("Clear") { _, _ ->
                 memoryManager.clear()
                 refreshStats()
-                Toast.makeText(requireContext(), "\u8BB0\u5FC6\u5DF2\u6E05\u9664", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Memory cleared", Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("\u53D6\u6D88", null)
+            .setNegativeButton("Cancel", null)
             .show()
     }
 
     private fun addHeader(title: String) {
         root.addView(LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(20), dp(16), dp(20), dp(12))
-            addView(TextView(requireContext()).apply { text = "\u2190"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 20f; setPadding(dp(4), dp(4), dp(12), dp(4)); setOnClickListener { parentFragmentManager.popBackStack() } })
+            addView(TextView(requireContext()).apply { text = "←"; setTextColor(resources.getColor(R.color.accent, null)); textSize = 20f; setPadding(dp(4), dp(4), dp(12), dp(4)); setOnClickListener { parentFragmentManager.popBackStack() } })
             addView(TextView(requireContext()).apply { text = title; setTextColor(resources.getColor(R.color.text_primary, null)); textSize = 18f; setTypeface(null, Typeface.BOLD) })
         })
     }

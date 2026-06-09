@@ -119,13 +119,15 @@ object PerformanceMonitor {
      * 测量代码块执行时间
      */
     fun measureTime(block: () -> Unit): Long {
-        return measureTime({ block() }, { it })
+        val startTime = SystemClock.uptimeMillis()
+        block()
+        return SystemClock.uptimeMillis() - startTime
     }
-    
+
     /**
      * 带返回值的测量
      */
-    inline fun <T> measureTime(
+    inline fun <T> measureWithResult(
         crossinline block: () -> T,
         crossinline onResult: (Long) -> Unit
     ): T {
@@ -159,19 +161,27 @@ object PerformanceMonitor {
         
         return try {
             val display = window.context.display ?: return null
-            val modes = display.supportedModes
+            val modes = display.getSupportedModes() ?: return null
+            
+            if (modes.isEmpty()) return null
             
             // 找到最高刷新率 + 最高分辨率的模式
-            val optimal = modes.maxByOrNull { 
-                it.refreshRate * 1000000 + it.width * it.height 
+            var best: android.view.Display.Mode? = null
+            var bestScore = -1.0
+            for (mode in modes) {
+                val score = mode.refreshRate * 1000000.0 + mode.physicalWidth * mode.physicalHeight
+                if (score > bestScore) {
+                    bestScore = score
+                    best = mode
+                }
             }
             
-            optimal?.let {
+            best?.let { mode ->
                 DisplayModeInfo(
-                    width = it.width,
-                    height = it.height,
-                    refreshRate = it.refreshRate,
-                    modeId = it.modeId
+                    width = mode.physicalWidth,
+                    height = mode.physicalHeight,
+                    refreshRate = mode.refreshRate,
+                    modeId = mode.modeId
                 )
             }
         } catch (e: Exception) {

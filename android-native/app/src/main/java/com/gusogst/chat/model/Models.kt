@@ -318,7 +318,9 @@ data class UISettings(
     val agentTone: String = "default",
     val agentResponseLength: String = "auto",
     val temperature: Float = 0.7f,
-    val topP: Float = 0.9f
+    val topP: Float = 0.9f,
+    val searchEnabled: Boolean = false,
+    val activeSearchEngine: String = "duckduckgo"
 )
 
 // ===== Provider UI 模型 =====

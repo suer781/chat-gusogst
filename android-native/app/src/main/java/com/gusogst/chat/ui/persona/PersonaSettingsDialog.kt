@@ -215,9 +215,8 @@ class PersonaSettingsDialog : DialogFragment() {
                     playful = traitVals[6], energetic = traitVals[7]
                 )
                 viewModel.updatePersona(personaId) { p ->
-                    p.copy(prompt = prompt, personality = newTraits,
+                    p.copy(systemPrompt = prompt, personality = newTraits,
                         modelParamsConfig = ModelParamsConfig(
-                            autoMode = autoMode, overrideGlobal = overrideGlobal,
                             temperature = temperature, topP = topP, maxTokens = maxTokens
                         ))
                 }

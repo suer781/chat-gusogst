@@ -69,7 +69,8 @@ class AgentEngine(
             val response = provider.chat(context, config, if (tools.isEmpty()) null else tools)
 
             // 6. 处理工具调用
-            if (response.toolCalls != null && response.toolCalls.isNotEmpty()) {
+            val calls = response.toolCalls
+            if (calls != null && calls.isNotEmpty()) {
                 handleToolCalls(response, history, config, personaId, maxHistoryTokens, 0)
                     .collect { emit(it) }
             } else {
@@ -128,7 +129,8 @@ class AgentEngine(
             // (SSE 流中 tool_calls 解析复杂，先用非流式兜底)
             val response = provider.chat(context, config, if (tools.isEmpty()) null else tools)
 
-            if (response.toolCalls != null && response.toolCalls.isNotEmpty()) {
+            val calls = response.toolCalls
+            if (calls != null && calls.isNotEmpty()) {
                 handleToolCalls(response, history, config, personaId, maxHistoryTokens, 0)
                     .collect { emit(it) }
             } else {
@@ -193,7 +195,8 @@ class AgentEngine(
         try {
             val nextResponse = provider.chat(context, config, if (tools.isEmpty()) null else tools)
 
-            if (nextResponse.toolCalls != null && nextResponse.toolCalls.isNotEmpty()) {
+            val nextCalls = nextResponse.toolCalls
+            if (nextCalls != null && nextCalls.isNotEmpty()) {
                 handleToolCalls(nextResponse, history, config, personaId, maxHistoryTokens, depth + 1)
                     .collect { emit(it) }
             } else {

@@ -103,7 +103,7 @@ class ToolRegistry {
         ) { _, args ->
             val content = args["content"] as? String ?: return@register mapOf("error" to "content required")
             val type = args["type"] as? String ?: "fact"
-            val importance = (args["importance"] as? Number)?.toFloat() ?: 0.5f
+            val importance = (args["importance"] as? Number)?.toDouble() ?: 0.5
             memoryManager?.add(content, type, importance)
             mapOf("success" to true, "content" to content)
         }

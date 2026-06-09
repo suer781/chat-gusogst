@@ -74,8 +74,8 @@ object HermesBridge {
             return
         }
         try {
-            if (!AndroidPlatform.isInitialized()) {
-                AndroidPlatform.initialize(context)
+            if (!Python.isStarted()) {
+                com.chaquo.python.android.AndroidPlatform(context)
             }
             val py = Python.getInstance()
             pyModule = py.getModule("hermes_bridge")
@@ -310,11 +310,27 @@ object HermesBridge {
         if (!started.get() || pyModule == null) return MemoryStats()
         return try {
             val result = pyModule!!.callAttr("get_memory_stats").toString()
-            val map: Map<String, Any> = gson.fromJson(result, Map::class.java)
+            val type = com.google.gson.reflect.TypeToken.getParameterized(Map::class.java, String::class.java, Any::class.java).type
+            val map: Map<String, Any> = gson.fromJson(result, type)
+            val totalEntries = when (val v = map["totalEntries"] ?: map["total_entries"] ?: 0) {
+                is Number -> v.toInt()
+                else -> 0
+            }
+            val typeBreakdownRaw = (map["typeBreakdown"] ?: map["type_breakdown"] ?: emptyMap<String, Int>()) as? Map<*, *> ?: emptyMap<String, Int>()
+            val safeBreakdown = typeBreakdownRaw.entries.associate { (k, v) ->
+                k.toString() to when (v) {
+                    is Number -> v.toInt()
+                    else -> 0
+                }
+            }
+            val totalSizeBytes = when (val v = map["totalSizeBytes"] ?: map["total_size_bytes"] ?: 0L) {
+                is Number -> v.toLong()
+                else -> 0L
+            }
             MemoryStats(
-                totalEntries = ((map["totalEntries"] ?: map["total_entries"] ?: 0) as? Number)?.toInt() ?: 0,
-                typeBreakdown = (map["typeBreakdown"] ?: map["type_breakdown"] ?: emptyMap<String, Int>()) as? Map<String, Int> ?: emptyMap(),
-                totalSizeBytes = ((map["totalSizeBytes"] ?: map["total_size_bytes"] ?: 0L) as? Number)?.toLong() ?: 0L,
+                totalEntries = totalEntries,
+                typeBreakdown = safeBreakdown,
+                totalSizeBytes = totalSizeBytes,
             )
         } catch (e: Exception) {
             Log.e(TAG, "getMemoryStats error", e)
@@ -326,7 +342,8 @@ object HermesBridge {
 
     private fun parseResult(json: String): MessageResult {
         return try {
-            val map: Map<String, Any> = gson.fromJson(json, Map::class.java)
+            val type = com.google.gson.reflect.TypeToken.getParameterized(Map::class.java, String::class.java, Any::class.java).type
+            val map: Map<String, Any> = gson.fromJson(json, type)
             MessageResult(
                 ok = map["ok"] as? Boolean ?: false,
                 content = map["content"] as? String ?: "",
@@ -360,11 +377,11 @@ object HermesBridge {
             id = map["id"] as? String ?: "",
             content = map["content"] as? String ?: "",
             type = map["type"] as? String ?: "general",
-            score = (map["score"] as? Number)?.toDouble() ?: 0.0,
-            trustScore = (map["trustScore"] ?: map["trust_score"] as? Number)?.toDouble() ?: 0.5,
+            score = when (val v = map["score"]) { is Number -> v.toDouble() else -> 0.0 },
+            trustScore = when (val v = map["trustScore"] ?: map["trust_score"]) { is Number -> v.toDouble() else -> 0.5 },
             timestamp = map["timestamp"] as? String ?: "",
-            retrievalCount = (map["retrievalCount"] ?: map["retrieval_count"] as? Number)?.toInt() ?: 0,
-            helpfulCount = (map["helpfulCount"] ?: map["helpful_count"] as? Number)?.toInt() ?: 0,
+            retrievalCount = when (val v = map["retrievalCount"] ?: map["retrieval_count"]) { is Number -> v.toInt() else -> 0 },
+            helpfulCount = when (val v = map["helpfulCount"] ?: map["helpful_count"]) { is Number -> v.toInt() else -> 0 },
         )
     }
 

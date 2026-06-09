@@ -15,13 +15,9 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        // 预防性声明：明确测试配置
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        // Build Python only for arm64-v8a (95%+ of modern Android devices)
-        // to keep APK size under control.  Add armeabi-v7a / x86_64 for
-        // emulators during development if needed.
         ndk {
             abiFilters += listOf("arm64-v8a")
         }
@@ -29,7 +25,6 @@ android {
 
     buildTypes {
         debug {
-            // 预防性声明：调试模式配置
             isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
@@ -37,7 +32,6 @@ android {
             versionNameSuffix = "-DEBUG"
         }
         release {
-            // 预防性声明：发布模式明确配置
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
@@ -49,17 +43,14 @@ android {
     }
 
     compileOptions {
-        // 预防性声明：明确 Java 编译配置
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
         encoding = "UTF-8"
-        // 使用 Java toolchain 确保与宿主 JDK 版本无关
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        // 预防性声明：明确 Kotlin 编译配置
-        jvmTarget = "21"
+        jvmTarget = "17"
         freeCompilerArgs += listOf(
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
@@ -67,9 +58,8 @@ android {
     }
 
     buildFeatures {
-        // 预防性声明：明确启用的功能
         buildConfig = true
-        viewBinding = false // 暂时禁用以避免问题
+        viewBinding = true
         aidl = false
         renderScript = false
         shaders = false
@@ -77,7 +67,6 @@ android {
 
     packaging {
         resources {
-            // 预防性声明：明确排除冲突资源
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
@@ -85,47 +74,37 @@ android {
 chaquopy {
     defaultConfig {
         version = "3.12"
-        // 只嵌入 Python 标准库（无外部 pip 依赖
-        // hermes_bridge.py 只用标准库模块（json/logging/os/sys）
     }
 }
 
 dependencies {
-    // Core library desugaring for Java 8+ APIs on older Android versions
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
 
-    // AndroidX Core Libraries (Latest Stable)
-    implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.core:core-splashscreen:1.1.0")
+    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.14.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.3.0")
-    implementation("androidx.recyclerview:recyclerview:1.5.0")
+    implementation("com.google.android.material:material:1.13.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
 
-    // Lifecycle & Architecture Components
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.5")
 
-    // Navigation
-    implementation("androidx.navigation:navigation-fragment-ktx:2.9.0")
-    implementation("androidx.navigation:navigation-ui-ktx:2.9.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.0")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.0")
 
-    // Networking (OkHttp & Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.12.0")
     implementation("com.squareup.retrofit2:converter-gson:2.12.0")
-    implementation("com.squareup.okhttp3:okhttp:4.13.0")
-    implementation("com.squareup.okhttp3:okhttp-sse:4.13.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.13.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // Kotlin Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
-    // DataStore
-    implementation("androidx.datastore:datastore-preferences:1.2.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }

@@ -172,7 +172,7 @@ class MainActivity : AppCompatActivity() {
                     
                     // 动态调整性能等级
                     val newLevel = PerformanceAdapter.adjustPerformanceLevel(this, fps)
-                    if (newLevel != animationQuality.maxFps) {
+                    if (newLevel != PerformanceAdapter.detectPerformanceLevel(this)) {
                         android.util.Log.i("Performance", "Auto-adjusted to: ${newLevel.name}")
                         // 重新获取动画质量
                         animationQuality = PerformanceAdapter.getAnimationQuality(this)
@@ -254,7 +254,7 @@ class MainActivity : AppCompatActivity() {
             // 降级处理：如果上面的方法不行，尝试简单方法
             try {
                 window.attributes = window.attributes.apply {
-                    refreshRate = Float.MAX_VALUE
+                    // 不强制设置刷新率，依赖系统默认
                 }
             } catch (e2: Exception) {
                 // 忽略错误
@@ -336,34 +336,31 @@ class MainActivity : AppCompatActivity() {
                 // 根据性能等级决定背景复杂度
                 if (animationQuality.enableComplexGradients) {
                     // 高配设备：复杂多层次渐变
-                    val gradient = android.graphics.RadialGradient(
-                        w / 2f, 0f,
-                        Math.max(w, h) * 0.8f,
+                    val gradient = android.graphics.drawable.GradientDrawable(
+                        android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
                         intArrayOf(
                             0x2020B0F0.toInt(),
                             0x15003080.toInt(),
                             0x00000000
-                        ),
-                        floatArrayOf(0f, 0.4f, 1f),
-                        Shader.TileMode.CLAMP
+                        )
                     )
-                    
-                    background = android.graphics.drawable.GradientDrawable(gradient)
+                    gradient.gradientType = android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT
+                    gradient.gradientRadius = Math.max(w, h) * 0.8f
+                    gradient.setCornerRadius(0f)
+                    background = gradient
                     alpha = 0.3f
                 } else if (animationQuality.enableGlowEffects) {
                     // 中配设备：简单渐变
-                    val gradient = android.graphics.RadialGradient(
-                        w / 2f, 0f,
-                        Math.max(w, h) * 0.6f,
+                    val gradient = android.graphics.drawable.GradientDrawable(
+                        android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
                         intArrayOf(
                             0x15002060.toInt(),
                             0x00000000
-                        ),
-                        floatArrayOf(0f, 1f),
-                        Shader.TileMode.CLAMP
+                        )
                     )
-                    
-                    background = android.graphics.drawable.GradientDrawable(gradient)
+                    gradient.gradientType = android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT
+                    gradient.gradientRadius = Math.max(w, h) * 0.6f
+                    background = gradient
                     alpha = 0.2f
                 } else {
                     // 低配设备：无背景效果
@@ -449,7 +446,6 @@ class MainActivity : AppCompatActivity() {
                         .scaleX(0.94f)
                         .scaleY(0.94f)
                         .translationZ(-4f)
-                        .elevation(v.elevation + 2f)
                         .setDuration(60)
                         .setInterpolator(quickEaseOut)
                         .withEndAction { v.setLayerType(View.LAYER_TYPE_NONE, null) }
@@ -469,7 +465,6 @@ class MainActivity : AppCompatActivity() {
                         .scaleX(1f)
                         .scaleY(1f)
                         .translationZ(0f)
-                        .elevation(v.elevation - 2f)
                         .setDuration(180)
                         .setInterpolator(overshoot)
                         .withEndAction {

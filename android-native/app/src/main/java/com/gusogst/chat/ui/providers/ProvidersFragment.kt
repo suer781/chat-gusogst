@@ -405,11 +405,11 @@ class ProvidersFragment : Fragment() {
                         layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                     })
 
-                    if (model.contextLength > 0) {
+                    if (provider.contextLength > 0) {
                         val ctxText = when {
-                            model.contextLength >= 1_000_000 -> "${model.contextLength / 1_000_000}M ctx"
-                            model.contextLength >= 1000 -> "${model.contextLength / 1000}K ctx"
-                            else -> "${model.contextLength} ctx"
+                            provider.contextLength >= 1_000_000 -> "${provider.contextLength / 1_000_000}M ctx"
+                            provider.contextLength >= 1000 -> "${provider.contextLength / 1000}K ctx"
+                            else -> "${provider.contextLength} ctx"
                         }
                         modelRow.addView(TextView(requireContext()).apply {
                             text = ctxText
