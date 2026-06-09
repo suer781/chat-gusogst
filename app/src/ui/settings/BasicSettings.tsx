@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSettingsStore, DEFAULT_EYE_CARE_MAPPINGS, genMappingId } from '../stores'
 import { EyeCareColorMapper } from './EyeCareColorMapper'
 import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette, Smartphone } from 'lucide-react'
@@ -38,7 +38,26 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
   const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity)
 
+  // 复用 App.tsx 已经写入 <html data-hdr-capable> 的检测结果
+  const [hdrCapable, setHdrCapable] = useState<boolean>(() => {
+    if (typeof document === 'undefined') return false
+    return document.documentElement.getAttribute('data-hdr-capable') === 'yes'
+  })
+
   const [showEyeCareDetail, setShowEyeCareDetail] = useState(false)
+
+  // 如果 App.tsx 的检测还没完成，监听一下变化
+  useEffect(() => {
+    const update = () => {
+      setHdrCapable(
+        document.documentElement.getAttribute('data-hdr-capable') === 'yes'
+      )
+    }
+    update()
+    const id = setInterval(update, 500)
+    setTimeout(() => clearInterval(id), 3000)
+    return () => clearInterval(id)
+  }, [])
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
@@ -134,8 +153,12 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       </Section>
 
       <Section title="HDR 渲染" icon={<Sun size={18} />}>
-        <ToggleRow label="HDR 玻璃质感" desc="利用屏幕高亮度模拟真实玻璃透光效果（需 HDR 屏幕）"
-          checked={hdrEnabled} onChange={setHdrEnabled} />
+        <ToggleRow
+          label="HDR 玻璃质感"
+          desc={hdrCapable ? '您的设备支持 HDR，将使用真实高光色渲染' : '您的设备不支持 HDR，当前仅显示 SDR 增强效果（高亮度不会真实发光）'}
+          checked={hdrEnabled}
+          onChange={setHdrEnabled}
+        />
       </Section>
     </div>
   )

@@ -38,6 +38,45 @@ export default function App() {
   const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
   const [appReady, setAppReady] = useState(false)
 
+  // ── HDR 能力检测 ───────────────────────────────
+  // 真正的 HDR 需要同时满足：
+  //   1. CSS 语法支持 oklch L > 100%  (@supports)
+  //   2. 屏幕是 HDR 屏幕 (@media dynamic-range: high)
+  // 如果不满足，即使用户手动打开了 HDR 开关，也只会渲染 SDR 增强色，
+  // 不会触发"假 HDR"。检测结果写入 <html data-hdr-capable> 供 CSS/JS 读取。
+  const [hdrCapable, setHdrCapable] = useState<boolean>(false)
+
+  useEffect(() => {
+    const checkHdr = () => {
+      if (typeof window === 'undefined' || !window.matchMedia) return false
+
+      const supportsOklch = window.CSS && CSS.supports && CSS.supports('color', 'oklch(1.4 0.3 15)')
+      const hasHighDynamic = window.matchMedia('(dynamic-range: high)').matches
+      const hasRec2020 = window.matchMedia('(color-gamut: rec2020)').matches
+
+      const capable = !!(supportsOklch && (hasHighDynamic || hasRec2020))
+
+      if (typeof document !== 'undefined' && document.documentElement) {
+        document.documentElement.setAttribute('data-hdr-capable', capable ? 'yes' : 'no')
+      }
+      return capable
+    }
+
+    setHdrCapable(checkHdr())
+
+    // 监听配置变化（例如切换外接显示器）
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mq1 = window.matchMedia('(dynamic-range: high)')
+      const mq2 = window.matchMedia('(color-gamut: rec2020)')
+      const handler = () => setHdrCapable(checkHdr())
+      const add = (m: MediaQueryList) => {
+        if (m.addEventListener) m.addEventListener('change', handler)
+        else if (m.addListener) m.addListener(handler)
+      }
+      add(mq1); add(mq2)
+    }
+  }, [])
+
   // Init: StatusBar + SafeArea + hide splash → then show app
   useEffect(() => {
     initApp().then(() => {
