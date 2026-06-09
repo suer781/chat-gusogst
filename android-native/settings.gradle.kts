@@ -4,7 +4,7 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url = uri("https://chaquo.com/maven") }
+        // Chaquopy disabled - removed maven repo
     }
 }
 dependencyResolutionManagement {
