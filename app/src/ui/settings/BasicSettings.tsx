@@ -155,7 +155,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <Section title="HDR 渲染" icon={<Sun size={18} />}>
         <ToggleRow
           label="HDR 玻璃质感"
-          desc={hdrCapable ? '您的设备支持 HDR，将使用真实高光色渲染' : '您的设备不支持 HDR，当前仅显示 SDR 增强效果（高亮度不会真实发光）'}
+          desc={describeHdrLevel(hdrCapable, readOklchLevel())}
           checked={hdrEnabled}
           onChange={setHdrEnabled}
         />
@@ -173,6 +173,22 @@ function Section({ title, icon, children }: { title: string; icon?: React.ReactN
       {children}
     </div>
   )
+}
+
+// ── 辅助函数：根据 JS 实测的能力等级返回设置页描述 ──
+function readOklchLevel(): string {
+  if (typeof document === 'undefined') return 'none'
+  return document.documentElement.getAttribute('data-oklch-level') || 'none'
+}
+
+function describeHdrLevel(hdrCapable: boolean, oklchLevel: string): string {
+  if (hdrCapable && oklchLevel === 'extended') {
+    return '★ 您的设备支持真 HDR，将使用超亮高光色渲染（边缘会有明显发光）'
+  }
+  if (oklchLevel === 'extended' || oklchLevel === 'basic') {
+    return '您的设备支持宽色域（Display P3），当前以高色准 SDR 增强效果渲染（屏幕峰值亮度受限）'
+  }
+  return '您的设备/WebView 不支持 oklch / 宽色域，当前以标准 rgba 颜色回退渲染'
 }
 
 function ToggleRow({ label, desc, checked, onChange }: { label: string; desc?: string; checked: boolean; onChange: (v: boolean) => void }) {

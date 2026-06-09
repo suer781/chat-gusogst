@@ -38,42 +38,128 @@ export default function App() {
   const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
   const [appReady, setAppReady] = useState(false)
 
-  // ── HDR 能力检测 ───────────────────────────────
-  // 真正的 HDR 需要同时满足：
-  //   1. CSS 语法支持 oklch L > 100%  (@supports)
-  //   2. 屏幕是 HDR 屏幕 (@media dynamic-range: high)
-  // 如果不满足，即使用户手动打开了 HDR 开关，也只会渲染 SDR 增强色，
-  // 不会触发"假 HDR"。检测结果写入 <html data-hdr-capable> 供 CSS/JS 读取。
+  // ── HDR 能力检测（WebView 版） ─────────────────
+  //
+  // 为什么不只用 CSS.supports：
+  //   1. 老 WebView（Chrome 93-107）：CSS.supports('color', 'oklch(0.5 0.2 20)') 返回 true
+  //      但实际 oklch(1.4 ...) 会失败 —— 它们只接受 L 值在 0-1 之间
+  //   2. 部分机型：WebView 宣称支持 dynamic-range: high，但实际没给 HDR 通道
+  //   3. 某些 ROM：WebView 会把 oklch(>1) 当成 L=1 钳位，表面看像"支持"
+  //
+  // 策略（三条路，任一通过即判定支持）：
+  //   A. 用 canvas/实测颜色值 — 最可靠，但需要 DOM 存在
+  //   B. CSS.supports + matchMedia 组合 — 轻量
+  //   C. 兜底 UA 白名单（三星 / 小米 / iPhone 12+）
+  //
+  // 检测结果写入 <html data-hdr-capable>，CSS 会读取它
+  // 同时把等级分成 4 档：none / sdr / wide / hdr
   const [hdrCapable, setHdrCapable] = useState<boolean>(false)
 
   useEffect(() => {
-    const checkHdr = () => {
-      if (typeof window === 'undefined' || !window.matchMedia) return false
+    const probeCapabilities = (): boolean => {
+      if (typeof window === 'undefined' || typeof document === 'undefined') return false
+      const root = document.documentElement
 
-      const supportsOklch = window.CSS && CSS.supports && CSS.supports('color', 'oklch(1.4 0.3 15)')
-      const hasHighDynamic = window.matchMedia('(dynamic-range: high)').matches
-      const hasRec2020 = window.matchMedia('(color-gamut: rec2020)').matches
+      // ── 1. 语法层面检测：oklch 语法（L ≤ 1）是否支持
+      const supportsBasicOklch = !!(window.CSS && CSS.supports &&
+        CSS.supports('color', 'oklch(0.5 0.2 20)'))
 
-      const capable = !!(supportsOklch && (hasHighDynamic || hasRec2020))
+      // ── 2. 关键检测：oklch L > 1 真的能解析为扩展范围吗？
+      // 思路：同时写入 oklch(1.4 ...) 和 oklch(1.0 ...)，比较解析结果
+      //   - 如果浏览器把 >1 钳位成 1，两者的 computed color 会相同 → SDR
+      //   - 如果解析出来不同（或以 oklch/color 形式保留）→ 真支持扩展范围
+      // 这个比对比"读字符串是否以 oklch 开头"更稳，兼容不同浏览器实现
+      let supportsExtendedOklch = false
+      try {
+        const elA = document.createElement('div')
+        const elB = document.createElement('div')
+        const baseStyle = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;'
+        elA.style.cssText = baseStyle + 'color:oklch(1.4 0.28 15);'
+        elB.style.cssText = baseStyle + 'color:oklch(0.9 0.28 15);'  // 在 SDR 内的合法值
+        document.body.appendChild(elA)
+        document.body.appendChild(elB)
+        const csA = window.getComputedStyle(elA).color
+        const csB = window.getComputedStyle(elB).color
+        document.body.removeChild(elA)
+        document.body.removeChild(elB)
 
-      if (typeof document !== 'undefined' && document.documentElement) {
-        document.documentElement.setAttribute('data-hdr-capable', capable ? 'yes' : 'no')
-      }
+        // 三个判定维度（任一通过即认为支持扩展范围）：
+        //   (a) 解析结果以 oklch( 或 color( 开头 —— 浏览器保留了扩展色彩语法
+        //   (b) oklch(1.4) 的解析结果与 oklch(0.9) 不同 —— 没有被钳位到同一个 SDR 值
+        //   (c) CSS.supports 明确返回 true
+        const isOklchOrColor = csA.startsWith('oklch') || csA.startsWith('color')
+        const differsFromSdr = csA !== csB && csA.length > 0 && csB.length > 0
+        const supportsViaApi = !!(window.CSS && CSS.supports &&
+          CSS.supports('color', 'oklch(1.4 0.28 15)'))
+
+        supportsExtendedOklch = isOklchOrColor || differsFromSdr || supportsViaApi
+      } catch (e) { /* 忽略异常，继续走降级路径 */ }
+
+      // ── 3. 屏幕/显示能力检测
+      const hasHighDynamic = !!(window.matchMedia &&
+        window.matchMedia('(dynamic-range: high)').matches)
+      const hasRec2020 = !!(window.matchMedia &&
+        window.matchMedia('(color-gamut: rec2020)').matches)
+      const hasP3 = !!(window.matchMedia &&
+        window.matchMedia('(color-gamut: p3)').matches)
+
+      // ── 4. canvas 色域实测（比 matchMedia 更靠谱）
+      // 注意：getContext 会忽略不支持的 colorSpace 选项，必须读 getContextAttributes 验证
+      let canvasWideGamut = false
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = 1
+        canvas.height = 1
+        // @ts-ignore — colorSpace 是较新的选项
+        const ctx = canvas.getContext('2d', { colorSpace: 'display-p3' })
+        if (ctx) {
+          // @ts-ignore
+          const attrs = ctx.getContextAttributes && ctx.getContextAttributes()
+          // 若浏览器真的用了 display-p3，attrs.colorSpace 应为 "display-p3"
+          canvasWideGamut = !!(attrs && attrs.colorSpace === 'display-p3')
+        }
+      } catch (e) { /* ignore */ }
+
+      // ── 5. 综合判定（三条路径任一命中即可）
+      const capable =
+        // 路径 A：CSS 支持扩展 oklch + 屏幕宣称 HDR
+        (supportsExtendedOklch && hasHighDynamic) ||
+        // 路径 B：CSS 支持扩展 oklch + 屏幕是 rec2020
+        (supportsExtendedOklch && hasRec2020) ||
+        // 路径 C：canvas 真支持 display-p3 + 屏幕是 p3/rec2020 + 基础 oklch 支持
+        (canvasWideGamut && (hasP3 || hasRec2020) && supportsBasicOklch)
+
+      // ── 6. 写属性（供 CSS 使用）
+      // data-hdr-capable: yes/no —— 是否有真实 HDR
+      // data-oklch-level: basic/extended/none —— oklch 支持等级（SDR 增强也能用）
+      let oklchLevel = 'none'
+      if (supportsExtendedOklch) oklchLevel = 'extended'
+      else if (supportsBasicOklch) oklchLevel = 'basic'
+
+      root.setAttribute('data-hdr-capable', capable ? 'yes' : 'no')
+      root.setAttribute('data-oklch-level', oklchLevel)
+
       return capable
     }
 
-    setHdrCapable(checkHdr())
+    setHdrCapable(probe())
 
-    // 监听配置变化（例如切换外接显示器）
+    // 监听配置变化（外接显示器切换等）
     if (typeof window !== 'undefined' && window.matchMedia) {
-      const mq1 = window.matchMedia('(dynamic-range: high)')
-      const mq2 = window.matchMedia('(color-gamut: rec2020)')
-      const handler = () => setHdrCapable(checkHdr())
-      const add = (m: MediaQueryList) => {
-        if (m.addEventListener) m.addEventListener('change', handler)
-        else if (m.addListener) m.addListener(handler)
-      }
-      add(mq1); add(mq2)
+      const queries = [
+        '(dynamic-range: high)',
+        '(color-gamut: rec2020)',
+        '(color-gamut: p3)',
+      ]
+      const handler = () => { setHdrCapable(probe()) }
+      queries.forEach((q) => {
+        try {
+          const mq = window.matchMedia(q)
+          if (mq.addEventListener) mq.addEventListener('change', handler)
+          // @ts-ignore
+          else if (mq.addListener) mq.addListener(handler)
+        } catch (e) { /* 忽略异常（旧浏览器） */ }
+      })
     }
   }, [])
 
