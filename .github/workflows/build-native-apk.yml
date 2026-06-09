@@ -16,8 +16,6 @@ jobs:
         working-directory: android-native
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.0/x64
-      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +25,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Setup Python 3.12 (for Chaquopy)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -50,8 +53,8 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace -Pkotlin.compiler.execution.strategy=in-process
-        timeout-minutes: 30
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        timeout-minutes: 45
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

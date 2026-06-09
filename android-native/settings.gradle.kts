@@ -1,10 +1,9 @@
 pluginManagement {
-    // 预防性声明：明确仓库顺序，避免不确定的行为
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
-        // Chaquopy disabled - removed maven repo
+        maven { url = uri("https://chaquo.com/maven") }
     }
 }
 dependencyResolutionManagement {
