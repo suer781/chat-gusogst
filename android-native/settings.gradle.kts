@@ -3,7 +3,15 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url = uri("https://chaquo.com/maven") }
+        exclusiveContent {
+            forRepository {
+                maven { url = uri("https://chaquo.com/maven") }
+            }
+            filter {
+                includeGroup("com.chaquo.python")
+                includeGroup("com.chaquo.python.runtime")
+            }
+        }
     }
 }
 dependencyResolutionManagement {
@@ -12,7 +20,15 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://chaquo.com/maven") }
+        exclusiveContent {
+            forRepository {
+                maven { url = uri("https://chaquo.com/maven") }
+            }
+            filter {
+                includeGroup("com.chaquo.python")
+                includeGroup("com.chaquo.python.runtime")
+            }
+        }
     }
 }
 
