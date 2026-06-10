@@ -15,8 +15,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
-import com.gusogst.chat.model.ChatMode
 import com.gusogst.chat.model.MessageStatus
+import com.gusogst.chat.ui.persona.PersonaProfileFragment
 import com.gusogst.chat.viewmodel.ChatViewModel
 import com.gusogst.chat.util.HdrHelper
 import com.gusogst.chat.util.MaterialAnimator
@@ -141,10 +141,10 @@ class ChatFragment : Fragment() {
             }
         }
 
-        // 头像点击：跳转到角色资料页（在主分支中，这个头像承载的角色感最强）
+        // 头像点击：跳转到角色资料页
         tvPersonaAvatar.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, com.gusogst.chat.ui.persona.PersonaProfileFragment())
+                .replace(R.id.fragmentContainer, PersonaProfileFragment())
                 .addToBackStack(null)
                 .commit()
         }
