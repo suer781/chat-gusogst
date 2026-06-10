@@ -1,0 +1,198 @@
+/*
+ * theme.css — 设计令牌 CSS 变量声明（暗色默认 + 亮色覆盖）
+ *
+ * 这是整个 UI 的颜色/字号/间距/圆角基础。
+ * 所有组件通过 var(--xxx) 引用，切换 data-theme 即可全局换肤。
+ *
+ * 暗色为 :root 默认值（项目主基调），亮色通过 [data-theme="light"] 覆盖。
+ */
+
+/* ══════════════════════════════════════════════
+   暗色主题（默认）
+   ══════════════════════════════════════════════ */
+:root {
+  /* ── 背景层级 ── */
+  --bg-primary:   #0d0d2b;
+  --bg-secondary: #151538;
+  --bg-tertiary:  #1a1a3a;
+  --bg-elevated:  #22224a;
+  --bg-overlay:   rgba(0, 0, 0, 0.6);
+
+  /* ── 文字层级 ── */
+  --text-primary:   #e8e8f0;
+  --text-secondary: #a0a0b8;
+  --text-tertiary:  #6b6b80;
+  --text-disabled:  #4a4a5e;
+  --text-inverse:   #0d0d2b;
+
+  /* ── 品牌色 ── */
+  --accent:       #e94560;
+  --accent-hover: #c73e54;
+  --accent-soft:  rgba(233, 69, 96, 0.12);
+  --accent-glow:  rgba(233, 69, 96, 0.25);
+
+  /* ── 功能色 ── */
+  --purple:      #6C5CE7;
+  --purple-soft: rgba(108, 92, 231, 0.12);
+  --yellow:      #FDCB6E;
+  --yellow-soft: rgba(253, 203, 110, 0.12);
+  --success:     #4CAF50;
+  --success-soft:rgba(76, 175, 80, 0.12);
+  --danger:      #FF5252;
+  --danger-soft: rgba(255, 82, 82, 0.12);
+  --warning:     #FF9800;
+  --warning-soft:rgba(255, 152, 0, 0.12);
+  --teal:        #00b894;
+  --teal-soft:   rgba(0, 184, 148, 0.12);
+  --blue:        #3498db;
+  --blue-soft:   rgba(52, 152, 219, 0.12);
+
+  /* ── 边框 & 分割线 ── */
+  --border:       #2a2a4a;
+  --border-focus: var(--accent);
+  --border-soft:  rgba(255, 255, 255, 0.06);
+  --divider:      rgba(255, 255, 255, 0.06);
+
+  /* ── 灰度阶梯 ── */
+  --gray-50:  #f5f5f7;
+  --gray-100: #e0e0e8;
+  --gray-200: #c0c0cc;
+  --gray-300: #a0a0b8;
+  --gray-400: #787890;
+  --gray-500: #585870;
+  --gray-600: #404058;
+  --gray-700: #303048;
+  --gray-800: #202038;
+  --gray-900: #101028;
+
+  /* ── 字号 ── */
+  --text-2xs: 9px;
+  --text-xs:  10px;
+  --text-sm:  12px;
+  --text-base: 14px;
+  --text-md:  15px;
+  --text-lg:  16px;
+  --text-xl:  18px;
+  --text-2xl: 20px;
+  --text-3xl: 24px;
+  --text-4xl: 32px;
+  --text-5xl: 40px;
+  --text-6xl: 48px;
+
+  /* ── 间距 ── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── 圆角 ── */
+  --radius-xs:  4px;
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  /* ── 阴影 ── */
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg:  0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* ── 动效 ── */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-bounce:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast:   150ms;
+  --duration-normal: 250ms;
+  --duration-slow:   400ms;
+
+  /* ── 字重 ── */
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+
+  /* ── 毛玻璃噪声纹理 ── */
+  --glass-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  --glass-noise-light: url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
+
+  /* ── 边框颜色（兼容旧引用）── */
+  --border-color: var(--border);
+}
+
+/* ══════════════════════════════════════════════
+   亮色主题
+   ══════════════════════════════════════════════ */
+[data-theme="light"] {
+  /* ── 背景层级（暖白底）── */
+  --bg-primary:   #f5f3ff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary:  #f0edfa;
+  --bg-elevated: #ffffff;
+  --bg-overlay:   rgba(0, 0, 0, 0.35);
+
+  /* ── 文字层级（深灰字）── */
+  --text-primary:   #1a1a2e;
+  --text-secondary: #555570;
+  --text-tertiary:  #8888a0;
+  --text-disabled:  #bbb8c8;
+  --text-inverse:   #ffffff;
+
+  /* ── 品牌色（保持不变）── */
+  --accent:       #e94560;
+  --accent-hover: #d63450;
+  --accent-soft:  rgba(233, 69, 96, 0.08);
+  --accent-glow:  rgba(233, 69, 96, 0.15);
+
+  /* ── 功能色 ── */
+  --purple:      #5b4cdb;
+  --purple-soft: rgba(91, 76, 219, 0.10);
+  --yellow:      #e6a800;
+  --yellow-soft: rgba(230, 168, 0, 0.10);
+  --success:     #22c55e;
+  --success-soft:rgba(34, 197, 94, 0.10);
+  --danger:      #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.10);
+  --warning:     #f59e0b;
+  --warning-soft:rgba(245, 158, 11, 0.10);
+  --teal:        #0d9488;
+  --teal-soft:   rgba(13, 148, 136, 0.10);
+  --blue:        #2563eb;
+  --blue-soft:   rgba(37, 99, 235, 0.10);
+
+  /* ── 边框 & 分割线 ── */
+  --border:       #e2e0ec;
+  --border-focus: var(--accent);
+  --border-soft:  rgba(0, 0, 0, 0.05);
+  --divider:      rgba(0, 0, 0, 0.06);
+
+  /* ── 灰度阶梯 ── */
+  --gray-50:  #fafafe;
+  --gray-100: #f0eeff;
+  --gray-200: #e2e0ec;
+  --gray-300: #c8c6d8;
+  --gray-400: #a8a6bc;
+  --gray-500: #8886a0;
+  --gray-600: #6b6985;
+  --gray-700: #4e4c68;
+  --gray-800: #333150;
+  --gray-900: #1a182e;
+
+  /* ── 阴影（亮色更柔和）── */
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-lg:  0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* ── 边框颜色兼容 ── */
+  --border-color: var(--border);
+}
