@@ -8,6 +8,47 @@
  */
 
 /* ══════════════════════════════════════════════
+   全局 Reset —— 必须最先执行，确保布局不塌陷
+   ══════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  /* 防止 iOS 橡皮筋效果导致页面回弹 */
+  overscroll-behavior: none;
+  /* 移动端字体大小不被系统缩放干扰 */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  /* WebView 套壳时确保填满 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 禁止长按选中文本影响触控体验 */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════
    暗色主题（默认）
    ══════════════════════════════════════════════ */
 :root {

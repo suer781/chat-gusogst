@@ -6,7 +6,7 @@ import { SettingsView } from './settings/SettingsView'
 import { PersonaView } from './persona/PersonaView'
 import PersonaProfileView from './persona/PersonaProfileView'
 import { ProviderSettings } from './providers/ProviderSettings'
-import { ChevronLeft, Settings, MessageSquare, Users, Server } from 'lucide-react'
+import { ChevronLeft, Settings, MessageSquare, Users, Server, Plus } from 'lucide-react'
 import { t, onLangChange } from './i18n'
 import TestDisclaimer from './components/TestDisclaimer'
 import { light as hapticLight, glassTap, glassPress, setHapticEnabled } from './haptics'
@@ -278,22 +278,37 @@ export default function App() {
   }
 
   return (
-    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary, #e0e0e0)', overflow: 'hidden', opacity: appReady ? 1 : 0, transition: 'opacity 0.6s cubic-bezier(0.4,0,0.2,1), background-color 0.6s cubic-bezier(0.4,0,0.2,1), color 0.6s cubic-bezier(0.4,0,0.2,1)' }}>
+    <div className="app-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', maxHeight: '100dvh', width: '100vw', background: 'var(--bg-primary)', color: 'var(--text-primary, #e0e0e0)', overflow: 'hidden', opacity: appReady ? 1 : 0, transition: 'opacity 0.6s cubic-bezier(0.4,0,0.2,1), background-color 0.6s cubic-bezier(0.4,0,0.2,1), color 0.6s cubic-bezier(0.4,0,0.2,1)' }}>
       {/* ── Page transition wrapper (header + content) ── */}
       <div className={pagePhase === 'exit' ? 'page-exit page-exit-active' : pagePhase === 'enter' ? 'page-enter page-enter-active' : ''} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      {/* ── Header ── */}
-      <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(48px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
+      {/* ── Header — 聊天页显示 persona 信息，其他页显示标题 ── */}
+      <header className="app-header" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, height: 'calc(44px + env(safe-area-inset-top, 0px))', padding: 'env(safe-area-inset-top, 0px) 12px 0 12px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.4s ease' }}>
         {view === 'personaProfile' ? (
           <button onClick={() => { glassTap(); setView('persona') }} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
             <ChevronLeft size={20} /> {t('btn.back')}
           </button>
+        ) : view === 'chat' ? (
+          /* 聊天页：左侧 persona 头像+名称，右侧新建按钮 */
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+            <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 32, height: 32, background: 'var(--accent-soft)', color: 'var(--accent)', fontSize: 14, fontWeight: 600 }}>{persona.name[0]}</div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{persona.name}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{persona.tags?.join(' · ') || t('chat.aiAssistant')}</div>
+            </div>
+          </div>
         ) : <div style={{ width: 60 }} />}
-        <div style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{viewTitles[view]}</div>
-        <div style={{ width: 60 }} />
+        {view === 'chat' ? (
+          <button className="shrink-0 p-2 rounded-lg hover:bg-white/5" style={{ background: 'none', border: 'none', cursor: 'pointer' }} title={t('chat.newChat')} onClick={() => { glassTap(); useChatStore.getState().clearMessages() }}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
+        ) : view === 'personaProfile' ? (
+          <div style={{ width: 60 }} />
+        ) : (
+          <div style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{viewTitles[view]}</div>
+        )}
+        {view !== 'chat' && view !== 'personaProfile' && <div style={{ width: 60 }} />}
       </header>
 
       {/* ── Content Area ── with page transitions */}
-      <div className={`app-content`} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+      <div className={`app-content`} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {displayedView === 'chat' && <ChatView onNavigate={setView} />}
         {displayedView === 'settings' && <SettingsView onDone={() => setView('chat')} />}
         {displayedView === 'persona' && <PersonaView onDone={() => setView('chat')} onProfile={(p) => { setSelectedPersona(p); setView('personaProfile') }} />}

@@ -89,7 +89,6 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   const clearMessages = useChatStore((s) => s.clearMessages)
   const setStreaming = useChatStore((s) => s.setStreaming)
   const setError = useChatStore((s) => s.setError)
-  const persona = useSettingsStore((s) => s.persona)
   const showThinking = useSettingsStore((s) => s.showThinking)
   const showToolCalls = useSettingsStore((s) => s.showToolCalls)
   const showMemoryHints = useSettingsStore((s) => s.showMemoryHints)
@@ -189,21 +188,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* ─── 顶栏 ─── */}
-      <div className="shrink-0 flex items-center justify-between" style={{ padding: 'var(--space-2) var(--space-4)', borderBottom: '1px solid var(--divider)' }}>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center rounded-full" style={{ width: 32, height: 32, background: 'var(--accent-soft)', color: 'var(--accent)', fontSize: "var(--text-base)", fontWeight: 600 }}>{persona.name[0]}</div>
-          <div>
-            <div style={{ fontSize: "var(--text-base)", fontWeight: 600 }}>{persona.name}</div>
-            <div style={{ fontSize: "var(--text-xs)", color: 'var(--text-secondary)' }}>{persona.tags?.join(' · ') || t('chat.aiAssistant')}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg hover:bg-white/5" title={t('chat.newChat')} onClick={() => { glassTap(); clearMessages() }}><Plus size={18} style={{ color: 'var(--text-secondary)' }} /></button>
-        </div>
-      </div>
-
+    <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
       {/* ─── 消息列表 ─── */}
       <div className="flex-1 overflow-y-auto" style={{ padding: "16px", overscrollBehavior: "contain", willChange: streaming ? 'contents' : 'auto' }}>
         {messages.length === 0 ? (
