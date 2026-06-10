@@ -26,7 +26,7 @@ export default function PersonaProfileView({ persona, onBack, onStartChat, onUpd
 
   return (
     <>
-      <div className="glass-panel" style={{ height: '100%', display: 'flex', flexDirection: 'column', color: 'var(--text-primary)', padding: 16, gap: 16, overflow: 'auto' }}>
+      <div className="glass-panel flex-1 flex flex-col overflow-y-auto" style={{ minHeight: 0, color: 'var(--text-primary)', padding: 16, gap: 16 }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

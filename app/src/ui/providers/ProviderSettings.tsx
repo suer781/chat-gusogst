@@ -241,7 +241,7 @@ export function ProviderSettings({ onDone }: { onDone: () => void }) {
 
   /* ── 主渲染 ── */
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary, #f0f2f5)' }}>
+    <div className="flex-1 flex flex-col overflow-y-auto" style={{ minHeight: 0, background: 'var(--bg-primary, #f0f2f5)' }}>
 
       {/* ── 头部 ── */}
       <div style={{ padding: '16px 16px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

@@ -29,7 +29,7 @@ export function PersonaView({ onDone, onProfile }: { onDone: () => void; onProfi
   const select = (persona: Persona) => { if (onProfile) { onProfile(persona) } else { setPersona(persona); onDone() } }
 
   return (
-    <div className="h-full flex flex-col" style={{ background: 'var(--bg-primary)' }}>
+    <div className="flex-1 flex flex-col" style={{ minHeight: 0, background: 'var(--bg-primary)' }}>
       <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a1a3a' }}>
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-secondary)' }} />

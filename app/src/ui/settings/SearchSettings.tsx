@@ -15,7 +15,7 @@ export function SearchSettings({ onBack }: { onBack: () => void }) {
   const setSearchEnabled = useSettingsStore((s) => s.setSearchEnabled)
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
+    <div className="flex-1 flex flex-col overflow-y-auto" style={{ minHeight: 0, background: 'var(--bg-primary)' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', position: 'sticky', top: 0,
         background: 'var(--bg-overlay)', backdropFilter: 'blur(20px)', zIndex: 10,
