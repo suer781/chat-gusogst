@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import com.google.android.material.textview.MaterialTextView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -14,6 +15,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gusogst.chat.R
+import com.gusogst.chat.model.ChatMode
 import com.gusogst.chat.model.MessageStatus
 import com.gusogst.chat.viewmodel.ChatViewModel
 import com.gusogst.chat.util.HdrHelper
@@ -27,6 +29,10 @@ class ChatFragment : Fragment() {
     private lateinit var tvEmpty: LinearLayout
     private lateinit var etInput: EditText
     private lateinit var btnSend: MaterialTextView
+    private lateinit var tvPersonaAvatar: TextView
+    private lateinit var tvPersonaName: TextView
+    private lateinit var tvTypingStatus: TextView
+    private lateinit var btnNewChat: ImageButton
     private lateinit var adapter: MessageAdapter
     private lateinit var haptics: HapticsHelper
 
@@ -47,6 +53,10 @@ class ChatFragment : Fragment() {
         tvEmpty = view.findViewById(R.id.emptyState)
         etInput = view.findViewById(R.id.etInput)
         btnSend = view.findViewById(R.id.btnSend)
+        tvPersonaAvatar = view.findViewById(R.id.tvPersonaAvatar)
+        tvPersonaName = view.findViewById(R.id.tvPersonaName)
+        tvTypingStatus = view.findViewById(R.id.tvTypingStatus)
+        btnNewChat = view.findViewById(R.id.btnNewChat)
         haptics = HapticsHelper(requireContext())
 
         adapter = MessageAdapter(
@@ -109,6 +119,38 @@ class ChatFragment : Fragment() {
 
             // Fix 7: Apply HDR input glow to edit text (check current focus)
             HdrHelper.applyInputGlow(etInput, s.hdrEnabled, etInput.hasFocus(), isDark)
+        }
+
+        // 角色信息与打字状态
+        viewModel.personas.observe(viewLifecycleOwner) { personas ->
+            val activeId = viewModel.activeConversation.value?.personaId
+            val persona = personas.find { it.id == activeId }
+            persona?.let {
+                tvPersonaAvatar.text = it.emoji ?: it.name.firstOrNull()?.uppercase() ?: "✦"
+                tvPersonaName.text = it.name
+                adapter.setPersonaInfo(it.name, it.emoji)
+            }
+        }
+
+        // 打字状态：只在流式时显示轻量提示
+        viewModel.typingState.observe(viewLifecycleOwner) { state ->
+            tvTypingStatus.text = when (state) {
+                ChatViewModel.TypingState.THINKING -> "思考中…"
+                ChatViewModel.TypingState.TYPING -> "正在回复…"
+                else -> ""
+            }
+        }
+
+        // 头像点击：跳转到角色资料页（在主分支中，这个头像承载的角色感最强）
+        tvPersonaAvatar.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, com.gusogst.chat.ui.persona.PersonaProfileFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+        btnNewChat.setOnClickListener {
+            etInput.text.clear()
+            viewModel.createConversation()
         }
 
         MaterialAnimator.viewEnter(view)

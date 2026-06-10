@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 柔和粉色径向渐变 — 主分支风格头像 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient
+        android:type="radial"
+        android:centerX="0.35"
+        android:centerY="0.35"
+        android:gradientRadius="60dp"
+        android:startColor="#FFE8EB"
+        android:centerColor="#F8D1D8"
+        android:endColor="#F0B8C2" />
+</shape>
