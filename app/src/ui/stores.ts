@@ -98,9 +98,11 @@ interface SettingsState extends AppSettings {
   fontSize: number
   eyeCareEnabled: boolean
   eyeCareColors: EyeCareMapping[]
-  eyeCareIntensity: number  // 0-100, 护眼强度（叠加色温偏移）
+  eyeCareIntensity: number  // 0-100, 护眼强度
   glassEnabled: boolean
   glassOpacity: number  // 0-100, 毛玻璃透明度
+  glassTier: 'auto' | 'full' | 'light' | 'off'  // 毛玻璃性能等级
+  performanceHint: string  // 检测结果提示
   hapticEnabled: boolean  // 转子马达触觉反馈
   hdrEnabled: boolean  // HDR高动态玻璃质感
 
@@ -136,6 +138,8 @@ interface SettingsState extends AppSettings {
   setEyeCareIntensity: (v: number) => void
   setGlassEnabled: (v: boolean) => void
   setGlassOpacity: (v: number) => void
+  setGlassTier: (t: 'auto' | 'full' | 'light' | 'off') => void
+  setPerformanceHint: (h: string) => void
   setHapticEnabled: (v: boolean) => void
   setHdrEnabled: (v: boolean) => void
   setLanguage: (lang: Lang) => void
@@ -156,6 +160,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   eyeCareIntensity: 30,
   glassEnabled: true,
   glassOpacity: 80,
+  glassTier: 'auto',
+  performanceHint: '',
   hapticEnabled: true,
   hdrEnabled: true,
 
