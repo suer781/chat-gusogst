@@ -207,7 +207,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
       {/* ─── 消息列表 ─── */}
       <div className="flex-1 overflow-y-auto" style={{ padding: "16px", overscrollBehavior: "contain", willChange: streaming ? 'contents' : 'auto' }}>
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--gray-500)' }}>
+          <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--text-secondary)' }}>
             <div style={{ fontSize: "var(--text-6xl)", marginBottom: "var(--space-4)" }}>✦</div>
             <div style={{ fontSize: "var(--text-xl)", fontWeight: 600, marginBottom: "var(--space-2)" }}>{t('chat.startTitle')}</div>
             <div style={{ fontSize: "var(--text-base)" }}>{t('chat.startHint')}</div>

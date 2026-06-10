@@ -357,7 +357,7 @@ export default function App() {
                 minHeight: 48,
                 position: 'relative',
                 zIndex: 1,
-                color: isActive ? 'var(--accent)' : 'var(--gray-400)',
+                color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
                 transition: 'color 0.3s ease',
               }}
             >
