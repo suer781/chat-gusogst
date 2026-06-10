@@ -11,8 +11,9 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="16dp"
         android:background="@color/bg_primary">
 
         <!-- 角色头像：60dp 粉色径向渐变圆，点击跳转角色资料 -->
