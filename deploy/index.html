@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chat Topbar Preview</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0D0D0D;color:#E8E8E8;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:20px}
+  .phone{width:375px;height:812px;background:#0D0D0D;border-radius:40px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column}
+  /* Topbar */
+  .topbar{display:flex;align-items:center;padding:28px 20px 16px;gap:12px}
+  .avatar{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFE8EB,#F8D1D8 50%,#F0B8C2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+  .info{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+  .name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .typing{font-size:12px;color:#666;transition:opacity .3s}
+  .btn-plane{width:40px;height:40px;border-radius:50%;background:#D64545;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+  .btn-plane svg{width:18px;height:18px;fill:#fff}
+  /* Messages */
+  .msgs{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;align-items:flex-start;gap:8px}
+  .row.ai{flex-direction:row}
+  .row.user{flex-direction:row-reverse}
+  .av-sm{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFE8EB,#F0B8C2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .bubble{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5}
+  .ai .bubble{background:#1A1A2E;border-bottom-left-radius:4px}
+  .user .bubble{background:#D64545;border-bottom-right-radius:4px}
+  .msg-name{font-size:11px;color:#888;margin-bottom:2px}
+  .msg-time{font-size:10px;color:#555;margin-top:4px}
+  /* Typing dots */
+  .dots{display:flex;gap:4px;padding:12px 16px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#555;animation:bounce 1.4s infinite ease-in-out}
+  .dot:nth-child(2){animation-delay:.15s}
+  .dot:nth-child(3){animation-delay:.3s}
+  @keyframes bounce{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+  /* Input */
+  .input-bar{display:flex;align-items:center;padding:12px 16px;gap:8px;background:#0D0D0D}
+  .input-field{flex:1;background:#1A1A1A;border:none;border-radius:22px;padding:10px 16px;font-size:14px;color:#E8E8E8;outline:none}
+  .input-field::placeholder{color:#555}
+  .send{width:38px;height:38px;border-radius:50%;background:#D64545;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .send svg{width:16px;height:16px;fill:#fff}
+  .label{text-align:center;margin-top:12px;font-size:13px;color:#555}
+  /* Status bar */
+  .status-bar{height:28px;background:#0D0D0D;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:11px;color:#888}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar"><span>9:41</span><span>🔋 ▮▮▮</span></div>
+  <div class="topbar">
+    <div class="avatar">🌸</div>
+    <div class="info"><div class="name">小樱</div><div class="typing" id="t"></div></div>
+    <div class="btn-plane"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+  </div>
+  <div class="msgs">
+    <div class="row ai">
+      <div class="av-sm">🌸</div>
+      <div><div class="msg-name">小樱</div><div class="bubble">嗨～今天天气真好呢！你想去哪里逛逛吗？</div><div class="msg-time">14:32</div></div>
+    </div>
+    <div class="row user">
+      <div class="av-sm" style="background:#2A2A3E">我</div>
+      <div style="text-align:right"><div class="bubble">去公园走走吧，好久没晒太阳了</div><div class="msg-time" style="text-align:right">14:33</div></div>
+    </div>
+    <div class="row ai">
+      <div class="av-sm">🌸</div>
+      <div><div class="bubble">好呀好呀！那我们带便当去野餐吧 🧺</div><div class="msg-time">14:34</div></div>
+    </div>
+    <div class="row ai">
+      <div class="av-sm" style="opacity:0">🌸</div>
+      <div><div class="bubble" style="border-radius:8px 16px 16px 16px">我做的三明治可好吃了！</div><div class="msg-time">14:34</div></div>
+    </div>
+    <div class="row ai">
+      <div class="av-sm">🌸</div>
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    </div>
+  </div>
+  <div class="input-bar">
+    <input class="input-field" placeholder="输入消息...">
+    <div class="send"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+  </div>
+</div>
+<div class="label">AndroidUI 分支 · 聊天页预览</div>
+<script>
+var s=['正在回复…','思考中…',''],i=0;
+setInterval(function(){i=(i+1)%s.length;document.getElementById('t').textContent=s[i]},2500);
+</script>
+</body>
+</html>
