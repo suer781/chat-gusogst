@@ -146,7 +146,7 @@ export default function App() {
       return capable
     }
 
-    setHdrCapable(probe())
+    setHdrCapable(probeCapabilities())
 
     // 监听配置变化（外接显示器切换等）
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -155,7 +155,7 @@ export default function App() {
         '(color-gamut: rec2020)',
         '(color-gamut: p3)',
       ]
-      const handler = () => { setHdrCapable(probe()) }
+      const handler = () => { setHdrCapable(probeCapabilities()) }
       queries.forEach((q) => {
         try {
           const mq = window.matchMedia(q)

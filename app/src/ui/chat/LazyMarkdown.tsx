@@ -61,7 +61,7 @@ function splitContent(content: string, chunkSize = 4000): string[] {
 }
 
 // ── 单个内容块，有/无懒加载 ──
-function MarkdownChunk({ content, lazy }: { content: string; lazy: boolean }) {
+function MarkdownChunk({ content, lazy, chunkIndex }: { content: string; lazy: boolean; chunkIndex: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(!lazy)
 
@@ -104,7 +104,7 @@ export default function LazyMarkdown({ content, isStreaming }: Props) {
     return (
       <>
         {chunks.map((chunk, i) => (
-          <MarkdownChunk key={i} content={chunk} lazy={false} />
+          <MarkdownChunk key={`s-${i}-${chunk.length}`} content={chunk} lazy={false} chunkIndex={i} />
         ))}
       </>
     )
@@ -117,7 +117,7 @@ export default function LazyMarkdown({ content, isStreaming }: Props) {
 
   // 中等内容：单个 chunk，IntersectionObserver 懒加载
   if (safeContent.length <= BLOCK_THRESHOLD) {
-    return <MarkdownChunk content={safeContent} lazy={true} />
+    return <MarkdownChunk content={safeContent} lazy={true} chunkIndex={0} />
   }
 
   // 长内容：分段 + 每段懒加载 + content-visibility 自动跳过离屏渲染
@@ -125,8 +125,8 @@ export default function LazyMarkdown({ content, isStreaming }: Props) {
   return (
     <>
       {chunks.map((chunk, i) => (
-        <div key={i} style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 300px' }}>
-          <MarkdownChunk content={chunk} lazy={i > 0} />
+        <div key={`c-${i}-${chunk.length}`} style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 300px' }}>
+          <MarkdownChunk content={chunk} lazy={i > 0} chunkIndex={i} />
         </div>
       ))}
     </>

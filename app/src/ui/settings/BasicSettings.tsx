@@ -157,56 +157,87 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
         {/* 毛玻璃性能分层选择器 */}
         {glassEnabled && (
           <div style={{ marginTop: 14 }}>
-            <div style={{ color: 'var(--gray-300)', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>
               毛玻璃效果等级
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
               {([
-                { key: 'auto', label: '自动', desc: performanceHint || '检测中…' },
-                { key: 'full', label: '完整', desc: '高端' },
-                { key: 'light', label: '轻量', desc: '中端' },
-                { key: 'off', label: '关闭', desc: '省电' },
-              ] as const).map(({ key, label, desc }) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    hapticMedium()
-                    setGlassTier(key)
-                  }}
-                  style={{
-                    padding: '10px 4px',
-                    borderRadius: 10,
-                    fontSize: 11,
-                    fontWeight: glassTier === key ? 600 : 400,
-                    color: glassTier === key ? 'var(--accent)' : 'var(--gray-300)',
-                    background: glassTier === key ? 'rgba(233,69,96,0.12)' : 'rgba(255,255,255,0.04)',
-                    border: glassTier === key ? '1.5px solid rgba(233,69,96,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 2,
-                    transition: 'all 0.2s ease',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  <span style={{ fontSize: 12 }}>{label}</span>
-                  <span style={{ fontSize: 9, opacity: 0.65 }}>{desc}</span>
-                </button>
-              ))}
+                { key: 'auto' as const, label: '自动', desc: performanceHint || '检测中…', icon: '🔄' },
+                { key: 'full' as const, label: '完整', desc: '最佳效果', icon: '✨' },
+                { key: 'light' as const, label: '轻量', desc: '折中方案', icon: '🌤' },
+                { key: 'off' as const, label: '关闭', desc: '最省资源', icon: '🔋' },
+              ]).map(({ key, label, desc, icon }) => {
+                const isActive = glassTier === key
+                    // "关闭" 用绿色系，其他用品牌色系
+                    const isOff = key === 'off'
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          hapticMedium()
+                          setGlassTier(key)
+                        }}
+                        style={{
+                          padding: '10px 6px',
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontWeight: isActive ? 700 : 500,
+                          color: isActive
+                            ? (isOff ? '#10b981' : 'var(--accent)')
+                            : 'var(--text-secondary)',
+                          background: isActive
+                            ? (isOff
+                              ? 'rgba(16,185,129,0.12)'
+                              : 'rgba(233,69,96,0.12)')
+                            : 'var(--bg-tertiary)',
+                          border: isActive
+                            ? (isOff
+                              ? '1.5px solid rgba(16,185,129,0.45)'
+                              : '1.5px solid rgba(233,69,96,0.45)')
+                            : '1px solid var(--border)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 3,
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      lineHeight: 1.25,
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {/* 选中指示条 */}
+                    {isActive && (
+                      <div style={{
+                        position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                        width: 20, height: 2.5, borderRadius: 2,
+                        background: isOff ? '#10b981' : 'var(--accent)',
+                      }} />
+                    )}
+                    <span style={{ fontSize: 14 }}>{icon}</span>
+                    <span>{label}</span>
+                    <span style={{ fontSize: 9.5, opacity: isActive ? 0.85 : 0.55 }}>{desc}</span>
+                  </button>
+                )
+              })}
             </div>
+            {/* 自动模式下的性能检测结果 */}
             {performanceHint && glassTier === 'auto' && (
               <div style={{
                 marginTop: 8,
                 padding: '8px 12px',
-                borderRadius: 8,
+                borderRadius: 10,
                 background: 'rgba(233,69,96,0.06)',
-                border: '1px solid rgba(233,69,96,0.12)',
+                border: '1px solid rgba(233,69,96,0.15)',
                 fontSize: 11,
-                color: 'var(--gray-300)',
-                lineHeight: 1.4,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.45,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
               }}>
-                自动检测：{performanceHint}
+                <span>📊</span>
+                <span>自动检测：<strong style={{ color: 'var(--text-primary)' }}>{performanceHint}</strong></span>
               </div>
             )}
           </div>
