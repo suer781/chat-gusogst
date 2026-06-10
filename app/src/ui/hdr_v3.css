@@ -237,12 +237,14 @@ input, textarea, .toggle-active {
   box-shadow: 0 0 0 3px var(--hdr-shadow-glow), 0 0 20px var(--hdr-glow-accent) !important;
 }
 
-/* 毛玻璃 + HDR 叠加 */
-[data-hdr="on"][data-glass="on"][data-theme="dark"] .glass-card {
+/* 毛玻璃 + HDR 叠加（full 和 light 都生效，off 不生效） */
+[data-hdr="on"][data-glass="full"][data-theme="dark"] .glass-card,
+[data-hdr="on"][data-glass="light"][data-theme="dark"] .glass-card {
   box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 0 30px var(--hdr-shadow-glow), 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 30px var(--hdr-shadow-glow) !important;
 }
 
-[data-hdr="on"][data-glass="on"][data-theme="dark"] .app-header {
+[data-hdr="on"][data-glass="full"][data-theme="dark"] .app-header,
+[data-hdr="on"][data-glass="light"][data-theme="dark"] .app-header {
   box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 -1px 20px var(--hdr-shadow-glow), 0 0 24px var(--hdr-shadow-glow) !important;
 }
 

@@ -31,12 +31,20 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const setEyeCareIntensity = useSettingsStore((s) => s.setEyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const setGlassEnabled = useSettingsStore((s) => s.setGlassEnabled)
+  const glassTier = useSettingsStore((s) => s.glassTier)
+  const setGlassTier = useSettingsStore((s) => s.setGlassTier)
+  const performanceHint = useSettingsStore((s) => s.performanceHint)
   const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
   const setHapticEnabled = useSettingsStore((s) => s.setHapticEnabled)
   const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
   const setHdrEnabled = useSettingsStore((s) => s.setHdrEnabled)
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
   const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity)
+
+  // 内联背景模糊级别（跟随当前生效的 tier）
+  const headerBlur = glassEnabled && glassTier !== 'off'
+    ? (glassTier === 'light' ? 'blur(8px)' : 'blur(16px)')
+    : 'none'
 
   // 复用 App.tsx 已经写入 <html data-hdr-capable> 的检测结果
   const [hdrCapable, setHdrCapable] = useState<boolean>(() => {
@@ -64,7 +72,7 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '16px 20px', position: 'sticky', top: 0,
-        background: 'var(--bg-overlay)', backdropFilter: glassEnabled ? 'blur(20px)' : 'none',
+        background: 'var(--bg-overlay)', backdropFilter: headerBlur,
         zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         <button onClick={() => { glassTap(); onBack() }} style={{
@@ -145,6 +153,64 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <Section title={t('settings.basic.glassTitle')} icon={<Droplets size={18} />}> 
         <ToggleRow label={t('settings.basic.glassLabel')} desc={t('settings.basic.glassDesc')}
           checked={glassEnabled} onChange={setGlassEnabled} />
+
+        {/* 毛玻璃性能分层选择器 */}
+        {glassEnabled && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ color: 'var(--gray-300)', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>
+              毛玻璃效果等级
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+              {([
+                { key: 'auto', label: '自动', desc: performanceHint || '检测中…' },
+                { key: 'full', label: '完整', desc: '高端' },
+                { key: 'light', label: '轻量', desc: '中端' },
+                { key: 'off', label: '关闭', desc: '省电' },
+              ] as const).map(({ key, label, desc }) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    hapticMedium()
+                    setGlassTier(key)
+                  }}
+                  style={{
+                    padding: '10px 4px',
+                    borderRadius: 10,
+                    fontSize: 11,
+                    fontWeight: glassTier === key ? 600 : 400,
+                    color: glassTier === key ? 'var(--accent)' : 'var(--gray-300)',
+                    background: glassTier === key ? 'rgba(233,69,96,0.12)' : 'rgba(255,255,255,0.04)',
+                    border: glassTier === key ? '1.5px solid rgba(233,69,96,0.4)' : '1px solid rgba(255,255,255,0.06)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 2,
+                    transition: 'all 0.2s ease',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  <span style={{ fontSize: 12 }}>{label}</span>
+                  <span style={{ fontSize: 9, opacity: 0.65 }}>{desc}</span>
+                </button>
+              ))}
+            </div>
+            {performanceHint && glassTier === 'auto' && (
+              <div style={{
+                marginTop: 8,
+                padding: '8px 12px',
+                borderRadius: 8,
+                background: 'rgba(233,69,96,0.06)',
+                border: '1px solid rgba(233,69,96,0.12)',
+                fontSize: 11,
+                color: 'var(--gray-300)',
+                lineHeight: 1.4,
+              }}>
+                自动检测：{performanceHint}
+              </div>
+            )}
+          </div>
+        )}
       </Section>
 
       <Section title="触觉反馈" icon={<Smartphone size={18} />}>

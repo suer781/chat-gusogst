@@ -199,6 +199,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setEyeCareIntensity: (eyeCareIntensity) => set({ eyeCareIntensity }),
   setGlassEnabled: (glassEnabled) => set({ glassEnabled }),
   setGlassOpacity: (glassOpacity) => set({ glassOpacity }),
+  setGlassTier: (glassTier) => set({ glassTier }),
+  setPerformanceHint: (performanceHint) => set({ performanceHint }),
   setHapticEnabled: (hapticEnabled) => set({ hapticEnabled }),
   setHdrEnabled: (hdrEnabled) => set({ hdrEnabled }),
   setLanguage: (lang) => {

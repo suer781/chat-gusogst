@@ -10,6 +10,7 @@ import { ChevronLeft, Settings, MessageSquare, Users, Server } from 'lucide-reac
 import { t, onLangChange } from './i18n'
 import TestDisclaimer from './components/TestDisclaimer'
 import { light as hapticLight, glassTap, glassPress, setHapticEnabled } from './haptics'
+import { detectPerformance } from './perf'
 
 type View = 'chat' | 'settings' | 'persona' | 'personaProfile' | 'providers'
 
@@ -34,6 +35,9 @@ export default function App() {
   const eyeCareIntensity = useSettingsStore((s) => s.eyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
+  const glassTier = useSettingsStore((s) => s.glassTier)
+  const setGlassTier = useSettingsStore((s) => s.setGlassTier)
+  const setPerformanceHint = useSettingsStore((s) => s.setPerformanceHint)
   const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
   const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
   const [appReady, setAppReady] = useState(false)
@@ -166,6 +170,12 @@ export default function App() {
   // Init: StatusBar + SafeArea + hide splash → then show app
   useEffect(() => {
     initApp().then(() => {
+      // ── 初始化完成后跑性能检测并写入 store ──
+      if (glassTier === 'auto') {
+        const perf = detectPerformance()
+        setGlassTier(perf.recommendedGlassTier)
+        setPerformanceHint(perf.hint)
+      }
       // Small delay to ensure first paint is complete
       requestAnimationFrame(() => setAppReady(true))
     })
@@ -211,11 +221,11 @@ export default function App() {
     } else {
       root.removeAttribute('data-eyecare')
     }
-    root.setAttribute('data-glass', glassEnabled ? 'on' : 'off')
+    root.setAttribute('data-glass', glassEnabled ? glassTier : 'off')
     root.style.setProperty('--glass-opacity', String(glassOpacity / 100))
     setHapticEnabled(hapticEnabled)
     root.setAttribute('data-hdr', hdrEnabled ? 'on' : 'off')
-  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, hapticEnabled, hdrEnabled])
+  }, [themeMode, fontSize, eyeCareEnabled, eyeCareColors, eyeCareIntensity, glassEnabled, glassOpacity, glassTier, hapticEnabled, hdrEnabled])
 
 
   // Sync system theme changes

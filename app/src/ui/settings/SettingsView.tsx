@@ -23,6 +23,7 @@ const CARDS = [
 
 export function SettingsView({ onDone }: { onDone: () => void }) {
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
+  const glassTier = useSettingsStore((s) => s.glassTier)
   const [subPage, setSubPage] = useState<SubPage>(null)
 
   if (subPage === 'basic')    return <BasicSettings onBack={() => setSubPage(null)} />
@@ -37,7 +38,7 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '16px 20px', position: 'sticky', top: 0,
-        background: 'var(--bg-overlay)', backdropFilter: glassEnabled ? 'blur(20px)' : 'none',
+        background: 'var(--bg-overlay)', backdropFilter: glassEnabled && glassTier !== 'off' ? (glassTier === 'light' ? 'blur(8px)' : 'blur(16px)') : 'none',
         zIndex: 10, borderBottom: '1px solid var(--divider)',
       }}>
         <button onClick={() => { glassTap(); onDone() }} style={{
