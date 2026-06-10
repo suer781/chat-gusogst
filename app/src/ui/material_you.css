@@ -97,7 +97,8 @@ button:active {
   100% { background-position: 0% 0%; }
 }
 
-[data-glass="on"] .app-content {
+[data-glass="full"] .app-content,
+[data-glass="light"] .app-content {
   background: linear-gradient(
     135deg,
     rgba(20, 20, 60, 0.03) 0%,
@@ -109,7 +110,8 @@ button:active {
   animation: ambientShift 30s ease-in-out infinite;
 }
 
-[data-theme="light"][data-glass="on"] .app-content {
+[data-theme="light"][data-glass="full"] .app-content,
+[data-theme="light"][data-glass="light"] .app-content {
   background: linear-gradient(
     135deg,
     rgba(240, 240, 255, 0.3) 0%,

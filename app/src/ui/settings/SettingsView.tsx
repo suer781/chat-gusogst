@@ -23,6 +23,7 @@ const CARDS = [
 
 export function SettingsView({ onDone }: { onDone: () => void }) {
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
+  const glassTier = useSettingsStore((s) => s.glassTier)
   const [subPage, setSubPage] = useState<SubPage>(null)
 
   if (subPage === 'basic')    return <BasicSettings onBack={() => setSubPage(null)} />
@@ -33,11 +34,11 @@ export function SettingsView({ onDone }: { onDone: () => void }) {
   if (subPage === 'about')    return <AboutSettings onBack={() => setSubPage(null)} />
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
+    <div className="flex-1 flex flex-col overflow-y-auto" style={{ minHeight: 0, background: 'var(--bg-primary)' }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '16px 20px', position: 'sticky', top: 0,
-        background: 'var(--bg-overlay)', backdropFilter: glassEnabled ? 'blur(20px)' : 'none',
+        background: 'var(--bg-overlay)', backdropFilter: glassEnabled && glassTier !== 'off' ? (glassTier === 'light' ? 'blur(8px)' : 'blur(16px)') : 'none',
         zIndex: 10, borderBottom: '1px solid var(--divider)',
       }}>
         <button onClick={() => { glassTap(); onDone() }} style={{

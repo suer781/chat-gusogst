@@ -1,163 +1,258 @@
-/* HDR v4.0 */
+/* =====================================================================
+ * HDR v6.0 — WebView 套壳专用增强版
+ *
+ * 设计目标（按优先级）：
+ *   1. 永远不破 SDR 渲染 —— 所有 WebView 都必须看到正常的增强效果
+ *   2. 真 HDR 设备看到超亮高光（峰值亮度区真实发光）
+ *   3. WebView 版本差异大，容错必须到位
+ *
+ * 兼容性注意（WebView 踩坑清单）：
+ *   - Android System WebView < 111: @supports 内嵌套 @media 可能静默失败
+ *   - WebView 93-107: 支持 oklch() 但仅能接受 0-1 的 L 值（140% 会报错）
+ *   - 老版 WebView: 看到不认识的颜色值，整条 declaration block 被扔掉
+ *   - 所以：每层选择器内的颜色值都必须有 rgba 作为最后一道保险
+ *   - 技巧：CSS 变量赋值时用 @supports 包裹，失败则变量保持 rgba 默认值
+ * ===================================================================== */
+
+/* ─────────────────────────────────────────────
+ * LEVEL 0: 基础 SDR 增强色（最保险，所有 WebView 都支持）
+ * 这是 CSS 变量的初始值，任何 @supports 检测失败都会保持这个
+ * ───────────────────────────────────────────── */
 :root {
-  --hdr-enabled: 0;
-  --hdr-glow-base: rgba(200, 210, 230, 0.0);
-  --hdr-glow-accent: rgba(180, 100, 130, 0.0);
-  --hdr-glow-white: rgba(255, 255, 255, 0.0);
-  --hdr-border-highlight: rgba(200, 210, 240, 0.0);
-  --hdr-shadow-glow: rgba(180, 100, 130, 0.0);
-  --hdr-bg-tint: transparent;
-  --hdr-card-border: transparent;
-  --hdr-header-bg: transparent;
-  --hdr-nav-bg: transparent;
-  --hdr-bubble-tint: transparent;
-}
-
-[data-hdr="on"] {
-  --hdr-enabled: 1;
-  --hdr-glow-base: rgba(220, 225, 245, 0.9);
-  --hdr-glow-accent: rgba(220, 100, 140, 0.9);
+  /* 玻璃/边框：半透明白色与强调色的柔和叠加 */
+  --hdr-glow-base: rgba(220, 225, 245, 0.78);
+  --hdr-glow-accent: rgba(233, 69, 96, 0.78);
   --hdr-glow-white: rgba(255, 255, 255, 0.95);
-  --hdr-border-highlight: rgba(180, 160, 220, 0.4);
-  --hdr-shadow-glow: rgba(200, 100, 150, 0.25);
-  --hdr-bg-tint: rgba(180, 120, 200, 0.06);
-  --hdr-card-border: rgba(180, 160, 220, 0.3);
-  --hdr-header-bg: rgba(180, 120, 200, 0.08);
-  --hdr-nav-bg: rgba(180, 120, 200, 0.05);
-  --hdr-bubble-tint: rgba(180, 140, 220, 0.08);
+  --hdr-border-highlight: rgba(200, 180, 230, 0.28);
+  --hdr-shadow-glow: rgba(200, 80, 120, 0.18);
+
+  /* 背景色 tint（永远保持 SDR，避免大面积过亮） */
+  --hdr-bg-tint: rgba(180, 120, 200, 0.04);
+  --hdr-card-border: rgba(180, 160, 220, 0.20);
+  --hdr-header-bg: rgba(180, 120, 200, 0.05);
+  --hdr-nav-bg: rgba(180, 120, 200, 0.04);
+  --hdr-bubble-tint: rgba(180, 140, 220, 0.06);
 }
 
-@supports (color: oklch(0 0 0)) {
+/* ─────────────────────────────────────────────
+ * LEVEL 1: oklch(L ≤ 1) 增强（WebView ≥ 111 全支持）
+ * 只在 [data-hdr="on"] 时启用，避免覆盖全局 rgba 默认值。
+ * 这样：HDR 开关关闭时，完全回到纯粹 rgba（旧 WebView 不会因 oklch 降级）
+ * ───────────────────────────────────────────── */
+@supports (color: oklch(0.5 0.2 20)) {
   [data-hdr="on"] {
-    --hdr-glow-base: oklch(95% 0.02 240);
-    --hdr-glow-accent: oklch(65% 0.2 20);
-    --hdr-glow-white: oklch(98% 0.01 240);
-    --hdr-border-highlight: oklch(80% 0.08 280 / 0.4);
-    --hdr-shadow-glow: oklch(65% 0.2 20 / 0.25);
-    --hdr-bg-tint: oklch(60% 0.1 280 / 0.06);
-    --hdr-card-border: oklch(80% 0.08 280 / 0.3);
-    --hdr-header-bg: oklch(60% 0.1 280 / 0.08);
-    --hdr-nav-bg: oklch(60% 0.08 280 / 0.05);
-    --hdr-bubble-tint: oklch(70% 0.1 280 / 0.08);
+    --hdr-glow-base: oklch(88% 0.04 265);
+    --hdr-glow-accent: oklch(62% 0.20 15);
+    --hdr-glow-white: oklch(98% 0.005 265);
+    --hdr-border-highlight: oklch(78% 0.07 290 / 0.30);
+    --hdr-shadow-glow: oklch(62% 0.18 15 / 0.18);
+    --hdr-bg-tint: oklch(58% 0.08 290 / 0.05);
+    --hdr-card-border: oklch(78% 0.07 290 / 0.25);
+    --hdr-header-bg: oklch(58% 0.08 290 / 0.06);
+    --hdr-nav-bg: oklch(58% 0.06 290 / 0.04);
+    --hdr-bubble-tint: oklch(65% 0.08 290 / 0.06);
   }
 }
 
-@media (color-gamut: p3) {
-  @supports (color: oklch(0 0 0)) {
+/* ─────────────────────────────────────────────
+ * LEVEL 2: 真 HDR（oklch L > 1.0 + dynamic-range: high）
+ * 只有同时满足两个条件才会触发。
+ * 注意：@supports 在外、@media 在内的组合在老 WebView 上有失败先例，
+ * 所以额外用 @media (color-gamut: rec2020) 做一条备用路径。
+ * ───────────────────────────────────────────── */
+
+/* 路径 A：CSS 支持 >1 的 oklch L 值 AND 屏幕宣称是 HDR */
+@supports (color: oklch(1.4 0.2 15)) {
+  @media (dynamic-range: high) {
     [data-hdr="on"] {
-      --hdr-glow-accent: oklch(68% 0.25 20);
-      --hdr-border-highlight: oklch(82% 0.12 280 / 0.45);
-      --hdr-shadow-glow: oklch(68% 0.25 20 / 0.3);
-      --hdr-bg-tint: oklch(62% 0.14 280 / 0.08);
-      --hdr-card-border: oklch(82% 0.12 280 / 0.35);
+      /* ★ 核心：L 超过 1.0 / 100% — 这才是真正会超出 SDR 白色的发光色 */
+      --hdr-glow-accent: oklch(1.4 0.28 15);       /* 粉/红色高光  */
+      --hdr-glow-white: oklch(1.75 0.008 265);     /* 超亮白 —— 让边缘顶到峰值亮度 */
+      --hdr-glow-base: oklch(1.2 0.05 265);
+      --hdr-border-highlight: oklch(1.15 0.10 290 / 0.50);
+      --hdr-shadow-glow: oklch(1.3 0.25 15 / 0.38);
     }
   }
 }
 
-.app-header,.app-nav,.glass-card,.msg-bubble,.nav-indicator>div,.btn-accent,button,input,textarea,.toggle-active {
-  transition: box-shadow 0.4s cubic-bezier(0.2,0,0,1), border-color 0.4s cubic-bezier(0.2,0,0,1), background 0.4s cubic-bezier(0.2,0,0,1), background-color 0.4s cubic-bezier(0.2,0,0,1), filter 0.4s cubic-bezier(0.2,0,0,1);
+/* 路径 B：同样 @supports，但用 rec2020 做后备（某些 WebView 不认 dynamic-range） */
+@supports (color: oklch(1.4 0.2 15)) {
+  @media (color-gamut: rec2020) {
+    [data-hdr="on"] {
+      --hdr-glow-accent: oklch(1.4 0.28 15);
+      --hdr-glow-white: oklch(1.75 0.008 265);
+      --hdr-shadow-glow: oklch(1.3 0.25 15 / 0.38);
+    }
+  }
 }
 
+/* 路径 C：color(display-p3 ...) 语法（Safari 系更偏好这个） */
+@supports (color: color(display-p3 1.0 0.2 0.2)) {
+  @media (dynamic-range: high) {
+    [data-hdr="on"] {
+      --hdr-glow-accent: color(display-p3 1.0 0.20 0.28);
+      --hdr-glow-white: color(display-p3 1.5 1.5 1.5);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────
+ * LEVEL 1.5: data-oklch-level 由 JS 实测写入
+ *   - basic:    只支持 L≤1 的 oklch（SDR 内色准更好）
+ *   - extended: 支持 L>1 的 oklch（真 HDR）
+ *   - none:     完全不支持，回落到 rgba
+ *
+ * 比纯 CSS @supports 更可靠：
+ *   某些 WebView CSS.supports 说"支持"，但实际把 oklch(1.4) 钳位成 L=1
+ *   JS 端读 computed style 才能发现真相
+ * ───────────────────────────────────────────── */
+
+/* basic 级：oklch 能解析但 L>1 会被钳位 → 只提色准，不提亮度 */
+[data-oklch-level="basic"][data-hdr="on"] {
+  --hdr-glow-accent: oklch(63% 0.20 15);
+  --hdr-glow-white: oklch(98% 0.005 265);
+  --hdr-shadow-glow: oklch(62% 0.18 15 / 0.20);
+}
+
+/* extended 级：oklch L>1 真的能解析 + 屏幕也宣称 HDR → 上真货 */
+[data-oklch-level="extended"][data-hdr-capable="yes"][data-hdr="on"] {
+  --hdr-glow-accent: oklch(1.5 0.30 15);
+  --hdr-glow-white: oklch(1.9 0.01 265);
+  --hdr-shadow-glow: oklch(1.3 0.25 15 / 0.40);
+}
+
+/* extended 级但屏幕没宣称 HDR：保守一点（某些设备屏幕不给力但渲染器支持）
+ * 仍然只给 SDR 增强色，避免"宣称真 HDR 但没发光"的落差感 */
+[data-oklch-level="extended"][data-hdr-capable="no"][data-hdr="on"] {
+  --hdr-glow-accent: oklch(65% 0.22 15);
+  --hdr-glow-white: oklch(98% 0.008 265);
+  --hdr-shadow-glow: oklch(62% 0.20 15 / 0.22);
+}
+
+/* none 级：oklch 完全用不了 → 保持 :root 里的 rgba 默认值，什么都不覆盖 */
+
+/* ─────────────────────────────────────────────
+ * 动画基础（box-shadow 切换时避免爆闪）
+ * ───────────────────────────────────────────── */
+.app-header, .app-nav, .glass-card, .msg-bubble,
+.nav-indicator > div, .btn-accent, button,
+input, textarea, .toggle-active {
+  transition:
+    box-shadow 0.4s cubic-bezier(0.2, 0, 0, 1),
+    border-color 0.4s cubic-bezier(0.2, 0, 0, 1),
+    background-color 0.4s cubic-bezier(0.2, 0, 0, 1),
+    color 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ─────────────────────────────────────────────
+ * UI 元素应用 —— 只改边框/边缘，不动大面积背景
+ * 颜色全部用 CSS 变量，由上面的能力检测决定最终值
+ * 这样：HDR 设备看到超亮边缘，普通 WebView 看到正常 SDR 增强色
+ * ───────────────────────────────────────────── */
+
+/* 暗主题 */
 [data-hdr="on"][data-theme="dark"] .app-header {
   background-color: var(--hdr-header-bg) !important;
   border-bottom: 1px solid var(--hdr-border-highlight) !important;
-  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 1px 3px rgba(0,0,0,0.3), 0 0 20px var(--hdr-shadow-glow) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 0 24px var(--hdr-shadow-glow) !important;
 }
+
 [data-hdr="on"][data-theme="dark"] .app-nav {
   background-color: var(--hdr-nav-bg) !important;
-  box-shadow: inset 0 -1px 0 var(--hdr-border-highlight), 0 -2px 12px var(--hdr-shadow-glow) !important;
+  box-shadow: inset 0 -1px 0 var(--hdr-border-highlight), 0 -2px 14px var(--hdr-shadow-glow) !important;
 }
+
 [data-hdr="on"][data-theme="dark"] .glass-card {
   border-top: 1px solid var(--hdr-card-border) !important;
-  border-left: 1px solid rgba(255,255,255,0.06) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
   background-color: var(--hdr-bg-tint) !important;
-  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 8px rgba(0,0,0,0.2), 0 0 24px var(--hdr-shadow-glow) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 28px var(--hdr-shadow-glow) !important;
 }
-[data-hdr="on"][data-theme="dark"] .nav-indicator>div {
+
+[data-hdr="on"][data-theme="dark"] .nav-indicator > div {
   background: var(--hdr-glow-accent) !important;
   backdrop-filter: blur(16px) saturate(1.8) !important;
   -webkit-backdrop-filter: blur(16px) saturate(1.8) !important;
-  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 8px var(--hdr-shadow-glow), 0 0 20px var(--hdr-shadow-glow) !important;
+  box-shadow: 0 0 4px var(--hdr-glow-white), 0 0 24px var(--hdr-shadow-glow) !important;
 }
+
 [data-hdr="on"][data-theme="dark"] .msg-bubble {
   border-color: var(--hdr-card-border) !important;
-  box-shadow: 0 0 8px var(--hdr-shadow-glow) !important;
+  box-shadow: 0 0 6px var(--hdr-shadow-glow) !important;
 }
+
 [data-hdr="on"][data-theme="dark"] .msg-bubble.user {
   background-color: var(--hdr-bubble-tint) !important;
 }
+
 [data-hdr="on"][data-theme="dark"] .btn-accent,
 [data-hdr="on"][data-theme="dark"] button:active {
-  box-shadow: inset 0 1px 2px var(--hdr-glow-white), 0 0 16px var(--hdr-shadow-glow) !important;
+  box-shadow: inset 0 1px 1px var(--hdr-glow-white), 0 0 18px var(--hdr-shadow-glow) !important;
 }
+
 [data-hdr="on"][data-theme="dark"] input:focus,
 [data-hdr="on"][data-theme="dark"] textarea:focus {
   border-color: var(--hdr-glow-accent) !important;
-  box-shadow: 0 0 0 3px var(--hdr-shadow-glow), 0 0 16px var(--hdr-shadow-glow) !important;
-}
-[data-hdr="on"][data-theme="dark"] .toggle-active {
-  box-shadow: 0 0 12px var(--hdr-shadow-glow) !important;
+  box-shadow: 0 0 0 3px var(--hdr-shadow-glow), 0 0 20px var(--hdr-glow-accent) !important;
 }
 
-[data-hdr="on"][data-theme="light"] {
-  --hdr-glow-accent: rgba(180, 60, 100, 0.85);
-  --hdr-border-highlight: rgba(160, 100, 200, 0.3);
-  --hdr-shadow-glow: rgba(180, 80, 140, 0.15);
-  --hdr-bg-tint: rgba(180, 100, 200, 0.04);
-  --hdr-card-border: rgba(160, 100, 200, 0.25);
-  --hdr-header-bg: rgba(180, 100, 200, 0.06);
-  --hdr-nav-bg: rgba(180, 100, 200, 0.04);
-  --hdr-bubble-tint: rgba(180, 100, 200, 0.06);
+[data-hdr="on"][data-theme="dark"] .toggle-active {
+  box-shadow: 0 0 14px var(--hdr-shadow-glow) !important;
 }
-@supports (color: oklch(0 0 0)) {
-  [data-hdr="on"][data-theme="light"] {
-    --hdr-glow-accent: oklch(55% 0.2 20);
-    --hdr-border-highlight: oklch(75% 0.08 280 / 0.3);
-    --hdr-shadow-glow: oklch(55% 0.2 20 / 0.15);
-    --hdr-bg-tint: oklch(55% 0.08 280 / 0.04);
-    --hdr-card-border: oklch(75% 0.08 280 / 0.25);
-    --hdr-header-bg: oklch(55% 0.08 280 / 0.06);
-    --hdr-nav-bg: oklch(55% 0.06 280 / 0.04);
-    --hdr-bubble-tint: oklch(55% 0.08 280 / 0.06);
-  }
-}
+
+/* 亮主题 */
 [data-hdr="on"][data-theme="light"] .app-header {
   background-color: var(--hdr-header-bg) !important;
   border-bottom: 1px solid var(--hdr-border-highlight) !important;
-  box-shadow: inset 0 -1px 0 var(--hdr-glow-white), 0 1px 3px rgba(0,0,0,0.08), 0 0 16px var(--hdr-shadow-glow) !important;
+  box-shadow: inset 0 -1px 0 var(--hdr-glow-white), 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 18px var(--hdr-shadow-glow) !important;
 }
+
 [data-hdr="on"][data-theme="light"] .app-nav {
   background-color: var(--hdr-nav-bg) !important;
-  box-shadow: inset 0 1px 0 var(--hdr-border-highlight), 0 2px 12px var(--hdr-shadow-glow) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-border-highlight), 0 2px 14px var(--hdr-shadow-glow) !important;
 }
+
 [data-hdr="on"][data-theme="light"] .glass-card {
   border-top: 1px solid var(--hdr-card-border) !important;
   background-color: var(--hdr-bg-tint) !important;
-  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 6px rgba(0,0,0,0.06), 0 0 16px var(--hdr-shadow-glow) !important;
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 18px var(--hdr-shadow-glow) !important;
 }
-[data-hdr="on"][data-theme="light"] .nav-indicator>div {
+
+[data-hdr="on"][data-theme="light"] .nav-indicator > div {
   background: var(--hdr-glow-accent) !important;
-  box-shadow: 0 2px 8px var(--hdr-shadow-glow), 0 0 16px var(--hdr-shadow-glow) !important;
+  box-shadow: 0 2px 8px var(--hdr-shadow-glow), 0 0 18px var(--hdr-shadow-glow) !important;
 }
-[data-hdr="on"][data-theme="light"] .msg-bubble { border-color: var(--hdr-card-border) !important; }
-[data-hdr="on"][data-theme="light"] .msg-bubble.user { background-color: var(--hdr-bubble-tint) !important; }
+
+[data-hdr="on"][data-theme="light"] .msg-bubble {
+  border-color: var(--hdr-card-border) !important;
+}
+
+[data-hdr="on"][data-theme="light"] .msg-bubble.user {
+  background-color: var(--hdr-bubble-tint) !important;
+}
+
 [data-hdr="on"][data-theme="light"] input:focus,
 [data-hdr="on"][data-theme="light"] textarea:focus {
   border-color: var(--hdr-glow-accent) !important;
-  box-shadow: 0 0 0 3px var(--hdr-shadow-glow) !important;
+  box-shadow: 0 0 0 3px var(--hdr-shadow-glow), 0 0 20px var(--hdr-glow-accent) !important;
 }
 
-[data-hdr="off"] .app-header, [data-hdr="off"] .app-nav, [data-hdr="off"] .glass-card,
-[data-hdr="off"] .msg-bubble, [data-hdr="off"] .nav-indicator>div,
-[data-hdr="off"] input:focus, [data-hdr="off"] textarea:focus {
-  box-shadow: none !important;
-  border-color: inherit !important;
-  background-color: transparent !important;
+/* 毛玻璃 + HDR 叠加（full 和 light 都生效，off 不生效） */
+[data-hdr="on"][data-glass="full"][data-theme="dark"] .glass-card,
+[data-hdr="on"][data-glass="light"][data-theme="dark"] .glass-card {
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 0 30px var(--hdr-shadow-glow), 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 30px var(--hdr-shadow-glow) !important;
 }
 
-[data-hdr="on"][data-glass="on"][data-theme="dark"] .glass-card {
-  box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 0 30px var(--hdr-shadow-glow), 0 2px 8px rgba(0,0,0,0.2), 0 0 30px var(--hdr-shadow-glow) !important;
+[data-hdr="on"][data-glass="full"][data-theme="dark"] .app-header,
+[data-hdr="on"][data-glass="light"][data-theme="dark"] .app-header {
+  box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 -1px 20px var(--hdr-shadow-glow), 0 0 24px var(--hdr-shadow-glow) !important;
 }
-[data-hdr="on"][data-glass="on"][data-theme="dark"] .app-header {
-  box-shadow: inset 0 1px 0 var(--hdr-glow-white), inset 0 -1px 20px var(--hdr-shadow-glow), 0 1px 3px rgba(0,0,0,0.3), 0 0 24px var(--hdr-shadow-glow) !important;
-}
+
+/* ─────────────────────────────────────────────
+ * HDR 关闭时：不做任何操作。
+ *
+ *   上面所有 HDR 样式都被 [data-hdr="on"] 选择器包裹，
+ *   关闭开关后自动失效，无需额外清除。
+ *   (避免用 box-shadow:none / background:transparent 一刀切，
+ *    那会清掉 app 其他非 HDR 的基础样式）
+ * ───────────────────────────────────────────── */

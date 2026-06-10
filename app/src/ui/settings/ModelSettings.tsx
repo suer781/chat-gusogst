@@ -92,7 +92,7 @@ ${systemPrompt || '（未设置自定义提示词，使用默认助手角色）'
   const provider = PROVIDERS.find((p) => p.id === model.provider) || PROVIDERS[3]
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
+    <div className="flex-1 flex flex-col overflow-y-auto" style={{ minHeight: 0, background: 'var(--bg-primary)' }}>
       <Header title="AI 模型" onBack={onBack} />
 
       {/* Provider */}

@@ -1,5 +1,6 @@
-export interface MemoryEntry {
 import { vectorStore } from './vectorStore'
+
+export interface MemoryEntry {
   id: string
   content: string
   type: 'fact' | 'preference' | 'event' | 'emotion' | 'context'

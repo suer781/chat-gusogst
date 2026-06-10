@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSettingsStore, DEFAULT_EYE_CARE_MAPPINGS, genMappingId } from '../stores'
 import { EyeCareColorMapper } from './EyeCareColorMapper'
 import { Sun, Moon, Monitor, Eye, Droplets, Type, Palette, Smartphone } from 'lucide-react'
@@ -31,6 +31,9 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const setEyeCareIntensity = useSettingsStore((s) => s.setEyeCareIntensity)
   const glassEnabled = useSettingsStore((s) => s.glassEnabled)
   const setGlassEnabled = useSettingsStore((s) => s.setGlassEnabled)
+  const glassTier = useSettingsStore((s) => s.glassTier)
+  const setGlassTier = useSettingsStore((s) => s.setGlassTier)
+  const performanceHint = useSettingsStore((s) => s.performanceHint)
   const hapticEnabled = useSettingsStore((s) => s.hapticEnabled)
   const setHapticEnabled = useSettingsStore((s) => s.setHapticEnabled)
   const hdrEnabled = useSettingsStore((s) => s.hdrEnabled)
@@ -38,14 +41,38 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
   const glassOpacity = useSettingsStore((s) => s.glassOpacity)
   const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity)
 
+  // 内联背景模糊级别（跟随当前生效的 tier）
+  const headerBlur = glassEnabled && glassTier !== 'off'
+    ? (glassTier === 'light' ? 'blur(8px)' : 'blur(16px)')
+    : 'none'
+
+  // 复用 App.tsx 已经写入 <html data-hdr-capable> 的检测结果
+  const [hdrCapable, setHdrCapable] = useState<boolean>(() => {
+    if (typeof document === 'undefined') return false
+    return document.documentElement.getAttribute('data-hdr-capable') === 'yes'
+  })
+
   const [showEyeCareDetail, setShowEyeCareDetail] = useState(false)
 
+  // 如果 App.tsx 的检测还没完成，监听一下变化
+  useEffect(() => {
+    const update = () => {
+      setHdrCapable(
+        document.documentElement.getAttribute('data-hdr-capable') === 'yes'
+      )
+    }
+    update()
+    const id = setInterval(update, 500)
+    setTimeout(() => clearInterval(id), 3000)
+    return () => clearInterval(id)
+  }, [])
+
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg-primary)', padding: '0 0 100px' }}>
+    <div className="flex-1 flex flex-col overflow-y-auto" style={{ minHeight: 0, background: 'var(--bg-primary)' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '16px 20px', position: 'sticky', top: 0,
-        background: 'var(--bg-overlay)', backdropFilter: glassEnabled ? 'blur(20px)' : 'none',
+        background: 'var(--bg-overlay)', backdropFilter: headerBlur,
         zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         <button onClick={() => { glassTap(); onBack() }} style={{
@@ -126,6 +153,95 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       <Section title={t('settings.basic.glassTitle')} icon={<Droplets size={18} />}> 
         <ToggleRow label={t('settings.basic.glassLabel')} desc={t('settings.basic.glassDesc')}
           checked={glassEnabled} onChange={setGlassEnabled} />
+
+        {/* 毛玻璃性能分层选择器 */}
+        {glassEnabled && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>
+              毛玻璃效果等级
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
+              {([
+                { key: 'auto' as const, label: '自动', desc: performanceHint || '检测中…', icon: '🔄' },
+                { key: 'full' as const, label: '完整', desc: '最佳效果', icon: '✨' },
+                { key: 'light' as const, label: '轻量', desc: '折中方案', icon: '🌤' },
+                { key: 'off' as const, label: '关闭', desc: '最省资源', icon: '🔋' },
+              ]).map(({ key, label, desc, icon }) => {
+                const isActive = glassTier === key
+                    // "关闭" 用绿色系，其他用品牌色系
+                    const isOff = key === 'off'
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          hapticMedium()
+                          setGlassTier(key)
+                        }}
+                        style={{
+                          padding: '10px 6px',
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontWeight: isActive ? 700 : 500,
+                          color: isActive
+                            ? (isOff ? '#10b981' : 'var(--accent)')
+                            : 'var(--text-secondary)',
+                          background: isActive
+                            ? (isOff
+                              ? 'rgba(16,185,129,0.12)'
+                              : 'rgba(233,69,96,0.12)')
+                            : 'var(--bg-tertiary)',
+                          border: isActive
+                            ? (isOff
+                              ? '1.5px solid rgba(16,185,129,0.45)'
+                              : '1.5px solid rgba(233,69,96,0.45)')
+                            : '1px solid var(--border)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 3,
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      lineHeight: 1.25,
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {/* 选中指示条 */}
+                    {isActive && (
+                      <div style={{
+                        position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                        width: 20, height: 2.5, borderRadius: 2,
+                        background: isOff ? '#10b981' : 'var(--accent)',
+                      }} />
+                    )}
+                    <span style={{ fontSize: 14 }}>{icon}</span>
+                    <span>{label}</span>
+                    <span style={{ fontSize: 9.5, opacity: isActive ? 0.85 : 0.55 }}>{desc}</span>
+                  </button>
+                )
+              })}
+            </div>
+            {/* 自动模式下的性能检测结果 */}
+            {performanceHint && glassTier === 'auto' && (
+              <div style={{
+                marginTop: 8,
+                padding: '8px 12px',
+                borderRadius: 10,
+                background: 'rgba(233,69,96,0.06)',
+                border: '1px solid rgba(233,69,96,0.15)',
+                fontSize: 11,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.45,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}>
+                <span>📊</span>
+                <span>自动检测：<strong style={{ color: 'var(--text-primary)' }}>{performanceHint}</strong></span>
+              </div>
+            )}
+          </div>
+        )}
       </Section>
 
       <Section title="触觉反馈" icon={<Smartphone size={18} />}>
@@ -134,8 +250,12 @@ export function BasicSettings({ onBack }: { onBack: () => void }) {
       </Section>
 
       <Section title="HDR 渲染" icon={<Sun size={18} />}>
-        <ToggleRow label="HDR 玻璃质感" desc="利用屏幕高亮度模拟真实玻璃透光效果（需 HDR 屏幕）"
-          checked={hdrEnabled} onChange={setHdrEnabled} />
+        <ToggleRow
+          label="HDR 玻璃质感"
+          desc={describeHdrLevel(hdrCapable, readOklchLevel())}
+          checked={hdrEnabled}
+          onChange={setHdrEnabled}
+        />
       </Section>
     </div>
   )
@@ -150,6 +270,22 @@ function Section({ title, icon, children }: { title: string; icon?: React.ReactN
       {children}
     </div>
   )
+}
+
+// ── 辅助函数：根据 JS 实测的能力等级返回设置页描述 ──
+function readOklchLevel(): string {
+  if (typeof document === 'undefined') return 'none'
+  return document.documentElement.getAttribute('data-oklch-level') || 'none'
+}
+
+function describeHdrLevel(hdrCapable: boolean, oklchLevel: string): string {
+  if (hdrCapable && oklchLevel === 'extended') {
+    return '★ 您的设备支持真 HDR，将使用超亮高光色渲染（边缘会有明显发光）'
+  }
+  if (oklchLevel === 'extended' || oklchLevel === 'basic') {
+    return '您的设备支持宽色域（Display P3），当前以高色准 SDR 增强效果渲染（屏幕峰值亮度受限）'
+  }
+  return '您的设备/WebView 不支持 oklch / 宽色域，当前以标准 rgba 颜色回退渲染'
 }
 
 function ToggleRow({ label, desc, checked, onChange }: { label: string; desc?: string; checked: boolean; onChange: (v: boolean) => void }) {
