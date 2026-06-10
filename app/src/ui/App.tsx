@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { initApp } from './init'
-import { useSettingsStore, type EyeCareMapping } from './stores'
+import { useSettingsStore, useChatStore, type EyeCareMapping } from './stores'
 import { ChatView } from './chat/ChatView'
 import { SettingsView } from './settings/SettingsView'
 import { PersonaView } from './persona/PersonaView'
