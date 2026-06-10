@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useChatStore, useSettingsStore } from '../stores'
 import type { UIMessage as Message, UIToolCall as ToolCall } from '../types'
 import { Plus, Search, Database, Send, Copy, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronRight, Square, Wrench, CheckCircle2, XCircle } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
+import LazyMarkdown from './LazyMarkdown'
 import { t, onLangChange } from '../i18n'
 import { success as hapticSuccess, light as hapticLight, medium as hapticMedium, heavy as hapticHeavy, sendPulse, unfold as hapticUnfold, error as hapticError, glassTap, glassPress } from '../haptics'
 
@@ -97,6 +97,9 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
   useEffect(() => { onLangChange(() => forceUpdate((n) => n + 1)) }, [])
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streaming])
 
+  // ── RAf 节流：流式输出时，每帧最多 flush 一次 ──
+  const rafId = useRef<number>(0)
+
   const send = useCallback(async (text?: string) => {
     const content = (text ?? input).trim()
     if (!content || streaming) return
@@ -109,31 +112,57 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
     let accumulated = ''
     let currentThinking = ''
     let toolCalls: ToolCall[] = []
+
+    // RAf 批量 flush —— 同一帧内多次 delta 只最后提交一次
+    const flushAccumulated = () => {
+      addMessage({
+        id: assistantId, role: 'assistant',
+        content: accumulated, timestamp: Date.now(),
+        thinking: currentThinking ? [{ id: 't', content: currentThinking, collapsed: true }] : undefined,
+        toolCalls: toolCalls.length ? toolCalls : undefined,
+      }, true)
+      rafId.current = 0
+    }
+
     try {
       for await (const evt of bridge.chat(content, cfg)) {
         if (evt.type === 'text_delta') {
           accumulated += evt.data
-          addMessage({ id: assistantId, role: 'assistant', content: accumulated, timestamp: Date.now(), thinking: currentThinking ? [{ id: 't', content: currentThinking, collapsed: true }] : undefined, toolCalls: toolCalls.length ? toolCalls : undefined }, true)
         } else if (evt.type === 'thinking') {
           currentThinking += evt.data
-          addMessage({ id: assistantId, role: 'assistant', content: accumulated, timestamp: Date.now(), thinking: [{ id: 't', content: currentThinking, collapsed: true }], toolCalls: toolCalls.length ? toolCalls : undefined }, true)
         } else if (evt.type === 'tool_use') {
           const tc: ToolCall = { id: genId(), tool: evt.data.tool, input: evt.data.input, status: 'running', agentEventId: evt.data.id }
           toolCalls = [...toolCalls, tc]
-          addMessage({ id: assistantId, role: 'assistant', content: accumulated, timestamp: Date.now(), thinking: currentThinking ? [{ id: 't', content: currentThinking, collapsed: true }] : undefined, toolCalls }, true)
         } else if (evt.type === 'tool_result') {
           toolCalls = toolCalls.map(tc => {
             const match = evt.data.id ? tc.agentEventId === evt.data.id : (tc.tool === evt.data.tool && tc.status === 'running');
             return match ? { ...tc, output: evt.data.output, status: (evt.data.isError ? 'error' : 'done') as ToolCall['status'] } : tc;
           })
+          // 工具结果立即提交（需要反馈状态变化）
           addMessage({ id: assistantId, role: 'assistant', content: accumulated, timestamp: Date.now(), toolCalls }, true)
         } else if (evt.type === 'error') {
           setError(evt.data)
         }
+
+        // text_delta / thinking：用 RAf 批量提交，避免每字符渲染一次
+        if (evt.type === 'text_delta' || evt.type === 'thinking') {
+          if (!rafId.current) {
+            rafId.current = requestAnimationFrame(flushAccumulated)
+          }
+        }
       }
+      // 流结束：强制 flush
+      if (rafId.current) { cancelAnimationFrame(rafId.current); rafId.current = 0 }
+      addMessage({
+        id: assistantId, role: 'assistant',
+        content: accumulated, timestamp: Date.now(),
+        thinking: currentThinking ? [{ id: 't', content: currentThinking, collapsed: true }] : undefined,
+        toolCalls: toolCalls.length ? toolCalls : undefined,
+      }, true)
       if (!accumulated && !toolCalls.length) addMessage({ id: assistantId, role: 'assistant', content: '(无回复)', timestamp: Date.now() })
       hapticSuccess()
     } catch (err: any) {
+      if (rafId.current) { cancelAnimationFrame(rafId.current); rafId.current = 0 }
       setError(err.message || '发送失败')
     } finally {
       setStreaming(false)
@@ -176,7 +205,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
       </div>
 
       {/* ─── 消息列表 ─── */}
-      <div className="flex-1 overflow-y-auto" style={{ padding: "16px", overscrollBehavior: "contain" }}>
+      <div className="flex-1 overflow-y-auto" style={{ padding: "16px", overscrollBehavior: "contain", willChange: streaming ? 'contents' : 'auto' }}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--gray-500)' }}>
             <div style={{ fontSize: "var(--text-6xl)", marginBottom: "var(--space-4)" }}>✦</div>
@@ -186,7 +215,13 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
         ) : (
           <div className="flex flex-col gap-3">
             {messages.map((msg) => (
-              <div key={msg.id} className="flex flex-col" style={{ alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+              <div key={msg.id} className="flex flex-col"
+                style={{
+                  alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  contentVisibility: 'auto',
+                  containIntrinsicSize: 'auto 80px',
+                }}
+              >
                 {/* 思考块 */}
                 {msg.thinking?.map((th: any) => (
                   <ThinkingBlock key={th.id} content={th.content} showThinking={showThinking} />
@@ -207,7 +242,7 @@ export function ChatView({ onNavigate }: { onNavigate?: (v: any) => void }) {
                     <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
                   ) : (
                     <div style={{ fontSize: "var(--text-base)", lineHeight: 1.6 }}>
-                      <ReactMarkdown>{msg.content || ' '}</ReactMarkdown>
+                      <LazyMarkdown content={msg.content || ' '} isStreaming={streaming && msg.id === messages[messages.length - 1]?.id} />
                     </div>
                   )}
                 </div>
